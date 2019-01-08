@@ -1,0 +1,374 @@
+C Copyright: CNRS - Université de Grenoble
+C
+C Contributors : Jean-Michel Brankart, Charles-Emmanuel Testut, Laurent Parent,
+C                Emmanuel Cosme, Claire Lauvernet, Frédéric Castruccio
+C
+C Jean-Michel.Brankart@hmg.inpg.fr
+C
+C This software is governed by the CeCILL license under French law and
+C abiding by the rules of distribution of free software.  You can  use,
+C modify and/ or redistribute the software under the terms of the CeCILL
+C license as circulated by CEA, CNRS and INRIA at the following URL
+C "http://www.cecill.info".
+C
+C%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+C ---                                                           ---
+C ---                    DEFCST.F                               ---
+C ---                                                           ---
+C ---                                                           ---
+C --- original     : 97-12 (C.E. Testut)                        ---
+C --- modification : 00-02 (C.E. Testut)                        ---
+C --- modification : 03-02 (J.M. Brankart)                      ---
+C ---                                                           ---
+C%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#include "config.main.h"
+C -----------------------------------------------------------------
+C --- 
+C --- SUBROUTINE  defcst : Define SESAM configuration
+C --- SUBROUTINE  defswi : Define SESAM structure
+C --- SUBROUTINE  defctl : Load user configuration
+C --- SUBROUTINE  defchk : Check user configuration
+C ---
+C -----------------------------------------------------------------
+C%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      SUBROUTINE defcst 
+CCC---------------------------------------------------------------------
+CCC
+CCC  Purpose : Define SESAM constants, load and check user configuration
+CCC  -------
+CCC  Method : 1) Define SESAM constants (list of possible actions,
+CCC  ------         list of possible switches, list of possible object
+CCC                 formats, help information, ...)   [defswi]
+CCC           2) Load SESAM user configuration (defined by the user
+CCC                 in 'defcst.control.h').           [defctl]
+CCC           3) Check user configuration             [defchk]
+CCC
+CCC---------------------------------------------------------------------
+CC module
+CC ======
+      use mod_main
+      use mod_cfgxyo
+      IMPLICIT NONE
+C
+      IF ((nprint.GE.0).AND.(jproc.EQ.0)) THEN
+         WRITE(numout,*) '*** ROUTINE : sesam/defcst :'
+         WRITE(numout,*) '         define SESAM configuration'
+      ENDIF
+C
+C -1.- Define SESAM constants (switches, modules, actions,...)
+C ------------------------------------------------------------
+C
+      CALL defswi
+C
+C -2.- Load SESAM user configuration
+C ----------------------------------
+C
+      CALL defctl
+C
+C -3.- Check user configuration
+C -----------------------------
+C
+      CALL defchk
+C
+      RETURN
+      END
+C%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+C -----------------------------------------------------------------
+C%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      SUBROUTINE defswi
+CCC---------------------------------------------------------------------
+CCC
+CCC  Purpose : Define SESAM constants (list of possible actions,
+CCC  -------   list of possible switches, list of possible object
+CCC            formats, help information, ...)
+CCC
+CCC  Method : Include file "defcst.switch.h"
+CCC  ------
+CCC---------------------------------------------------------------------
+CC modules
+CC =======
+      use mod_main
+      use mod_cfgxyo
+      IMPLICIT NONE
+CC----------------------------------------------------------------------
+CC local declarations
+CC ==================
+      INTEGER :: jarg,jmod,jaction,jorder,jhelp
+      INTEGER :: jextbas,jextdbs,jextdta,jextobs,jextvar,jextzon
+CC----------------------------------------------------------------------
+C
+      IF ((nprint.GE.0).AND.(jproc.EQ.0)) THEN
+         WRITE(numout,*) '*** sesam/defcst/defswi :'
+         WRITE(numout,*) '         define SESAM structure'
+      ENDIF
+C
+C -1.- Include file with SESAM structure definition
+C -------------------------------------------------
+C
+#include "defcst.switch.h"
+C
+      RETURN
+      END
+C%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+C -----------------------------------------------------------------
+C%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      SUBROUTINE defctl
+CCC---------------------------------------------------------------------
+CCC
+CCC  Purpose : Load SESAM user configuration (definition of SESAM objects:
+CCC  -------   list of variables, masks, observations structure,...)
+CCC
+CCC  Method : Read SESAM configuration file
+CCC  ------
+CCC---------------------------------------------------------------------
+CC module
+CC ======
+      use mod_main
+      use mod_cfgxyo
+      IMPLICIT NONE
+CC----------------------------------------------------------------------
+CC local declarations
+CC ==================
+      INTEGER :: indvar,inddta,indobs,inddbs
+      INTEGER :: jvar,jdta,jobs,jndbs
+CC----------------------------------------------------------------------
+C
+      IF ((nprint.GE.0).AND.(jproc.EQ.0)) THEN
+         WRITE(numout,*) '*** ROUTINE sesam/defcst/defctl :'
+         WRITE(numout,*) '         load user configuration'
+      ENDIF
+C
+C -1.- Default SESAM configuration
+C --------------------------------
+C
+#include "defcst.control.h"
+C
+C -2.- Read user defined SESAM configuration file
+C -----------------------------------------------
+C
+      CALL readlist
+C
+      RETURN
+      END
+C%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+C -----------------------------------------------------------------
+C%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      SUBROUTINE defchk 
+CCC---------------------------------------------------------------------
+CCC
+CCC  Purpose : Check user configuration
+CCC  -------
+CCC
+CCC  Method : Compute number and order of variables in SESAM objects
+CCC  ------   Pre-initialize size and position of variables in SESAM objects
+CCC           Check variable and mask dimensions
+CCC           Write information about user configuration
+CCC
+CCC---------------------------------------------------------------------
+CC module
+CC ======
+      use mod_main
+      use mod_cfgxyo
+      use mod_spacexyo , only : jpdbsend,
+     $     jprend,jpoend,jpitpend,jpxend,jpx,jpyend
+      IMPLICIT NONE
+CC----------------------------------------------------------------------
+CC local declarations
+CC ==================
+      INTEGER :: indvar,inddta,indobs,inddbs
+      INTEGER :: jvar,jdta,jobs,jndbs
+      INTEGER :: jdta1,jobs1,jinf
+CC----------------------------------------------------------------------
+C
+      IF (nprint.GE.1) THEN
+         WRITE(numout,*) '*** sesam/defcst/defchk :'
+         WRITE(numout,*) '         check user configuration'
+      ENDIF
+C
+C -1.- Compute number and order of variables in SESAM objects
+C -----------------------------------------------------------
+C  Vx: varend, var_ord; Vy: dtaend, dta_ord; Vo: obsend, obs_ord
+C  This is computed from user defined 'varend' and 'var_ord'
+      jdta1=1
+      DO jvar=1,varend
+         indvar=var_ord(jvar)
+         IF (dta_act(indvar)) THEN
+            dta_ord(jdta1)=indvar
+            jdta1=jdta1+1
+         ENDIF
+      ENDDO  
+      dtaend=jdta1-1
+      DO jvar=jdta1,nbvar
+         dta_ord(jvar)= 0
+      ENDDO
+C
+      obsend=0
+      jobs1=1
+      DO jdta=1,dtaend
+         inddta=dta_ord(jdta)
+         IF (.NOT.(dta_act(inddta))) GOTO 1000
+         DO jobs=jobs1,(jobs1+obsndbs(inddta)-1)
+            obs_ord(jobs)=inddta
+            obsnord(jobs)=jobs-jobs1+1
+         ENDDO
+         jobs1=jobs1+obsndbs(inddta)
+         obsend=obsend+obsndbs(inddta)
+      ENDDO
+      DO jobs=obsend+1,nbobs
+         obs_ord(jobs)=0
+         obsnord(jobs)=0
+      ENDDO
+C
+C -2.- Pre-initialize size and position of variables in SESAM objects
+C -------------------------------------------------------------------
+C  Vx: var_nbr, var_ind; Vy: dta_nbr, dta_ind; Vo: obs_nbr, obs_ind
+C  xxx_nbr: size of the variable; xxx_ind: index of the variable in SESAM Object
+C  Check variable and mask dimensions
+C
+C ==> A Variable configuration
+      DO jvar=1,varend
+         indvar=var_ord(jvar)
+         vardmsk(indvar)=var_dim(indvar)
+         IF (var_dim(indvar).NE.vardmsk(indvar)) GOTO 101
+         var_nbr(indvar)= 1
+         var_ind(indvar)= 1
+      ENDDO
+C ==> B Data section configuration
+      DO jdta=1,dtaend
+         inddta=dta_ord(jdta)
+         dtadmsk(inddta)=dta_dim(inddta)
+         IF (dta_dim(inddta).LT.dtadmsk(inddta)) GOTO 101
+         IF (dta_dim(inddta).GT.var_dim(inddta)) GOTO 101
+         dta_nbr(inddta)= 1
+         dta_ind(inddta)= 1
+      ENDDO
+C ==> C Observation configuration
+      DO jobs=1,obsend
+         indobs=obs_ord(jobs)
+         inddbs=obsnord(jobs)
+         IF (obs_dim(indobs,inddbs).GT.dta_dim(indobs)) GOTO 101
+         obs_nbr(indobs,inddbs)= 1
+         obs_ind(indobs,inddbs)= 1
+      ENDDO
+C
+C ==> Check mask dimensions
+      DO jvar=1,varend
+         indvar=var_ord(jvar)
+         IF (var_dim(indvar).GT.vardmsk(indvar)) THEN
+            PRINT *,'----WARNING----'
+            PRINT *,var_nam(indvar)(1:lenv(var_nam(indvar))),
+     $           ' : mask and variable dimensions are different'
+         ENDIF
+      ENDDO
+      DO jdta=1,dtaend
+         inddta=dta_ord(jdta)
+         IF (dta_dim(inddta).GT.dtadmsk(inddta)) THEN
+            PRINT *,'----WARNING----'
+            PRINT *,dta_nam(inddta)(1:lenv(dta_nam(inddta))),
+     $           ' : mask and variable dimensions are different'
+         ENDIF
+      ENDDO
+C
+C -2.- Pre-initialize size of SESAM objects
+C -----------------------------------------
+C  Vx: jpxend; Vy: jpyend; Vo: jpoend
+C  Rank of covariance matrix: jprend
+C  Number of interpolation points in observation operator: jpitpend
+C  Size of database vector: jpdbsend
+      jpxend=0
+      DO jvar=1,varend
+         jpxend=jpxend+var_nbr(var_ord(jvar))
+      ENDDO
+      jpx=jpxend
+C
+      jpyend=0
+      DO jdta=1,dtaend
+         jpyend=jpyend+dta_nbr(dta_ord(jdta))
+      ENDDO
+C
+      jpoend=0
+      DO jobs=1,obsend
+         indobs=obs_ord(jobs)
+         inddbs=obsnord(jobs)
+         jpoend=jpoend+obs_nbr(indobs,inddbs)
+      ENDDO
+C
+      jpitpend=0
+      jpdbsend=jpoend
+      jprend=0
+C
+C -3.- Pre-initialize object existence flag
+C -----------------------------------------
+      existbas=.FALSE.
+      existdbs=.FALSE.
+      existdta=.FALSE.
+      existobs=.FALSE.
+      existvar=.FALSE.
+C
+C -4.- Write information about user configuration
+C -----------------------------------------------
+      IF(nprint.GE.1) THEN
+         WRITE(numout,*) '... Vx object configuration:'
+         WRITE(numout,*) ' varend = ',varend
+         WRITE(numout,12) '-'
+         WRITE(numout,10) 'ord','ind','var','dim','nmax','moy','ect'
+         WRITE(numout,12) '-'
+         DO jvar=1,varend
+            indvar=var_ord(jvar)
+            WRITE(numout,11) jvar,var_ord(jvar),var_nam(indvar),
+     $           var_dim(indvar),var_nbr(indvar),
+     $           var_moy(indvar),var_ect(indvar)
+         ENDDO
+         WRITE(numout,12) '-'
+         WRITE(numout,*) '... Vy object configuration:'
+         WRITE(numout,*) ' dtaend = ',dtaend
+         WRITE(numout,12) '-'
+         WRITE(numout,10) 'ord','ind','dta','dim','nmax','moy','ect'
+         WRITE(numout,12) '-'
+         DO jdta=1,dtaend
+            inddta=dta_ord(jdta)
+            WRITE(numout,11) jdta,dta_ord(jdta),
+     $           dta_nam(inddta),
+     $           dta_dim(inddta),dta_nbr(inddta),
+     $           dta_moy(inddta),dta_ect(inddta)
+         ENDDO
+         WRITE(numout,12) '-'
+         WRITE(numout,*) '... Vo object configuration:'
+         WRITE(numout,*) ' obsend = ',obsend
+         WRITE(numout,12) '-'
+         WRITE(numout,13) 'obs','dta','dbs','name','dim','size','ref','std'
+         WRITE(numout,12) '-'
+         DO jobs=1,obsend
+            indobs=obs_ord(jobs)
+            inddbs=obsnord(jobs)
+            WRITE(numout,14) jobs,obs_ord(jobs),obsnord(jobs),
+     $           obs_nam(indobs,inddbs),
+     $           obs_dim(indobs,inddbs),obs_nbr(indobs,inddbs),
+     $           obs_moy(indobs,inddbs),obs_ect(indobs,inddbs)
+         ENDDO
+         WRITE(numout,12) '-'
+      ENDIF
+C
+      RETURN
+C
+C --- format definitions
+C
+ 10   FORMAT ("|",7(2X,A4,2X,"|"))
+ 11   FORMAT ("|",2(I5,3X,"|"),3X,A5,"|",2X,I3,"D",2X,"|",
+     $     I7,1X,"|",2(E7.1,1X,"|"))
+ 12   FORMAT (A1,72("-"))
+ 13   FORMAT ("|",8(2X,A4,2X,"|"))
+ 14   FORMAT ("|",3(I5,3X,"|"),3X,A5,"|",2X,I3,"D",2X,"|",
+     $     I7,1X,"|",2(E7.1,1X,"|"))
+C
+C --- error management
+C
+ 1000 CALL printerror2(0,1000,1,'defcst','defchk')
+C
+ 101  WRITE (texterror,*) 'incoherent variable dimensions in user configuration'
+      CALL printerror2(0,101,3,'defcst','defchk',comment=texterror)
+C
+      END
+C%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+C -----------------------------------------------------------------
+C%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

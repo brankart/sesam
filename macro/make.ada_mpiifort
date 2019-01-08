@@ -1,0 +1,6 @@
+FC = mpiifort
+LD = mpiifort
+CPPFLAGS = -DMPI
+FFLAGS = -132 -convert big_endian ${IDEV_PATH}
+LDFLAGS = ${LDEV_PATH} -lnetcdf -lnetcdff -L${HOME}/lib -lensdam
+LIST =
