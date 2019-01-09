@@ -62,9 +62,11 @@ CC modules
 CC =======
       use mod_main
       use mod_cfgxyo
-      use mod_spacexyo , only :
+      use mod_spacexyo , only : vects=>vectx1,percsr=>baseyr,
+     $     percref=>coef_r1,
      $     jpoend,jpitpend,jpx,jpxend,jpyend,jprend,jpperc,
-     $     poscoefobs,gridijkobs,arraynx_jindxbeg
+     $     poscoefobs,gridijkobs,vectorms,
+     $     arraynx_jindxbeg
       use hioxyo
       use hiobas
       use ensdam_anatra
@@ -79,11 +81,6 @@ CC ===================
 CC----------------------------------------------------------------------
 CC local declarations
 CC ==================
-      BIGREAL, dimension(:), allocatable, save :: vects
-      BIGREAL, dimension(:,:), allocatable, save :: percsr
-      BIGREAL, dimension(:), allocatable :: percref
-      BIGREAL, dimension(:), allocatable :: vectorms
-C
       INTEGER :: allocok,jpssize,jpitpsize,jprsize
       INTEGER :: jnxyo,js,jr,jperc,jp,jjproc
       LOGICAL :: lectinfo,lmodprint
@@ -324,9 +321,11 @@ CC modules
 CC =======
       use mod_main
       use mod_cfgxyo
-      use mod_spacexyo , only :
+      use mod_spacexyo , only : basesr=>basexr,percsr=>baseyr,
+     $     percref=>coef_r1,
      $     jpoend,jpitpend,jpx,jpxend,jpyend,jprend,jpperc,
-     $     poscoefobs,gridijkobs,arraynx_jindxbeg
+     $     poscoefobs,gridijkobs,vectorms,
+     $     arraynx_jindxbeg
       use hioxyo
       use hiobas
       use ensdam_anatra
@@ -341,11 +340,6 @@ CC ===================
 CC----------------------------------------------------------------------
 CC local declarations
 CC ==================
-      BIGREAL, dimension(:,:), allocatable, save :: basesr
-      BIGREAL, dimension(:,:), allocatable, save :: percsr
-      BIGREAL, dimension(:), allocatable :: percref
-      BIGREAL, dimension(:), allocatable :: vectorms
-C
       INTEGER :: allocok,jpssize,jpitpsize,jprsize
       INTEGER :: jnxyo,js,jr,jp,jperc,jjproc
       LOGICAL :: lectinfo,lmodprint
@@ -599,13 +593,15 @@ CC =======
       use mod_main
       use mod_cfgxyo
       use utilroa, only : mkyorms
-      use mod_spacexyo , only :
+      use mod_spacexyo , only : vecto=>vectx1,enso=>baseyr,smplo=>baseor,
+     $     percref=>coef_r, percdef=>coef_r1, oestd=>vecto4,
      $     jpoend,jpyend,jprend,jpsmplend,jpitpend,jpperc,
-     $     poscoefobs,gridijkobs
+     $     poscoefobs,gridijkobs,vectorms
       use hioxyo
       use hiobas
       use utilvalid
       use ensdam_anaobs
+      use ensdam_obserror
       IMPLICIT NONE
 CC----------------------------------------------------------------------
 CC header declarations
@@ -616,14 +612,6 @@ CC ===================
 CC----------------------------------------------------------------------
 CC local declarations
 CC ==================
-      BIGREAL, dimension(:), allocatable, save :: vecto
-      BIGREAL, dimension(:,:), allocatable, save :: enso
-      BIGREAL, dimension(:,:), allocatable, save :: smplo
-      BIGREAL, dimension(:), allocatable :: percref
-      BIGREAL, dimension(:), allocatable :: percdef
-      BIGREAL, dimension(:), allocatable, save :: oestd
-      BIGREAL, dimension(:), allocatable :: vectorms
-C
       INTEGER :: allocok,jpssize,jpitpsize,jprsize
       INTEGER :: js,jr,jjproc,jnxyo,jsmp,jpsmp
       LOGICAL :: lectinfo,lmodprint
@@ -761,9 +749,9 @@ C Read observation spread of observation error
       ENDIF
 C
 C Define type of observation error
-      CALL ana_obs_init( obserror_cdf )
+      obserror_type = obserror_type_sesam
 C
-      SELECT CASE (obserror_cdf)
+      SELECT CASE (obserror_type_sesam)
       CASE ('gaussian')
         print *, 'Warning: non-optimal algorithm for a Gaussian pdf'
       CASE ('gamma','beta')
@@ -774,6 +762,7 @@ C
       DO jsmp=1,jpsmp
 C
 C Perform anamorphosis transformation
+       print *, 'oestd',minval(oestd),maxval(oestd)
        CALL ana_obs(smplo,enso,vecto,oestd,percdef,percref)
 C     
 C Write output sample

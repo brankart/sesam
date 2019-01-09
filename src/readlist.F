@@ -165,7 +165,7 @@ C Get global SESAM parameters
         CASE('DISABLE')
           READ(attr,*,ERR=102) argdisable
         CASE('OBSERROR_CDF')
-          READ(attr,*,ERR=102) obserror_cdf
+          READ(attr,*,ERR=102) obserror_type_sesam
         CASE('OECORRELTYP')
           READ(attr,*,ERR=102) oecorreltyp
           IF ((oecorreltyp.LE.0).OR.(oecorreltyp.GT.2)) GOTO 106

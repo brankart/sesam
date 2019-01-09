@@ -1,0 +1,19 @@
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module sesam ! in
+    interface  ! in :sesam
+        subroutine sesam(textcommand) ! in :sesam:../sesam.F
+            use hiomsk
+            use utilfiles
+            use mod_mpitime
+            use mod_main
+            use mod_cfgxyo
+            use argsesam
+            character*(*) :: textcommand
+        end subroutine sesam
+    end interface
+end python module sesam
+
+! This file was auto-generated with f2py (version:2).
+! See http://cens.ioc.ee/projects/f2py2e/

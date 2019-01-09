@@ -295,7 +295,7 @@ C ==> Parameters for roa modules
 C ==> Parameters for adap module
       INTEGER, save :: oecorreltyp = 1
 C ==> Parameters for aanm module
-      CHARACTER(len=80), save :: obserror_cdf = 'gaussian'
+      CHARACTER(len=80), save :: obserror_type_sesam = 'gaussian'
 C ==> Parameters for spct module
       CHARACTER(len=80) :: regr_type='local' ! regression type
       INTEGER, SAVE :: regr_maxiter=50   ! maximum number of iteration
