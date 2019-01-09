@@ -34,3 +34,6 @@
 # Test files
 zz*
 .zz*
+
+# Vi swap files
+.*.swp
