@@ -23,7 +23,7 @@ make
 have been created in the 'modules' directory,
 ready to be imported in the python interface module (ensdam.py).
 
-### To import EnsDAM in python:
+### To import SeSAM in python:
 
 ```python
 import sesam
