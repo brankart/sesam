@@ -13,7 +13,8 @@ Interfaces to python are in development.
 ### Installation of SeSAM
 
 You need a FORTRAN-90 compiler and the NetCDF library (with f90 support) installed.
-You also need installing the EnsDAM library.
+
+You also need installing the EnsDAM library, from https://github.com/brankart/ensdam
 
 To compile SeSAM :
 
