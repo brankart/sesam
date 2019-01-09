@@ -1,4 +1,4 @@
-## Python interface to EnsDAM
+## Python interface to SeSAM
 
 ### Warning: This interface is still experimental.
 
