@@ -358,8 +358,8 @@ C
         ENDDO
       ELSEIF (kargtypeoper(1:1).EQ.'O') THEN
 C
-        CALL init_regr_ylm( regr_type, regr_maxiter, regr_maxbloc,
-     $                      regr_overlap, regr_epsilon, regr_rho )
+        CALL init_regr_ylm( regr_type_sesam, regr_maxiter_sesam, regr_maxbloc_sesam,
+     $                      regr_overlap_sesam, regr_epsilon_sesam, regr_rho_sesam )
 C
 C       Observation transformation
         DO jsxy=1,sxyend

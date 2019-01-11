@@ -297,12 +297,12 @@ C ==> Parameters for adap module
 C ==> Parameters for aanm module
       CHARACTER(len=80), save :: obserror_type_sesam = 'gaussian'
 C ==> Parameters for spct module
-      CHARACTER(len=80) :: regr_type='local' ! regression type
-      INTEGER, SAVE :: regr_maxiter=50   ! maximum number of iteration
-      INTEGER, SAVE :: regr_maxbloc=1    ! maximum size of local blocks
-      INTEGER, SAVE :: regr_overlap=1    ! overlapping of local blocks
-      REAL(KIND=8), SAVE :: regr_epsilon=0.01 ! relative difference for convergence test
-      REAL(KIND=8), SAVE :: regr_rho=1.0 ! weight according to signal std (rho=1) or not (rho=0)
+      CHARACTER(len=80) :: regr_type_sesam='local' ! regression type
+      INTEGER, SAVE :: regr_maxiter_sesam=50   ! maximum number of iteration
+      INTEGER, SAVE :: regr_maxbloc_sesam=1    ! maximum size of local blocks
+      INTEGER, SAVE :: regr_overlap_sesam=1    ! overlapping of local blocks
+      REAL(KIND=8), SAVE :: regr_epsilon_sesam=0.01 ! relative difference for convergence test
+      REAL(KIND=8), SAVE :: regr_rho_sesam=1.0 ! weight according to signal std (rho=1) or not (rho=0)
 C
 C -5.- Miscellaneous variables
 C ----------------------------

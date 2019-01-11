@@ -606,6 +606,7 @@ CC =======
       use hiobas
       use utilvalid
       use ensdam_anaobs
+      use ensdam_obserror
       IMPLICIT NONE
 CC----------------------------------------------------------------------
 CC header declarations

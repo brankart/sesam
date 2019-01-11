@@ -1,7 +1,7 @@
 # Makefile created by mkmf 19.3.0
 
 
-MK_TEMPLATE = ../macro/make.linux_ifort
+MK_TEMPLATE = ../macro/make.cal1_ifort
 include $(MK_TEMPLATE)
 
 
@@ -32,7 +32,7 @@ algortho.o: ../src/algortho.F mod_main.o mod_cfgxyo.o mod_spacexyo.o hioxyo.o hi
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/algortho.F
 algoscor.o: ../src/algoscor.F mod_main.o mod_cfgxyo.o mod_spacexyo.o hioxyo.o hiobas.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/algoscor.F
-algospct.o: ../src/algospct.F mod_main.o mod_cfgxyo.o mod_coord.o mod_spacexyo.o utilroa.o hioxyo.o liospct.o utilvct.o utilvalid.o
+algospct.o: ../src/algospct.F mod_main.o mod_cfgxyo.o mod_coord.o mod_spacexyo.o utilroa.o hioxyo.o hiogrd.o liospct.o utilvct.o utilvalid.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/algospct.F
 algotgest.o: ../src/algotgest.F mod_main.o mod_cfgxyo.o mod_spacexyo.o hioxyo.o hiobas.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/algotgest.F
@@ -58,8 +58,8 @@ hiocnt.o: ../src/hiocnt.F mod_main.o mod_cfgxyo.o mod_cont.o utilfiles.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/hiocnt.F
 hiodbs.o: ../src/hiodbs.F mod_main.o mod_cfgxyo.o lioadbs.o lioncdbs.o liocrg.o utilvalid.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/hiodbs.F
-hiogrd.o: ../src/hiogrd.f mod_main.o mod_cfgxyo.o mod_coord.o utilcdfvar.o
-	$(FC) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/hiogrd.f
+hiogrd.o: ../src/hiogrd.F mod_main.o mod_cfgxyo.o mod_coord.o utilcdfvar.o utilfiles.o
+	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/hiogrd.F
 hiomsk.o: ../src/hiomsk.F mod_main.o mod_cfgxyo.o mod_mask.o liobimg.o liodimg.o liocdf.o lionc.o utilvalid.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/hiomsk.F
 hioxyo.o: ../src/hioxyo.F mod_main.o liobimg.o liodimg.o liocdf.o lionc.o liocpak.o lioobs.o liocobs.o liorst.o utilvalid.o mod_cfgxyo.o mod_spacexyo.o utilmkh.o
@@ -70,7 +70,7 @@ lioadbs.o: ../src/lioadbs.F mod_main.o utilfiles.o mod_cfgxyo.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/lioadbs.F
 liobimg.o: ../src/liobimg.F mod_main.o utilvct.o utilfiles.o mod_cfgxyo.o mod_spacexyo.o mod_mask.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/liobimg.F
-liocdf.o: ../src/liocdf.F mod_main.o utilvct.o utilcdfvar.o mod_cfgxyo.o mod_coord.o mod_spacexyo.o mod_mask.o
+liocdf.o: ../src/liocdf.F mod_main.o hiogrd.o utilvct.o utilcdfvar.o mod_cfgxyo.o mod_coord.o mod_spacexyo.o mod_mask.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/liocdf.F
 liocobs.o: ../src/liocobs.F mod_main.o mod_cfgxyo.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/liocobs.F
@@ -84,7 +84,7 @@ lioczon.o: ../src/lioczon.F mod_main.o mod_cfgxyo.o utilcdfzon.o mod_spacexyo.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/lioczon.F
 liodimg.o: ../src/liodimg.F mod_main.o utilvct.o utilfiles.o mod_cfgxyo.o mod_spacexyo.o mod_mask.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/liodimg.F
-lionc.o: ../src/lionc.F mod_main.o utilvct.o mod_cfgxyo.o mod_coord.o mod_spacexyo.o mod_mask.o
+lionc.o: ../src/lionc.F mod_main.o hiogrd.o utilvct.o mod_cfgxyo.o mod_coord.o mod_spacexyo.o mod_mask.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/lionc.F
 lioncdbs.o: ../src/lioncdbs.F mod_main.o mod_cfgxyo.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/lioncdbs.F
@@ -94,13 +94,13 @@ liorst.o: ../src/liorst.F mod_main.o utilvct.o utilfiles.o mod_cfgxyo.o mod_mask
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/liorst.F
 liospct.o: ../src/liospct.F mod_main.o mod_cfgxyo.o mod_spacexyo.o utilcdfvar.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/liospct.F
-mkcnttozon.o: ../src/mkcnttozon.F mod_main.o utilzone.o mod_cfgxyo.o mod_mask.o mod_coord.o mod_cont.o mod_spacexyo.o hiozon.o hiocnt.o utilmkto.o utilfiles.o
+mkcnttozon.o: ../src/mkcnttozon.F mod_main.o utilzone.o mod_cfgxyo.o mod_mask.o mod_coord.o mod_cont.o mod_spacexyo.o hiozon.o hiocnt.o hiogrd.o utilmkto.o utilfiles.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/mkcnttozon.F
 mkconnect.o: ../src/mkconnect.F mod_main.o mod_cfgxyo.o mod_mask.o mod_coord.o utilfiles.o mod_spacexyo.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/mkconnect.F
 mkcorrzbas.o: ../src/mkcorrzbas.F mod_main.o utilzone.o mod_cfgxyo.o mod_mask.o mod_spacexyo.o hiozon.o hiobas.o utilroa.o utilvalid.o utilprint.o utilfiles.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/mkcorrzbas.F
-mkdbstoobs.o: ../src/mkdbstoobs.F mod_main.o mknullobs.o mkobsoper.o mkinterp2dh.o mkinterp3d.o mod_cfgxyo.o mod_coord.o mod_spacexyo.o hioxyo.o lioadbs.o lioncdbs.o liocrg.o utilroa.o utilobsv.o
+mkdbstoobs.o: ../src/mkdbstoobs.F mod_main.o mknullobs.o mkobsoper.o mkinterp2dh.o mkinterp3d.o mod_cfgxyo.o mod_coord.o mod_spacexyo.o hioxyo.o hiogrd.o lioadbs.o lioncdbs.o liocrg.o utilroa.o utilobsv.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/mkdbstoobs.F
 mkdtatoobs.o: ../src/mkdtatoobs.F mod_main.o mod_cfgxyo.o mod_spacexyo.o utilroa.o hioxyo.o mod_mask.o utilmkh.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/mkdtatoobs.F
@@ -120,11 +120,11 @@ mkobsoper.o: ../src/mkobsoper.F mod_main.o mod_cfgxyo.o mod_mask.o mod_coord.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/mkobsoper.F
 mkobstodta.o: ../src/mkobstodta.F mod_main.o mod_cfgxyo.o mod_spacexyo.o hioxyo.o utilmkh.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/mkobstodta.F
-mkpartvar.o: ../src/mkpartvar.F mod_main.o utilzone.o mod_cfgxyo.o mod_mask.o mod_coord.o mod_cont.o mod_spacexyo.o hioxyo.o hiocnt.o utilfiles.o
+mkpartvar.o: ../src/mkpartvar.F mod_main.o utilzone.o mod_cfgxyo.o mod_mask.o mod_coord.o mod_cont.o mod_spacexyo.o hioxyo.o hiocnt.o hiogrd.o utilfiles.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/mkpartvar.F
 mkpttozon.o: ../src/mkpttozon.F mod_main.o mod_cfgxyo.o mod_mask.o mod_spacexyo.o hiozon.o utilmkto.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/mkpttozon.F
-mkreducevar.o: ../src/mkreducevar.F mod_main.o utilzone.o mod_cfgxyo.o mod_mask.o mod_coord.o mod_cont.o mod_spacexyo.o hioxyo.o hiocnt.o utilmkto.o utilfiles.o
+mkreducevar.o: ../src/mkreducevar.F mod_main.o utilzone.o mod_cfgxyo.o mod_mask.o mod_coord.o mod_cont.o mod_spacexyo.o hioxyo.o hiocnt.o hiogrd.o utilmkto.o utilfiles.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/mkreducevar.F
 mkrztovar.o: ../src/mkrztovar.F mod_main.o mod_cfgxyo.o mod_spacexyo.o hioxyo.o liocrz.o utilfiles.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/mkrztovar.F
@@ -222,223 +222,223 @@ utilvct.o: ../src/utilvct.F mod_main.o mod_cfgxyo.o mod_mask.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/utilvct.F
 utilzone.o: ../src/utilzone.F mod_main.o mod_cfgxyo.o mod_cont.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/utilzone.F
-./mkdtatozon.F: ../src/mkdtatozon.F
-	cp ../src/mkdtatozon.F .
-./algoscor.F: ../src/algoscor.F
-	cp ../src/algoscor.F .
-./utilvct.F: ../src/utilvct.F
-	cp ../src/utilvct.F .
-./mkmeanect.F: ../src/mkmeanect.F
-	cp ../src/mkmeanect.F .
-./algobase.F: ../src/algobase.F
-	cp ../src/algobase.F .
-./liocrg.F: ../src/liocrg.F
-	cp ../src/liocrg.F .
-./hiogrd.f: ../src/hiogrd.f
-	cp ../src/hiogrd.f .
-./liodimg.F: ../src/liodimg.F
-	cp ../src/liodimg.F .
-./utilobsv.F: ../src/utilobsv.F
-	cp ../src/utilobsv.F .
-./lioncdbs.F: ../src/lioncdbs.F
-	cp ../src/lioncdbs.F .
-./utilmkh.F: ../src/utilmkh.F
-	cp ../src/utilmkh.F .
-./utilmkto.F: ../src/utilmkto.F
-	cp ../src/utilmkto.F .
-./mkreducevar.F: ../src/mkreducevar.F
-	cp ../src/mkreducevar.F .
-./utilcdfvar.F: ../src/utilcdfvar.F
-	cp ../src/utilcdfvar.F .
-./modobsv.F: ../src/modobsv.F
-	cp ../src/modobsv.F .
-./algoperc.F: ../src/algoperc.F
-	cp ../src/algoperc.F .
-./algofilt.F: ../src/algofilt.F
-	cp ../src/algofilt.F .
-./mkzontodta.F: ../src/mkzontodta.F
-	cp ../src/mkzontodta.F .
-./mkobsoper.F: ../src/mkobsoper.F
-	cp ../src/mkobsoper.F .
-./liospct.F: ../src/liospct.F
-	cp ../src/liospct.F .
-./modoper.F: ../src/modoper.F
-	cp ../src/modoper.F .
-./modadap.F: ../src/modadap.F
-	cp ../src/modadap.F .
-./algoanam.F: ../src/algoanam.F
-	cp ../src/algoanam.F .
-./mkobstodta.F: ../src/mkobstodta.F
-	cp ../src/mkobstodta.F .
-./lioczon.F: ../src/lioczon.F
-	cp ../src/lioczon.F .
-./algodiff.F: ../src/algodiff.F
-	cp ../src/algodiff.F .
-./mod_cfgxyo.F: ../src/mod_cfgxyo.F
-	cp ../src/mod_cfgxyo.F .
-./mktgsmpl.F: ../src/mktgsmpl.F
-	cp ../src/mktgsmpl.F .
-./algospct.F: ../src/algospct.F
-	cp ../src/algospct.F .
-./hiomsk.F: ../src/hiomsk.F
-	cp ../src/hiomsk.F .
-./lioadbs.F: ../src/lioadbs.F
-	cp ../src/lioadbs.F .
-./modanam.F: ../src/modanam.F
-	cp ../src/modanam.F .
-./algortho.F: ../src/algortho.F
-	cp ../src/algortho.F .
 ./lioobs.F: ../src/lioobs.F
 	cp ../src/lioobs.F .
+./modadap.F: ../src/modadap.F
+	cp ../src/modadap.F .
 ./hiozon.F: ../src/hiozon.F
 	cp ../src/hiozon.F .
-./moddiff.F: ../src/moddiff.F
-	cp ../src/moddiff.F .
-./mkcnttozon.F: ../src/mkcnttozon.F
-	cp ../src/mkcnttozon.F .
-./mod_spacexyo.F: ../src/mod_spacexyo.F
-	cp ../src/mod_spacexyo.F .
-./mkfiltzon.F: ../src/mkfiltzon.F
-	cp ../src/mkfiltzon.F .
-./utilsesam.F: ../src/utilsesam.F
-	cp ../src/utilsesam.F .
-./liorst.F: ../src/liorst.F
-	cp ../src/liorst.F .
-./algooper.F: ../src/algooper.F
-	cp ../src/algooper.F .
-./utilfilt.F: ../src/utilfilt.F
-	cp ../src/utilfilt.F .
-./sesam.F: ../src/sesam.F
-	cp ../src/sesam.F .
-./mod_main.F: ../src/mod_main.F
-	cp ../src/mod_main.F .
-./utilroa.F: ../src/utilroa.F
-	cp ../src/utilroa.F .
+./mkcorrzbas.F: ../src/mkcorrzbas.F
+	cp ../src/mkcorrzbas.F .
+./mkpttozon.F: ../src/mkpttozon.F
+	cp ../src/mkpttozon.F .
+./mkreducevar.F: ../src/mkreducevar.F
+	cp ../src/mkreducevar.F .
+./algodiff.F: ../src/algodiff.F
+	cp ../src/algodiff.F .
+./algoscor.F: ../src/algoscor.F
+	cp ../src/algoscor.F .
+./utilcdfvar.F: ../src/utilcdfvar.F
+	cp ../src/utilcdfvar.F .
+./mknullobs.F: ../src/mknullobs.F
+	cp ../src/mknullobs.F .
+./algooerr.F: ../src/algooerr.F
+	cp ../src/algooerr.F .
 ./modcorr.F: ../src/modcorr.F
 	cp ../src/modcorr.F .
-./mkdtatoobs.F: ../src/mkdtatoobs.F
-	cp ../src/mkdtatoobs.F .
-./utilarg.F: ../src/utilarg.F
-	cp ../src/utilarg.F .
-./readlist.F: ../src/readlist.F
-	cp ../src/readlist.F .
-./modproj.F: ../src/modproj.F
-	cp ../src/modproj.F .
+./hiocnt.F: ../src/hiocnt.F
+	cp ../src/hiocnt.F .
 ./mod_cont.F: ../src/mod_cont.F
 	cp ../src/mod_cont.F .
 ./algointf.F: ../src/algointf.F
 	cp ../src/algointf.F .
-./defcst.F: ../src/defcst.F
-	cp ../src/defcst.F .
-./modspct.F: ../src/modspct.F
-	cp ../src/modspct.F .
-./arghelp.F: ../src/arghelp.F
-	cp ../src/arghelp.F .
-./liocpak.F: ../src/liocpak.F
-	cp ../src/liocpak.F .
-./utilcdfpak.F: ../src/utilcdfpak.F
-	cp ../src/utilcdfpak.F .
-./modzone.F: ../src/modzone.F
-	cp ../src/modzone.F .
-./mod_coord.F: ../src/mod_coord.F
-	cp ../src/mod_coord.F .
-./utilmath1.F: ../src/utilmath1.F
-	cp ../src/utilmath1.F .
-./hioxyo.F: ../src/hioxyo.F
-	cp ../src/hioxyo.F .
-./argsesam.F: ../src/argsesam.F
-	cp ../src/argsesam.F .
-./utilzone.F: ../src/utilzone.F
-	cp ../src/utilzone.F .
-./algotgest.F: ../src/algotgest.F
-	cp ../src/algotgest.F .
-./mod_mask.F: ../src/mod_mask.F
-	cp ../src/mod_mask.F .
-./modvari.F: ../src/modvari.F
-	cp ../src/modvari.F .
-./mknullobs.F: ../src/mknullobs.F
-	cp ../src/mknullobs.F .
-./mod_mpitime.F: ../src/mod_mpitime.F
-	cp ../src/mod_mpitime.F .
-./liocdf.F: ../src/liocdf.F
-	cp ../src/liocdf.F .
-./liobimg.F: ../src/liobimg.F
-	cp ../src/liobimg.F .
-./utilclc.F: ../src/utilclc.F
-	cp ../src/utilclc.F .
-./utilvalid.F: ../src/utilvalid.F
-	cp ../src/utilvalid.F .
-./modfilt.F: ../src/modfilt.F
-	cp ../src/modfilt.F .
-./mkinterp3d.F: ../src/mkinterp3d.F
-	cp ../src/mkinterp3d.F .
-./argmode.F: ../src/argmode.F
-	cp ../src/argmode.F .
-./algoroa.F: ../src/algoroa.F
-	cp ../src/algoroa.F .
-./mkdbstoobs.F: ../src/mkdbstoobs.F
-	cp ../src/mkdbstoobs.F .
-./algovari.F: ../src/algovari.F
-	cp ../src/algovari.F .
-./hiodbs.F: ../src/hiodbs.F
-	cp ../src/hiodbs.F .
-./modglbroa.F: ../src/modglbroa.F
-	cp ../src/modglbroa.F .
-./mkrztovar.F: ../src/mkrztovar.F
-	cp ../src/mkrztovar.F .
-./algooerr.F: ../src/algooerr.F
-	cp ../src/algooerr.F .
-./mkpttozon.F: ../src/mkpttozon.F
-	cp ../src/mkpttozon.F .
-./mkcorrzbas.F: ../src/mkcorrzbas.F
-	cp ../src/mkcorrzbas.F .
-./modintf.F: ../src/modintf.F
-	cp ../src/modintf.F .
 ./liocrz.F: ../src/liocrz.F
 	cp ../src/liocrz.F .
-./mkpartvar.F: ../src/mkpartvar.F
-	cp ../src/mkpartvar.F .
-./modoerr.F: ../src/modoerr.F
-	cp ../src/modoerr.F .
-./mkinterp2dh.F: ../src/mkinterp2dh.F
-	cp ../src/mkinterp2dh.F .
-./evalconfig.F: ../src/evalconfig.F
-	cp ../src/evalconfig.F .
-./modscor.F: ../src/modscor.F
-	cp ../src/modscor.F .
-./lionc.F: ../src/lionc.F
-	cp ../src/lionc.F .
-./algozone.F: ../src/algozone.F
-	cp ../src/algozone.F .
-./hiocnt.F: ../src/hiocnt.F
-	cp ../src/hiocnt.F .
-./utilcdfzon.F: ../src/utilcdfzon.F
-	cp ../src/utilcdfzon.F .
-./utilprint.F: ../src/utilprint.F
-	cp ../src/utilprint.F .
+./mktgsmpl.F: ../src/mktgsmpl.F
+	cp ../src/mktgsmpl.F .
+./modintf.F: ../src/modintf.F
+	cp ../src/modintf.F .
 ./hiocfg.F: ../src/hiocfg.F
 	cp ../src/hiocfg.F .
-./modglbeof.F: ../src/modglbeof.F
-	cp ../src/modglbeof.F .
-./progsesam.f: ../src/progsesam.f
-	cp ../src/progsesam.f .
-./modtgop.F: ../src/modtgop.F
-	cp ../src/modtgop.F .
-./modglbreg.F: ../src/modglbreg.F
-	cp ../src/modglbreg.F .
+./mkrztovar.F: ../src/mkrztovar.F
+	cp ../src/mkrztovar.F .
+./lioncdbs.F: ../src/lioncdbs.F
+	cp ../src/lioncdbs.F .
+./mod_coord.F: ../src/mod_coord.F
+	cp ../src/mod_coord.F .
+./modobsv.F: ../src/modobsv.F
+	cp ../src/modobsv.F .
+./utilcdfzon.F: ../src/utilcdfzon.F
+	cp ../src/utilcdfzon.F .
+./liospct.F: ../src/liospct.F
+	cp ../src/liospct.F .
+./mod_spacexyo.F: ../src/mod_spacexyo.F
+	cp ../src/mod_spacexyo.F .
+./mod_mask.F: ../src/mod_mask.F
+	cp ../src/mod_mask.F .
+./mkdtatoobs.F: ../src/mkdtatoobs.F
+	cp ../src/mkdtatoobs.F .
+./utilclc.F: ../src/utilclc.F
+	cp ../src/utilclc.F .
+./argsesam.F: ../src/argsesam.F
+	cp ../src/argsesam.F .
+./liodimg.F: ../src/liodimg.F
+	cp ../src/liodimg.F .
+./algoperc.F: ../src/algoperc.F
+	cp ../src/algoperc.F .
+./mkdbstoobs.F: ../src/mkdbstoobs.F
+	cp ../src/mkdbstoobs.F .
+./utilmkto.F: ../src/utilmkto.F
+	cp ../src/utilmkto.F .
+./hiobas.F: ../src/hiobas.F
+	cp ../src/hiobas.F .
+./utilmkh.F: ../src/utilmkh.F
+	cp ../src/utilmkh.F .
+./liocrg.F: ../src/liocrg.F
+	cp ../src/liocrg.F .
 ./algocorr.F: ../src/algocorr.F
 	cp ../src/algocorr.F .
 ./liocobs.F: ../src/liocobs.F
 	cp ../src/liocobs.F .
-./hiobas.F: ../src/hiobas.F
-	cp ../src/hiobas.F .
+./mkmeanect.F: ../src/mkmeanect.F
+	cp ../src/mkmeanect.F .
+./mkobstodta.F: ../src/mkobstodta.F
+	cp ../src/mkobstodta.F .
+./lionc.F: ../src/lionc.F
+	cp ../src/lionc.F .
+./modfilt.F: ../src/modfilt.F
+	cp ../src/modfilt.F .
+./utilsesam.F: ../src/utilsesam.F
+	cp ../src/utilsesam.F .
+./lioadbs.F: ../src/lioadbs.F
+	cp ../src/lioadbs.F .
+./mkobsoper.F: ../src/mkobsoper.F
+	cp ../src/mkobsoper.F .
+./utilfilt.F: ../src/utilfilt.F
+	cp ../src/utilfilt.F .
+./mkzontodta.F: ../src/mkzontodta.F
+	cp ../src/mkzontodta.F .
+./evalconfig.F: ../src/evalconfig.F
+	cp ../src/evalconfig.F .
+./mkdtatozon.F: ../src/mkdtatozon.F
+	cp ../src/mkdtatozon.F .
+./utilvct.F: ../src/utilvct.F
+	cp ../src/utilvct.F .
+./hiodbs.F: ../src/hiodbs.F
+	cp ../src/hiodbs.F .
+./algoanam.F: ../src/algoanam.F
+	cp ../src/algoanam.F .
+./algospct.F: ../src/algospct.F
+	cp ../src/algospct.F .
+./utilmath1.F: ../src/utilmath1.F
+	cp ../src/utilmath1.F .
+./modglbreg.F: ../src/modglbreg.F
+	cp ../src/modglbreg.F .
+./algozone.F: ../src/algozone.F
+	cp ../src/algozone.F .
+./mod_mpitime.F: ../src/mod_mpitime.F
+	cp ../src/mod_mpitime.F .
+./mkinterp3d.F: ../src/mkinterp3d.F
+	cp ../src/mkinterp3d.F .
+./algooper.F: ../src/algooper.F
+	cp ../src/algooper.F .
+./mkfiltzon.F: ../src/mkfiltzon.F
+	cp ../src/mkfiltzon.F .
+./mkinterp2dh.F: ../src/mkinterp2dh.F
+	cp ../src/mkinterp2dh.F .
+./readlist.F: ../src/readlist.F
+	cp ../src/readlist.F .
+./utilobsv.F: ../src/utilobsv.F
+	cp ../src/utilobsv.F .
+./utilprint.F: ../src/utilprint.F
+	cp ../src/utilprint.F .
 ./utilfiles.F: ../src/utilfiles.F
 	cp ../src/utilfiles.F .
+./utilvalid.F: ../src/utilvalid.F
+	cp ../src/utilvalid.F .
+./utilroa.F: ../src/utilroa.F
+	cp ../src/utilroa.F .
+./modanam.F: ../src/modanam.F
+	cp ../src/modanam.F .
+./argmode.F: ../src/argmode.F
+	cp ../src/argmode.F .
+./utilcdfpak.F: ../src/utilcdfpak.F
+	cp ../src/utilcdfpak.F .
+./utilzone.F: ../src/utilzone.F
+	cp ../src/utilzone.F .
+./modoerr.F: ../src/modoerr.F
+	cp ../src/modoerr.F .
+./lioczon.F: ../src/lioczon.F
+	cp ../src/lioczon.F .
+./algofilt.F: ../src/algofilt.F
+	cp ../src/algofilt.F .
+./algovari.F: ../src/algovari.F
+	cp ../src/algovari.F .
+./modzone.F: ../src/modzone.F
+	cp ../src/modzone.F .
+./defcst.F: ../src/defcst.F
+	cp ../src/defcst.F .
+./progsesam.f: ../src/progsesam.f
+	cp ../src/progsesam.f .
+./algortho.F: ../src/algortho.F
+	cp ../src/algortho.F .
+./modoper.F: ../src/modoper.F
+	cp ../src/modoper.F .
+./liocpak.F: ../src/liocpak.F
+	cp ../src/liocpak.F .
+./algoroa.F: ../src/algoroa.F
+	cp ../src/algoroa.F .
+./modproj.F: ../src/modproj.F
+	cp ../src/modproj.F .
+./liorst.F: ../src/liorst.F
+	cp ../src/liorst.F .
+./mkcnttozon.F: ../src/mkcnttozon.F
+	cp ../src/mkcnttozon.F .
+./modscor.F: ../src/modscor.F
+	cp ../src/modscor.F .
+./liobimg.F: ../src/liobimg.F
+	cp ../src/liobimg.F .
+./modspct.F: ../src/modspct.F
+	cp ../src/modspct.F .
+./algobase.F: ../src/algobase.F
+	cp ../src/algobase.F .
+./modglbroa.F: ../src/modglbroa.F
+	cp ../src/modglbroa.F .
+./modglbeof.F: ../src/modglbeof.F
+	cp ../src/modglbeof.F .
 ./mkconnect.F: ../src/mkconnect.F
 	cp ../src/mkconnect.F .
-SRC = ../src/modcorr.F ../src/algoroa.F ../src/algozone.F ../src/moddiff.F ../src/algofilt.F ../src/mktgsmpl.F ../src/modoerr.F ../src/algoperc.F ../src/lionc.F ../src/mod_cont.F ../src/mkinterp2dh.F ../src/algovari.F ../src/utilcdfpak.F ../src/liodimg.F ../src/mod_mpitime.F ../src/liocobs.F ../src/modglbroa.F ../src/algodiff.F ../src/algoanam.F ../src/liorst.F ../src/algointf.F ../src/modadap.F ../src/mkconnect.F ../src/algortho.F ../src/liocrg.F ../src/mkdbstoobs.F ../src/modvari.F ../src/modanam.F ../src/mkobstodta.F ../src/argmode.F ../src/utilarg.F ../src/lioobs.F ../src/utilfiles.F ../src/hiocnt.F ../src/mkdtatoobs.F ../src/utilsesam.F ../src/algospct.F ../src/hiobas.F ../src/modspct.F ../src/mkcorrzbas.F ../src/utilcdfvar.F ../src/hiozon.F ../src/modproj.F ../src/utilclc.F ../src/utilroa.F ../src/defcst.F ../src/hiodbs.F ../src/mkfiltzon.F ../src/lioadbs.F ../src/lioncdbs.F ../src/modzone.F ../src/modscor.F ../src/modfilt.F ../src/mkinterp3d.F ../src/sesam.F ../src/utilmkh.F ../src/mkcnttozon.F ../src/mkobsoper.F ../src/mkzontodta.F ../src/hiocfg.F ../src/mod_spacexyo.F ../src/utilobsv.F ../src/mod_main.F ../src/liobimg.F ../src/modoper.F ../src/hiomsk.F ../src/utilvct.F ../src/utilmath1.F ../src/mkmeanect.F ../src/mod_coord.F ../src/algooper.F ../src/mod_mask.F ../src/mkdtatozon.F ../src/modtgop.F ../src/utilprint.F ../src/progsesam.f ../src/algooerr.F ../src/mknullobs.F ../src/utilfilt.F ../src/modobsv.F ../src/arghelp.F ../src/algotgest.F ../src/mod_cfgxyo.F ../src/mkpttozon.F ../src/mkreducevar.F ../src/modintf.F ../src/liocpak.F ../src/utilvalid.F ../src/mkrztovar.F ../src/liocrz.F ../src/algobase.F ../src/evalconfig.F ../src/liospct.F ../src/mkpartvar.F ../src/utilmkto.F ../src/lioczon.F ../src/liocdf.F ../src/modglbreg.F ../src/readlist.F ../src/argsesam.F ../src/algocorr.F ../src/utilcdfzon.F ../src/hioxyo.F ../src/utilzone.F ../src/modglbeof.F ../src/hiogrd.f ../src/algoscor.F
-OBJ = modcorr.o algoroa.o algozone.o moddiff.o algofilt.o mktgsmpl.o modoerr.o algoperc.o lionc.o mod_cont.o mkinterp2dh.o algovari.o utilcdfpak.o liodimg.o mod_mpitime.o liocobs.o modglbroa.o algodiff.o algoanam.o liorst.o algointf.o modadap.o mkconnect.o algortho.o liocrg.o mkdbstoobs.o modvari.o modanam.o mkobstodta.o argmode.o utilarg.o lioobs.o utilfiles.o hiocnt.o mkdtatoobs.o utilsesam.o algospct.o hiobas.o modspct.o mkcorrzbas.o utilcdfvar.o hiozon.o modproj.o utilclc.o utilroa.o defcst.o hiodbs.o mkfiltzon.o lioadbs.o lioncdbs.o modzone.o modscor.o modfilt.o mkinterp3d.o sesam.o utilmkh.o mkcnttozon.o mkobsoper.o mkzontodta.o hiocfg.o mod_spacexyo.o utilobsv.o mod_main.o liobimg.o modoper.o hiomsk.o utilvct.o utilmath1.o mkmeanect.o mod_coord.o algooper.o mod_mask.o mkdtatozon.o modtgop.o utilprint.o progsesam.o algooerr.o mknullobs.o utilfilt.o modobsv.o arghelp.o algotgest.o mod_cfgxyo.o mkpttozon.o mkreducevar.o modintf.o liocpak.o utilvalid.o mkrztovar.o liocrz.o algobase.o evalconfig.o liospct.o mkpartvar.o utilmkto.o lioczon.o liocdf.o modglbreg.o readlist.o argsesam.o algocorr.o utilcdfzon.o hioxyo.o utilzone.o modglbeof.o hiogrd.o algoscor.o
-OFF = ../src/mkdtatozon.F ../src/algoscor.F ../src/utilvct.F ../src/mkmeanect.F ../src/algobase.F ../src/liocrg.F ../src/hiogrd.f ../src/liodimg.F ../src/utilobsv.F ../src/lioncdbs.F ../src/utilmkh.F ../src/utilmkto.F ../src/mkreducevar.F ../src/utilcdfvar.F ../src/modobsv.F ../src/algoperc.F ../src/algofilt.F ../src/mkzontodta.F ../src/mkobsoper.F ../src/liospct.F ../src/modoper.F ../src/modadap.F ../src/algoanam.F ../src/mkobstodta.F ../src/lioczon.F ../src/algodiff.F ../src/mod_cfgxyo.F ../src/mktgsmpl.F ../src/algospct.F ../src/hiomsk.F ../src/lioadbs.F ../src/modanam.F ../src/algortho.F ../src/lioobs.F ../src/hiozon.F ../src/moddiff.F ../src/mkcnttozon.F ../src/mod_spacexyo.F ../src/mkfiltzon.F ../src/utilsesam.F ../src/liorst.F ../src/algooper.F ../src/utilfilt.F ../src/sesam.F ../src/mod_main.F ../src/utilroa.F ../src/modcorr.F ../src/mkdtatoobs.F ../src/utilarg.F ../src/readlist.F ../src/modproj.F ../src/mod_cont.F ../src/algointf.F ../src/defcst.F ../src/modspct.F ../src/arghelp.F ../src/liocpak.F ../src/utilcdfpak.F ../src/modzone.F ../src/mod_coord.F ../src/utilmath1.F ../src/hioxyo.F ../src/argsesam.F ../src/utilzone.F ../src/algotgest.F ../src/mod_mask.F ../src/modvari.F ../src/mknullobs.F ../src/mod_mpitime.F ../src/liocdf.F ../src/liobimg.F ../src/utilclc.F ../src/utilvalid.F ../src/modfilt.F ../src/mkinterp3d.F ../src/argmode.F ../src/algoroa.F ../src/mkdbstoobs.F ../src/algovari.F ../src/hiodbs.F ../src/modglbroa.F ../src/mkrztovar.F ../src/algooerr.F ../src/mkpttozon.F ../src/mkcorrzbas.F ../src/modintf.F ../src/liocrz.F ../src/mkpartvar.F ../src/modoerr.F ../src/mkinterp2dh.F ../src/evalconfig.F ../src/modscor.F ../src/lionc.F ../src/algozone.F ../src/hiocnt.F ../src/utilcdfzon.F ../src/utilprint.F ../src/hiocfg.F ../src/modglbeof.F ../src/progsesam.f ../src/modtgop.F ../src/modglbreg.F ../src/algocorr.F ../src/liocobs.F ../src/hiobas.F ../src/utilfiles.F ../src/mkconnect.F
+./utilarg.F: ../src/utilarg.F
+	cp ../src/utilarg.F .
+./mkpartvar.F: ../src/mkpartvar.F
+	cp ../src/mkpartvar.F .
+./moddiff.F: ../src/moddiff.F
+	cp ../src/moddiff.F .
+./hiomsk.F: ../src/hiomsk.F
+	cp ../src/hiomsk.F .
+./mod_main.F: ../src/mod_main.F
+	cp ../src/mod_main.F .
+./sesam.F: ../src/sesam.F
+	cp ../src/sesam.F .
+./hiogrd.F: ../src/hiogrd.F
+	cp ../src/hiogrd.F .
+./mod_cfgxyo.F: ../src/mod_cfgxyo.F
+	cp ../src/mod_cfgxyo.F .
+./modvari.F: ../src/modvari.F
+	cp ../src/modvari.F .
+./hioxyo.F: ../src/hioxyo.F
+	cp ../src/hioxyo.F .
+./arghelp.F: ../src/arghelp.F
+	cp ../src/arghelp.F .
+./algotgest.F: ../src/algotgest.F
+	cp ../src/algotgest.F .
+./modtgop.F: ../src/modtgop.F
+	cp ../src/modtgop.F .
+./liocdf.F: ../src/liocdf.F
+	cp ../src/liocdf.F .
+SRC = ../src/modadap.F ../src/algozone.F ../src/lioczon.F ../src/algofilt.F ../src/liocdf.F ../src/utilzone.F ../src/lioobs.F ../src/hiozon.F ../src/utilobsv.F ../src/algocorr.F ../src/modglbreg.F ../src/algooper.F ../src/mktgsmpl.F ../src/liodimg.F ../src/modfilt.F ../src/algotgest.F ../src/algoanam.F ../src/mkconnect.F ../src/mkrztovar.F ../src/hiogrd.F ../src/mkinterp3d.F ../src/liospct.F ../src/modzone.F ../src/utilarg.F ../src/liocpak.F ../src/lioadbs.F ../src/modglbroa.F ../src/mkpartvar.F ../src/sesam.F ../src/argmode.F ../src/algodiff.F ../src/utilmkto.F ../src/hiocnt.F ../src/mkreducevar.F ../src/hiomsk.F ../src/modtgop.F ../src/modglbeof.F ../src/utilcdfvar.F ../src/mkcnttozon.F ../src/algovari.F ../src/mkdtatozon.F ../src/mod_mpitime.F ../src/algoroa.F ../src/mod_coord.F ../src/liobimg.F ../src/mkobstodta.F ../src/modoper.F ../src/algospct.F ../src/modanam.F ../src/readlist.F ../src/modspct.F ../src/arghelp.F ../src/utilprint.F ../src/mod_spacexyo.F ../src/mknullobs.F ../src/utilvct.F ../src/hiobas.F ../src/mkzontodta.F ../src/mkdtatoobs.F ../src/progsesam.f ../src/hiocfg.F ../src/liorst.F ../src/mkobsoper.F ../src/argsesam.F ../src/algoscor.F ../src/algointf.F ../src/utilcdfpak.F ../src/algoperc.F ../src/mod_mask.F ../src/mkcorrzbas.F ../src/algortho.F ../src/moddiff.F ../src/utilfilt.F ../src/lionc.F ../src/mkmeanect.F ../src/utilcdfzon.F ../src/mkfiltzon.F ../src/utilfiles.F ../src/algooerr.F ../src/mkpttozon.F ../src/modvari.F ../src/evalconfig.F ../src/lioncdbs.F ../src/mod_main.F ../src/modintf.F ../src/modproj.F ../src/liocrz.F ../src/defcst.F ../src/liocobs.F ../src/mkinterp2dh.F ../src/mod_cont.F ../src/hiodbs.F ../src/modscor.F ../src/modobsv.F ../src/algobase.F ../src/utilmkh.F ../src/liocrg.F ../src/modcorr.F ../src/utilroa.F ../src/mkdbstoobs.F ../src/modoerr.F ../src/utilclc.F ../src/utilvalid.F ../src/hioxyo.F ../src/utilsesam.F ../src/utilmath1.F ../src/mod_cfgxyo.F
+OBJ = modadap.o algozone.o lioczon.o algofilt.o liocdf.o utilzone.o lioobs.o hiozon.o utilobsv.o algocorr.o modglbreg.o algooper.o mktgsmpl.o liodimg.o modfilt.o algotgest.o algoanam.o mkconnect.o mkrztovar.o hiogrd.o mkinterp3d.o liospct.o modzone.o utilarg.o liocpak.o lioadbs.o modglbroa.o mkpartvar.o sesam.o argmode.o algodiff.o utilmkto.o hiocnt.o mkreducevar.o hiomsk.o modtgop.o modglbeof.o utilcdfvar.o mkcnttozon.o algovari.o mkdtatozon.o mod_mpitime.o algoroa.o mod_coord.o liobimg.o mkobstodta.o modoper.o algospct.o modanam.o readlist.o modspct.o arghelp.o utilprint.o mod_spacexyo.o mknullobs.o utilvct.o hiobas.o mkzontodta.o mkdtatoobs.o progsesam.o hiocfg.o liorst.o mkobsoper.o argsesam.o algoscor.o algointf.o utilcdfpak.o algoperc.o mod_mask.o mkcorrzbas.o algortho.o moddiff.o utilfilt.o lionc.o mkmeanect.o utilcdfzon.o mkfiltzon.o utilfiles.o algooerr.o mkpttozon.o modvari.o evalconfig.o lioncdbs.o mod_main.o modintf.o modproj.o liocrz.o defcst.o liocobs.o mkinterp2dh.o mod_cont.o hiodbs.o modscor.o modobsv.o algobase.o utilmkh.o liocrg.o modcorr.o utilroa.o mkdbstoobs.o modoerr.o utilclc.o utilvalid.o hioxyo.o utilsesam.o utilmath1.o mod_cfgxyo.o
+OFF = ../src/lioobs.F ../src/modadap.F ../src/hiozon.F ../src/mkcorrzbas.F ../src/mkpttozon.F ../src/mkreducevar.F ../src/algodiff.F ../src/algoscor.F ../src/utilcdfvar.F ../src/mknullobs.F ../src/algooerr.F ../src/modcorr.F ../src/hiocnt.F ../src/mod_cont.F ../src/algointf.F ../src/liocrz.F ../src/mktgsmpl.F ../src/modintf.F ../src/hiocfg.F ../src/mkrztovar.F ../src/lioncdbs.F ../src/mod_coord.F ../src/modobsv.F ../src/utilcdfzon.F ../src/liospct.F ../src/mod_spacexyo.F ../src/mod_mask.F ../src/mkdtatoobs.F ../src/utilclc.F ../src/argsesam.F ../src/liodimg.F ../src/algoperc.F ../src/mkdbstoobs.F ../src/utilmkto.F ../src/hiobas.F ../src/utilmkh.F ../src/liocrg.F ../src/algocorr.F ../src/liocobs.F ../src/mkmeanect.F ../src/mkobstodta.F ../src/lionc.F ../src/modfilt.F ../src/utilsesam.F ../src/lioadbs.F ../src/mkobsoper.F ../src/utilfilt.F ../src/mkzontodta.F ../src/evalconfig.F ../src/mkdtatozon.F ../src/utilvct.F ../src/hiodbs.F ../src/algoanam.F ../src/algospct.F ../src/utilmath1.F ../src/modglbreg.F ../src/algozone.F ../src/mod_mpitime.F ../src/mkinterp3d.F ../src/algooper.F ../src/mkfiltzon.F ../src/mkinterp2dh.F ../src/readlist.F ../src/utilobsv.F ../src/utilprint.F ../src/utilfiles.F ../src/utilvalid.F ../src/utilroa.F ../src/modanam.F ../src/argmode.F ../src/utilcdfpak.F ../src/utilzone.F ../src/modoerr.F ../src/lioczon.F ../src/algofilt.F ../src/algovari.F ../src/modzone.F ../src/defcst.F ../src/progsesam.f ../src/algortho.F ../src/modoper.F ../src/liocpak.F ../src/algoroa.F ../src/modproj.F ../src/liorst.F ../src/mkcnttozon.F ../src/modscor.F ../src/liobimg.F ../src/modspct.F ../src/algobase.F ../src/modglbroa.F ../src/modglbeof.F ../src/mkconnect.F ../src/utilarg.F ../src/mkpartvar.F ../src/moddiff.F ../src/hiomsk.F ../src/mod_main.F ../src/sesam.F ../src/hiogrd.F ../src/mod_cfgxyo.F ../src/modvari.F ../src/hioxyo.F ../src/arghelp.F ../src/algotgest.F ../src/modtgop.F ../src/liocdf.F
 clean: neat
 	-rm -f ./home/brankarj/bin/sesam.cppdefs $(OBJ) /home/brankarj/bin/sesam
 

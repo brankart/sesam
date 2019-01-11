@@ -170,22 +170,22 @@ C Get global SESAM parameters
           READ(attr,*,ERR=102) oecorreltyp
           IF ((oecorreltyp.LE.0).OR.(oecorreltyp.GT.2)) GOTO 106
         CASE('REGR_TYPE')
-          READ(attr,*,ERR=102) regr_type
+          READ(attr,*,ERR=102) regr_type_sesam
         CASE('REGR_MAXITER')
-          READ(attr,*,ERR=102) regr_maxiter
-          IF (regr_maxiter.LE.0) GOTO 106
+          READ(attr,*,ERR=102) regr_maxiter_sesam
+          IF (regr_maxiter_sesam.LE.0) GOTO 106
         CASE('REGR_MAXBLOC')
-          READ(attr,*,ERR=102) regr_maxbloc
-          IF (regr_maxbloc.LE.0) GOTO 106
+          READ(attr,*,ERR=102) regr_maxbloc_sesam
+          IF (regr_maxbloc_sesam.LE.0) GOTO 106
         CASE('REGR_OVERLAP')
-          READ(attr,*,ERR=102) regr_overlap
-          IF (regr_overlap.LE.0) GOTO 106
+          READ(attr,*,ERR=102) regr_overlap_sesam
+          IF (regr_overlap_sesam.LE.0) GOTO 106
         CASE('REGR_EPSILON')
-          READ(attr,*,ERR=102) regr_epsilon
-          IF (regr_epsilon.LE.0.0) GOTO 106
+          READ(attr,*,ERR=102) regr_epsilon_sesam
+          IF (regr_epsilon_sesam.LE.0.0) GOTO 106
         CASE('REGR_RHO')
-          READ(attr,*,ERR=102) regr_rho
-          IF ((regr_rho.LT.0.0).OR.(regr_rho.GT.1.0)) GOTO 106
+          READ(attr,*,ERR=102) regr_rho_sesam
+          IF ((regr_rho_sesam.LT.0.0).OR.(regr_rho_sesam.GT.1.0)) GOTO 106
 C
 C ==> A State vector configuration
 C
