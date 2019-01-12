@@ -1,0 +1,100 @@
+! Copyright: CNRS - Université de Grenoble
+!
+! Contributors : Jean-Michel Brankart, Charles-Emmanuel Testut, Laurent Parent,
+!                Emmanuel Cosme, Claire Lauvernet, Frédéric Castruccio
+!
+! Jean-Michel.Brankart@hmg.inpg.fr
+!
+! This software is governed by the CeCILL license under French law and
+! abiding by the rules of distribution of free software.  You can  use,
+! modify and/ or redistribute the software under the terms of the CeCILL
+! license as circulated by CEA, CNRS and INRIA at the following URL
+! "http://www.cecill.info".
+!
+!---------------------------------------------------------------------
+!
+!                        CONFIG.MAIN
+!
+!---------------------------------------------------------------------
+!
+!  Purpose :
+!  ---------
+!     Definition of keywords specifying the type
+!     of SESAM 'real' and 'integer' variables.
+!     This file must be included in all SESAM FORTRAN files.
+!   
+!  Modifications :
+!  -------------
+!     original     : 97-12 (C.E. Testut)
+!     modification : 99-12 (C.E. Testut)
+!     modification : 03-02 (J.M. Brankart)
+!
+!---------------------------------------------------------------------
+! List of keywords defined in this include file
+!
+! BIGREAL  : kind of real for SESAM internal computations
+! BIGREAL8 : kind of real for SESAM i/o (8-byte real)
+! BIGREAL4 : kind of real for SESAM i/o (4-byte real)
+! FREAL    : function transforming integer or real variable into BIGREAL
+! FREAL8   : function transforming integer or real variable into BIGREAL8
+! FREAL4   : function transforming integer or real variable into BIGREAL4
+!
+! The definitions can be modified by precompilation options
+! like 'cpp_real4' or 'cpp_real16', or as a function of the computer.
+!---------------------------------------------------------------------
+# undef cpp_real16
+# undef cpp_real4
+!---------------------------------------------------------------------
+! List of keywords defining the type of computer:
+! 
+! cray     :  all CRAY computers
+! _CRAYT3E :  CRAY T3E
+! _CRAYC90 :  CRAY C90
+! __uxpv__ :  Fujitsu
+! SX       :  NEC SX-5
+! hpux     :  HP K200
+!
+!---------------------------------------------------------------------
+! Definition of keywords specifying the kind of real variables
+! (Values for kr, kr4, kr8 are defined in 'mod_main.F90' as
+! a function of KR<y>EQ<nn> keywords defined in the following).
+#define BIGREAL8 REAL(KIND=kr8)
+#define BIGREAL4 REAL(KIND=kr4)
+#define BIGREAL REAL(KIND=kr)
+! Defintions for NEC SX-5 computers
+#if defined SX
+#  define _NEC
+#  define FREAL8 dble
+#  define FREAL4 real
+#  define KR8EQ8
+#  define KR4EQ4
+#  define SMALLINTGR2 INTEGER(KIND=4)
+#  if defined cpp_real4
+#     define FREAL real
+#     define KREQ4
+#  elif defined cpp_real16
+#     define FREAL qfloat
+#     define KREQ16
+#  else
+#     define FREAL dble
+#     define KREQ8
+#  endif
+! Defintions for other computers
+! They work for Linux, IBM SP3 and SP4, Fujistsu, HP workstations.
+#else
+#  define FREAL8 dble
+#  define FREAL4 real
+#  define KR8EQ8
+#  define KR4EQ4
+#  define SMALLINTGR2 INTEGER*4
+#  if defined cpp_real4
+#     define FREAL real
+#     define KREQ4
+#  elif defined cpp_real16
+#     define FREAL qfloat
+#     define KREQ16
+#  else
+#     define FREAL dble
+#     define KREQ8
+#  endif
+#endif
