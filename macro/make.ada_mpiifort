@@ -2,13 +2,13 @@
 FC = mpiifort
 LD = mpiifort
 CPPFLAGS = -DMPI
-FFLAGS = -fpic -132 -convert big_endian ${IDEV_PATH} -I${HOME}/include
-LDFLAGS = ${LDEV_PATH} -lnetcdf -lnetcdff -L${HOME}/lib -lensdam
+FFLAGS = -fpic -132 -convert big_endian $(IDEV_PATH) -I${HOME}/include
+LDFLAGS = $(LDEV_PATH) -lnetcdf -lnetcdff -L$(HOME)/lib -lensdam
 LIST =
 
 # f2py settings
-NCDF="/smplocal/pub/NetCDF/4.1.3/seq/lib/"
-FVENDOR="intelem"
-FCOMPILER="/smplocal/pub/Modules/IDRIS/wrappers/mpiifort"
-F2PYFLAGS="--fcompiler=$FVENDOR --f90exec=$FCOMPILER"
+NCDFLIB = /smplocal/pub/NetCDF/4.1.3/seq/lib/
+FVENDOR = intelem
+FCOMPILER = /smplocal/pub/Modules/IDRIS/wrappers/mpiifort
+F2PYFLAGS = --fcompiler=$(FVENDOR) --f90exec=$(FCOMPILER)
 

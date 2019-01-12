@@ -2,7 +2,7 @@
 # ------------------------------------------------------------
 # J.-M. Brankart, January 2019
 # 
-include ../macro/make.ada_ifort
+include ../macro/make.cal1_ifort
 #
 OBJ = sesam.so
 #
@@ -15,8 +15,8 @@ clean:
 	-rm -fr build
 	-mkdir build
 #
-sesam.so: signatures/sesam.pyf ../src/sesam.F
+sesam.so: signatures/sesam.pyf ../src/sesam.F90
 	-ln -s ../build/*.o . ; rm sesam.o
-	$(F2PY) $(F2PYFLAGS) $(LDFLAGS) --build-dir build --f90flags="$(CPPFLAGS) $(FFLAGS)" -c signatures/sesam.pyf ../src/sesam.F *.o $(NCDF)/libnetcdff.so $(NCDF)/libnetcdf.so
+	$(F2PY) $(F2PYFLAGS) $(LDFLAGS) --build-dir build --f90flags="$(CPPFLAGS) $(FFLAGS)" -c signatures/sesam.pyf ../src/sesam.F90 *.o $(NCDFLIB)/libnetcdff.so $(NCDFLIB)/libnetcdf.so
 	-rm *.o
 

@@ -2,6 +2,14 @@ FC = ifort
 LD = ifort
 CPPFLAGS = 
 NCDF = /opt/modules/netcdf/nompi/netcdf-4.4.1_intel15
-FFLAGS = -132 -convert big_endian -I$(NCDF)/include -I$(HOME)/include
+FFLAGS = -fpic -132 -convert big_endian -I$(NCDF)/include -I$(HOME)/include
 LDFLAGS = -L$(NCDF)/lib -lnetcdf -lnetcdff -L$(HOME)/lib -lensdam
 LIST =
+
+# f2py settings
+F2PY = f2py
+FVENDOR = intelem
+NCDFLIB = /opt/modules/netcdf/nompi/netcdf-4.4.1_intel15/lib
+FCOMPILER = /opt/intel/composer_xe_2015.3.187/bin/intel64/ifort
+F2PYFLAGS = --fcompiler=$(FVENDOR) --f90exec=$(FCOMPILER)
+
