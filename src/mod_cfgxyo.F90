@@ -296,6 +296,7 @@
       INTEGER, save :: oecorreltyp = 1
 ! ==> Parameters for aanm module
       CHARACTER(len=80), save :: obserror_type_sesam = 'gaussian'
+      BIGREAL, save :: special_value = -999.
 ! ==> Parameters for spct module
       CHARACTER(len=80) :: regr_type_sesam='local' ! regression type
       INTEGER, SAVE :: regr_maxiter_sesam=50   ! maximum number of iteration

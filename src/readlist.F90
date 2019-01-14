@@ -186,6 +186,8 @@
         CASE('REGR_RHO')
           READ(attr,*,ERR=102) regr_rho_sesam
           IF ((regr_rho_sesam.LT.0.0).OR.(regr_rho_sesam.GT.1.0)) GOTO 106
+        CASE('SPECIAL_VALUE')
+          READ(attr,*,ERR=102) special_value
 !
 ! ==> A State vector configuration
 !

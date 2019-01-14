@@ -297,11 +297,13 @@
         ELSE
 ! NEW SCHEME
 ! ==========
+        WHERE(basesr==special_value) basesr=huge(basesr)
         IF (lweight) THEN
           CALL ens_quantiles(percsr,basesr,percdef,enswei=vectw0)
         ELSE
           CALL ens_quantiles(percsr,basesr,percdef)
         ENDIF
+        WHERE(percsr==huge(percsr)) percsr=special_value
 ! ==========
         ENDIF
 !     
