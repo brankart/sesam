@@ -305,7 +305,7 @@
             ctext63=ctext62
          ENDIF
       ENDIF
-! --- make ctext7 (debbugging: )
+! --- make ctext7 (debugging: )
       SELECT CASE (errortype)
       CASE (1)
          ctext7='contact SESAM wizard or debug yourself'
