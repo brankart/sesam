@@ -31,7 +31,6 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       MODULE arghelp
       use mod_main
-      use mod_cfgxyo
       use utilarg
       use utilvalid
       IMPLICIT NONE
@@ -54,6 +53,7 @@
 !---------------------------------------------------------------------
 ! modules
 ! =======
+      use mod_cfgxyo
       use mod_spacexyo , only : jpoend,jpitpend,jpdbsend, &
      &     jpx,jpxend,jpnxend,jpyend,jprend,jpz
       use hiomsk

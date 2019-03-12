@@ -500,6 +500,7 @@
       use mod_main
       use mod_cfgxyo
       use mod_coord
+      use utilcdfvar
       use netcdf
       IMPLICIT NONE
 !----------------------------------------------------------------------
@@ -698,6 +699,7 @@
       use mod_main
       use mod_cfgxyo
       use mod_coord
+      use utilcdfvar
       use netcdf
       IMPLICIT NONE
 !----------------------------------------------------------------------

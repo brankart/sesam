@@ -102,7 +102,6 @@
       BIGREAL, dimension(:,:), allocatable :: RMS_ARxyo
       BIGREAL, dimension(:), allocatable :: vcts_sr
       BIGREAL :: spval1,spval
-      INTEGER :: labtitr,labnbre
       CHARACTER(len=bgword) :: ligne,lignbre,lignbre1, &
      &     methode,fhisto1,fhisto2
       CHARACTER(len=bgword) :: myformat
@@ -464,19 +463,16 @@
       WRITE(ligne,'(A,A)')  &
      &        ' ------------------------------------', &
      &        '-------------------------'
-      ASSIGN 11 to labtitr
-      ASSIGN 20 to labnbre
-!
       PRINT *,'  -------------------  Array of ERRORS' &
      &       ,'  -------------------'
       PRINT '(A)', ligne(1:lenv(ligne))
-      PRINT labtitr, 'Var','Method','Nbr pts' &
+      PRINT 11, 'Var','Method','Nbr pts' &
      &        ,' RMS[AR] ',' AR_R(%) '
       PRINT '(A)', ligne(1:lenv(ligne))
       IF (nprint.GE.0) THEN
          WRITE(numout,'(A)') '   --------  Array of ERRORS  --------'
          WRITE(numout,'(A)') ligne(1:lenv(ligne))
-         WRITE(numout,labtitr) 'Var','Methode','Nbr pts' &
+         WRITE(numout,11) 'Var','Methode','Nbr pts' &
      &           ,' RMS[AR] ',' AR_R(%) '
          WRITE(numout,'(A)') ligne(1:lenv(ligne))
       ENDIF
@@ -485,14 +481,14 @@
 ! jind=1
          jind=1
          methode='-ALL AREAS-'
-         WRITE(lignbre,labnbre) xyo_nam(jxyo),methode, &
+         WRITE(lignbre,20) xyo_nam(jxyo),methode, &
      &        xyo_nbrgrp(jxyo,jind),xyo_RMS_AR(jxyo,jind)
          IF (nprint.GE.0) WRITE(numout,'(A)') lignbre(1:lenv(lignbre))
          PRINT '(A)',lignbre(1:lenv(lignbre))
 ! 
          DO jgroup=1,jpgroupsize
             methode=knam_grouparea(jgroup)(1:11)
-            WRITE(lignbre,labnbre) xyo_nam(jxyo),methode, &
+            WRITE(lignbre,20) xyo_nam(jxyo),methode, &
      &           xyo_nbrgrp(jxyo,jgroup+1),xyo_RMS_AR(jxyo,jgroup+1)
             SELECT CASE (ktab_nbarea(jgroup))
             CASE (7:)
@@ -522,7 +518,7 @@
             WRITE(methode,'("jzon",I3.3,"-",I3.3)')  &
      &           jtabxyo+(kjzondeb-1), &
      &           jtabxyo+(kjzondeb-1)
-            WRITE(lignbre,labnbre) xyo_nam(jxyo),methode, &
+            WRITE(lignbre,20) xyo_nam(jxyo),methode, &
      &           tabnbrxyo(jtabxyo,jxyo),RMS_ARxyo(jtabxyo,jxyo)
             IF (nprint.GE.0) WRITE(numout,'(A)') lignbre(1:lenv(lignbre))
 !            IF (MOD(jtabxyo,zonkfreq).EQ.0) 
@@ -647,7 +643,6 @@
      &     rap_AR_LRxyo
       BIGREAL, dimension(:), allocatable :: vcts_sr,vctso_sr
       BIGREAL :: spval1,spval
-      INTEGER :: labtitr,labnbre
       CHARACTER(len=bgword) :: ligne,lignbre,lignbre1, &
      &     methode,fhisto1,fhisto2
       INTEGER, parameter  :: zonkfreq = 1
@@ -1118,23 +1113,20 @@
          WRITE(ligne,'(A,A)') &
      &        ' ------------------------------------', &
      &        '---------------------------------------'
-         ASSIGN 12 to labtitr
       ELSE
          WRITE(ligne,'(A,A)') &
      &        ' ------------------------------------', &
      &        '-------------------------'
-         ASSIGN 11 to labtitr
       ENDIF
-      ASSIGN 20 to labnbre
 !
       PRINT *,'  -------------------  Array of ERRORS' &
      &       ,'  -------------------'
       PRINT '(A)', ligne(1:lenv(ligne))
       IF (klargdiffxyoorg) THEN
-         PRINT labtitr, 'Var','Method ','Nbr pts' &
+         PRINT 12, 'Var','Method ','Nbr pts' &
      &        ,' RMS[AR] ',' AR_R(%) ',' AR_LR(%)'
       ELSE
-         PRINT labtitr, 'Var','Method ','Nbr pts' &
+         PRINT 11, 'Var','Method ','Nbr pts' &
      &        ,' RMS[AR] ',' AR_R(%) '
       ENDIF
       PRINT '(A)', ligne(1:lenv(ligne))
@@ -1142,10 +1134,10 @@
          WRITE(numout,'(A)') '   ---------  Array of ERRORS  ---------'
          WRITE(numout,'(A)') ligne(1:lenv(ligne))
          IF (klargdiffxyoorg) THEN
-            WRITE(numout,labtitr) 'Var','Method','Nbr pts' &
+            WRITE(numout,12) 'Var','Method','Nbr pts' &
      &        ,' RMS[AR] ',' AR_R(%) ',' AR_LR(%)'
          ELSE
-            WRITE(numout,labtitr) 'Var','Method','Nbr pts' &
+            WRITE(numout,11) 'Var','Method','Nbr pts' &
      &           ,' RMS[AR] ',' AR_R(%) '
          ENDIF
          WRITE(numout,'(A)') ligne(1:lenv(ligne))
@@ -1160,7 +1152,7 @@
             WRITE(methode,'("zonk",I3.3,"-",I3.3)')  &
      &           0,0
          ENDIF
-         WRITE(lignbre,labnbre) xyo_nam(jxyo),methode, &
+         WRITE(lignbre,20) xyo_nam(jxyo),methode, &
      &        xyo_nbr(jxyo),xyo_RMS_AR(jxyo)
          IF (xyo_rap_AR_R(jxyo).NE.spval1) THEN
             WRITE(lignbre1,'(A,3X,F11.7)') lignbre(1:lenv(lignbre)) &
@@ -1189,7 +1181,7 @@
             DO jtabxyo1=jtabxyo,jtabxyo2
                WRITE(methode,'("zonk",I3.3,"-",I3.3)')  &
      &                 (jtabxyo1-jtabxyo+1),(jtabxyo1-jtabxyo+1)
-               WRITE(lignbre,labnbre) xyo_nam(jxyo),methode, &
+               WRITE(lignbre,20) xyo_nam(jxyo),methode, &
      &              tabnbrxyo(jtabxyo1),RMS_ARxyo(jtabxyo1)
                IF (rap_AR_Rxyo(jtabxyo1).NE.spval1) THEN
                   WRITE(lignbre1,'(A,3X,F11.7)') lignbre(1:lenv(lignbre)) &
@@ -1345,7 +1337,6 @@
       INTEGER, dimension (:,:), allocatable :: tabnbrxyo
       BIGREAL, dimension(:,:), allocatable :: zonmeanxyo,zonstdxyo
       BIGREAL :: spval1,spval
-      INTEGER :: labtitr,labnbre
       CHARACTER(len=bgword) :: ligne,lignbre,lignbre1, &
      &     methode,fhisto1,fhisto2
       CHARACTER(len=bgword) :: myformat
@@ -1709,19 +1700,16 @@
       WRITE(ligne,'(A,A)')  &
      &     ' ------------------------------------', &
      &     '-------------------------'
-      ASSIGN 11 to labtitr
-      ASSIGN 20 to labnbre
-!
       PRINT *,'  -------------------  Array of ERRORS' &
      &       ,'  -------------------'
       PRINT '(A)', ligne(1:lenv(ligne))
-      PRINT labtitr, 'Var','Method','Nbr pts' &
+      PRINT 11, 'Var','Method','Nbr pts' &
      &        ,'  MEAN   ','   STD   '
       PRINT '(A)', ligne(1:lenv(ligne))
       IF (nprint.GE.0) THEN
          WRITE(numout,'(A)') '   --------  Array of VALUE   --------'
          WRITE(numout,'(A)') ligne(1:lenv(ligne))
-         WRITE(numout,labtitr) 'Var','Methode','Nbr pts' &
+         WRITE(numout,11) 'Var','Methode','Nbr pts' &
      &        ,'  MEAN   ','   STD   '
          WRITE(numout,'(A)') ligne(1:lenv(ligne))
       ENDIF
@@ -1730,7 +1718,7 @@
 ! jind=1
          jind=1
          methode='-ALL AREAS-'
-         WRITE(lignbre,labnbre) xyo_nam(jxyo),methode, &
+         WRITE(lignbre,20) xyo_nam(jxyo),methode, &
      &        xyo_nbrgrp(jxyo,jind),xyo_zonmean(jxyo,jind)
          IF (xyo_zonstd(jxyo,jind).NE.spval1) THEN
             WRITE(lignbre1,'(A,3X,F11.7)') lignbre(1:lenv(lignbre)) &
@@ -1746,7 +1734,7 @@
 ! 
          DO jgroup=1,jpgroupsize
             methode=knam_grouparea(jgroup)(1:11)
-            WRITE(lignbre,labnbre) xyo_nam(jxyo),methode, &
+            WRITE(lignbre,20) xyo_nam(jxyo),methode, &
      &           xyo_nbrgrp(jxyo,jgroup+1),xyo_zonmean(jxyo,jgroup+1)
             IF (xyo_zonstd(jxyo,jgroup+1).NE.spval1) THEN
                WRITE(lignbre1,'(A,3X,F11.7)') lignbre(1:lenv(lignbre)) &
@@ -1783,7 +1771,7 @@
             WRITE(methode,'("jzon",I3.3,"-",I3.3)')  &
      &           jtabxyo+(kjzondeb-1), &
      &           jtabxyo+(kjzondeb-1)
-            WRITE(lignbre,labnbre) xyo_nam(jxyo),methode, &
+            WRITE(lignbre,20) xyo_nam(jxyo),methode, &
      &           tabnbrxyo(jtabxyo,jxyo),zonmeanxyo(jtabxyo,jxyo)
             IF (zonstdxyo(jtabxyo,jxyo).NE.spval1) THEN
                WRITE(lignbre1,'(A,3X,F11.7)') lignbre(1:lenv(lignbre)) &

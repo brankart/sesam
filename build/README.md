@@ -6,8 +6,10 @@ To compile SeSAM :
   This is the Makefile configurable part, which specifies
   your compiler options and where to find the NetCDF and EnsDAM libraries.
 
-- edit the file 'Makefile.template' to include this 'make.macro' file (first line below the title)
-
+```bash
+cd build
+ln -sf ../macro/make.(MY_MACHINE) Makefile.macro
+```
 - compile with:
 
 ```bash
