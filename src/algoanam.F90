@@ -258,7 +258,9 @@
 ! ==================
         ELSE
         IF (kflaganam) THEN
+          WHERE(vects==special_value) vects=huge(vects)
           CALL ana_forward(vects,percsr,percref)
+          WHERE(vects==huge(vects)) vects=special_value
         ELSE
           CALL ana_backward(vects,percsr,percref)
         ENDIF
@@ -532,7 +534,9 @@
 ! ==================
         ELSE
         IF (kflaganam) THEN
+          WHERE(basesr==special_value) basesr=huge(basesr)
           CALL ana_forward(basesr,percsr,percref)
+          WHERE(basesr==huge(basesr)) basesr=special_value
         ELSE
           CALL ana_backward(basesr,percsr,percref)
         ENDIF
