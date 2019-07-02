@@ -3,8 +3,10 @@ LD = ifort
 FPPFLAGS = -DMPI
 NCDF = /opt/modules/netcdf/nompi/netcdf-4.4.1_intel15
 #FFLAGS = -Bstatic -132 -convert big_endian -I$(NCDF)/include -I$(HOME)/include
-FFLAGS = -fpic -132 -convert big_endian -I$(NCDF)/include -I$(HOME)/include -I/usr/lib/x86_64-linux-gnu/openmpi/include
-LDFLAGS = -L$(NCDF)/lib -lnetcdf -lnetcdff -L$(HOME)/lib -lensdam -L/usr/lib/x86_64-linux-gnu/openmpi/lib -lmpi_mpifh -lmpi
+#FFLAGS = -fpic -132 -convert big_endian -I$(NCDF)/include -I$(HOME)/include -I/usr/lib/x86_64-linux-gnu/openmpi/include
+FFLAGS = -fpic -132 -convert big_endian -I$(NCDF)/include -I$(HOME)/include -I/opt/modules/openmpi/openmpi-3.0.0_intel15/include/
+#LDFLAGS = -L$(NCDF)/lib -lnetcdf -lnetcdff -L$(HOME)/lib -lensdam -L/usr/lib/x86_64-linux-gnu/openmpi/lib -lmpi_mpifh -lmpi
+LDFLAGS = -L$(NCDF)/lib -lnetcdf -lnetcdff -L$(HOME)/lib -lensdam -L/opt/modules/openmpi/openmpi-3.0.0_intel15/lib -lmpi_mpifh -lmpi
 LIST =
 
 # f2py settings
