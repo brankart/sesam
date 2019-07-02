@@ -2,6 +2,7 @@ FC = ifort
 LD = ifort
 CPPFLAGS = 
 NCDF = /opt/modules/netcdf/nompi/netcdf-4.4.1_intel15
+#FFLAGS = -Bstatic -132 -convert big_endian -I$(NCDF)/include -I$(HOME)/include
 FFLAGS = -fpic -132 -convert big_endian -I$(NCDF)/include -I$(HOME)/include
 LDFLAGS = -L$(NCDF)/lib -lnetcdf -lnetcdff -L$(HOME)/lib -lensdam
 LIST =

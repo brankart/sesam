@@ -38,7 +38,7 @@
 !
 #if defined MPI
       INTEGER, save :: mpi_code
-      include "mpif.h90"
+      include "mpif.h"
 #endif
 !
 ! Variable type definitions
