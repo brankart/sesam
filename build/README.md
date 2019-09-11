@@ -19,7 +19,6 @@ make
 To update the Makefile (if the source are modified) :
 
 ```bash
-platform="linux_ifort"    # define the macro file to use
 target="$HOME/bin/sesam"  # define the name of the executable
-./mkmf -t macro/make.$platform -p $target ../src/*.[Ffh]
+./mkmf -t Makefile.macro -p $target ../src/*.[Ffh]*
 ```
