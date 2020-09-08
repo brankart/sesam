@@ -524,12 +524,14 @@
       CASE(1)
         kfname=varfgrd(kindxy)
         kngrd=varngrd(kindxy)
+        kegrd=varegrd(kindxy)
         kjpk=var_jpk(kindxy)
         zdim=varzdim(kindxy)
         znam=varznam(kindxy)
       CASE(2)
         kfname=dtafgrd(kindxy)
         kngrd=dtangrd(kindxy)
+        kegrd=dtaegrd(kindxy)
         kjpk=dta_jpk(kindxy)
         zdim=dtazdim(kindxy)
         znam=dtaznam(kindxy)
@@ -658,8 +660,8 @@
 !
 ! --- error management
 !
- 1000 CALL printerror2(0,1000,1,'hiogrd','readgrd')
- 1001 CALL printerror2(0,1001,3,'hiogrd','readgrd')
+ 1000 CALL printerror2(0,1000,1,'hiogrd','readlev')
+ 1001 CALL printerror2(0,1001,3,'hiogrd','readlev')
 !
  101  WRITE (texterror,*) 'Unsupported file format'
       CALL printerror2(0,101,3,'hiogrd','readlev',comment=texterror)
