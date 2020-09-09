@@ -210,9 +210,9 @@
          varvmsk(indvar)= FREAL(-9999.0)
          varmsea(indvar)= .FALSE.
 ! ==> A.4. Configuration of grid files
-         varfgrd(indvar)= 'geom.cdf'
-         varegrd(indvar)= 3
-         varngrd(indvar)= 2
+         varfgrd(indvar)= 'geom.nc'
+         varegrd(indvar)= 4
+         varngrd(indvar)= 3
          varxnam(indvar)= 'lonxy'
          varynam(indvar)= 'latxy'
          varznam(indvar)= 'depth'
@@ -248,9 +248,9 @@
 ! ==> B.4. Observation error standard deviation
          dta_rms(indvar)= FREAL(1.0)
 ! ==> B.5. Configuration of grid and level files
-         dtafgrd(indvar)= 'geom.cdf'
-         dtaegrd(indvar)= 3
-         dtangrd(indvar)= 2
+         dtafgrd(indvar)= 'geom.nc'
+         dtaegrd(indvar)= 4
+         dtangrd(indvar)= 3
          dtaxnam(indvar)= 'lonxy'
          dtaynam(indvar)= 'latxy'
          dtaznam(indvar)= 'depth'
