@@ -59,14 +59,19 @@
 ! =======
       use mod_main
       use mod_cfgxyo
+      use mod_coord
       use mod_spacexyo , only :  &
      &     poscoefobs,gridijkobs, &
      &     jpoend,jpitpend,jpx,jpxend, &
      &     jpyend,spvalvar,spvaldta,spvalobs
       use hioxyo
       use hiocfg
+      use hiogrd
       use ensdam_storng
       use ensdam_stoanam
+      use ensdam_anaqua
+      use ensdam_interp
+      use utilvct
       use utilvalid
       IMPLICIT NONE
 !----------------------------------------------------------------------
@@ -90,9 +95,10 @@
       TYPE (type_gridijk), dimension(:), allocatable :: gridijkobsnew
       TYPE (type_poscoef), dimension(:,:), allocatable :: poscoefobsnew
 !
-      INTEGER :: allocok,jpssize,jpisize
-      INTEGER :: jpitpsize
-      INTEGER :: jnxyo,js,ji,jpi,jextvar,jjproc
+      INTEGER :: allocok,jpssize,jpisize,jpjsize
+      INTEGER :: jpitpsize,sxyend,indsxy,nbr
+      INTEGER, dimension(1:nbvar) :: sxy_ord,sxy_jpi,sxy_jpj
+      INTEGER :: jnxyo,js,ji,jk,jt,jpi,jextvar,jjproc,jqua,js1,jsxy
       INTEGER :: flagcfg,flagxyo,ios,jpgroup,jgroup
       INTEGER :: jpoendold,jpitpsizeold,jpoendnew,jpitpsizenew,indobs, &
      &     inddbs,indobs1,inddbs1,jodeb,jofin,jodebnew,jofinnew,jobs,jitp
@@ -109,21 +115,41 @@
      &     obs_itpold,obs_itpnew
       INTEGER, dimension(:,:,:), allocatable, save :: obs_nbrjgrp, &
      &     obs_indjgrp,obs_itpjgrp
-      REAL(KIND=8) :: gran, xcoef, mu, nu, gammak, gammath, betaa, betab, xmin, xmax
+      REAL(KIND=8) :: gran, xcoef, mu, nu, gammak, gammath, betaa, betab
+      REAL(KIND=8) :: xmin, xmax, qua, distmin, dist
+      BIGREAL, DIMENSION(:), allocatable :: lon, lat
+      REAL(KIND=8), PARAMETER :: twopi=2*3.1415926535897932384626
+      REAL(KIND=8), PARAMETER :: deg2rad=twopi/360.
+      REAL(KIND=8), PARAMETER :: earthrad=6.371e3
 !----------------------------------------------------------------------
       SELECT CASE (kflaganlxyo)
       CASE(1)
          jpssize=jpx
          jpitpsize=1
          spvals=spvalvar
+         sxyend=varend
+         DO jsxy = 1,sxyend
+           sxy_ord(jsxy)=var_ord(jsxy)
+           indsxy= sxy_ord(jsxy)
+           sxy_jpi(indsxy)=var_jpi(indsxy)
+           sxy_jpj(indsxy)=var_jpj(indsxy)
+         ENDDO
       CASE(2)
          jpssize=jpyend
          jpitpsize=1
          spvals=spvaldta
+         sxyend=dtaend
+         DO jsxy = 1,sxyend
+           sxy_ord(jsxy)=dta_ord(jsxy)
+           indsxy= sxy_ord(jsxy)
+           sxy_jpi(indsxy)=var_jpi(indsxy)
+           sxy_jpj(indsxy)=var_jpj(indsxy)
+         ENDDO
       CASE(3)
          jpssize=jpoend
          jpitpsize=jpitpend
          spvals=spvalobs
+         sxyend=0
       CASE DEFAULT
          GOTO 1000
       END SELECT
@@ -928,6 +954,28 @@
                      ENDIF
                   ENDDO            
                   CALL kiss_save()
+               CASE ('quantiles')
+                  vectsout = vectsin
+                  CALL heapsort(vectsout)
+                  OPEN(UNIT=11,file='quantiles.txt')
+                  DO jqua=0,NINT(cst)
+                    js = NINT(REAL(jqua,8)*REAL(jpssize-1,8)/cst) + 1
+                    WRITE(11,*) vectsout(js)
+                  ENDDO
+                  CLOSE(11)
+               CASE ('quantize')
+                  OPEN(UNIT=11,file='quantiles.txt')
+                  READ(11,*)
+                  vectsout(:) = 1.
+                  DO jqua=1,NINT(cst)-1
+                    READ(11,*) qua
+                    DO js=1,jpssize
+                      IF (vectsin(js).GT.qua) THEN
+                        vectsout(js) = jqua+1 !  REAL(jqua,8)/(NINT(cst)-1)
+                      ENDIF
+                    ENDDO
+                  ENDDO
+                  CLOSE(11)
                CASE DEFAULT
                   GOTO 101
                END SELECT
@@ -1191,6 +1239,46 @@
                   vectsout(js) = gran
                ENDDO
                CALL kiss_save()
+            CASE ('locerror')
+               ! Read grid (assuming only one variable)
+               jsxy=1
+               IF (sxyend.NE.1) GOTO 1000
+
+               jpisize=sxy_jpi(1)
+               jpjsize=sxy_jpj(1)
+!
+               allocate (gridij(1:jpisize,1:jpjsize), stat=allocok )
+               IF (allocok.NE.0) GOTO 1001
+               gridij(:,:) = type_gridij(FREAL(0.0),FREAL(0.0))
+
+               CALL readgrd(kflaganlxyo,sxy_ord(1))
+
+               allocate (lon(1:jpssize), stat=allocok )
+               IF (allocok.NE.0) GOTO 1001
+               allocate (lat(1:jpssize), stat=allocok )
+               IF (allocok.NE.0) GOTO 1001
+
+               jk=1 ; jt=1
+               CALL mk8vct(lon(1:),gridij(:,:)%longi,jk,jt, &
+     &                     jsxy,nbr,kflaganlxyo)
+               CALL mk8vct(lat(1:),gridij(:,:)%latj, jk,jt, &
+     &                     jsxy,nbr,kflaganlxyo)
+               lon = lon * deg2rad ; lat = (90. - lat) * deg2rad
+
+               ! Compute location error
+               IF (ANY(vectsin(:).EQ.spvalsin)) GOTO 103
+               IF (ANY(vectsinref(:).EQ.spvalsinref)) GOTO 103
+               DO js=1,jpssize
+                 distmin = HUGE(nu)
+                 DO js1=1,jpssize
+                   IF (NINT(vectsin(js1)).EQ.NINT(vectsinref(js))) THEN
+                     !dist=max(abs(lon(js1)-lon(js)),abs(lat(js1)-lat(js)))
+                     dist=sph_dist(lon(js1),lon(js),lat(js1),lat(js))
+                     IF (dist.LT.distmin) distmin = dist
+                   ENDIF
+                 ENDDO
+                 vectsout(js) = distmin * earthrad
+               ENDDO
             CASE DEFAULT
                GOTO 101
             END SELECT
