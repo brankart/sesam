@@ -43,6 +43,7 @@
       use mod_spacexyo , only : jpz
       use mkzontodta
       use algozone
+      use algolocal
       use mkcorrzbas
       use mkpartvar
       use mkreducevar
@@ -92,7 +93,11 @@
          CALL zontodta(arginzon,argoutdta,jz)
       CASE (2)
 ! Action: -outpartvar *.var -outzon *.zon
-         CALL calczone(argoutpartvar,argoutzon,argincfg)
+         IF (traditional) THEN
+           CALL calczone(argoutpartvar,argoutzon,argincfg)
+         ELSE
+           CALL calclocal(argoutpartvar,argoutzon,argincfg)
+         ENDIF
       CASE (3)
 ! Action: -inzon *.zon -incfg *.cfg -outzbas *.zon.bas
          CALL corrzbas(arginzon,argincfg,argoutzbas)
