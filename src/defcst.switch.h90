@@ -655,8 +655,15 @@
             swiopt(jarg) = 0
             arginrz       = ''
             larginrz     = .FALSE.
+         CASE (90)
+            switab(jarg) = '-iterate'
+            swihelp(jarg)= 'iteration number'
+            swibool(jarg)= .TRUE.
+            swiopt(jarg) = 0
+            argiterate   = ''
+            largiterate  = .FALSE.
          CASE (nbarg+1)
-            IF (jarg.NE.90) STOP 'defcst.switch.h : bad nbarg parameter'
+            IF (jarg.NE.91) STOP 'defcst.switch.h : bad nbarg parameter'
          CASE DEFAULT
             switab(jarg) = '--------'
             swihelp(jarg)= '--------'
@@ -796,8 +803,13 @@
      &           'Spectral transformation'
             modbool(jmod)= .TRUE.
             modtype(jmod)= 2
+         CASE (24)
+            modtab(jmod) = 'mcmc'
+            modhelp(jmod)= 'MCMC sampler'
+            modbool(jmod)= .TRUE.
+            modtype(jmod)= 1
          CASE (nbmod+1)
-            IF (jmod.NE.24) STOP 'defcst.switch.h : bad nbmod parameter'
+            IF (jmod.NE.25) STOP 'defcst.switch.h : bad nbmod parameter'
          CASE DEFAULT
             modtab(jmod) = '----'
             modhelp(jmod)= ''
@@ -3204,3 +3216,17 @@
       taborder(jmod,jaction,2)=52
       taborder(jmod,jaction,3)=66
       taborder(jmod,jaction,4)=33
+!
+! -XXIV.- MCMC module : MCMC sampler
+! ----------------------------------
+      jmod=24
+! --- optional switches -oestd(7)
+      tabnumswiopt(jmod,1)=7
+! -XIV.1- =>: -inxbas <file_xbas> -inxbasref <file_xbas> -outxbas <file_xbas> -iterate <iteration number>
+      jaction=1
+      WRITE(tabhelporder(jmod,jaction),*) 'Ensemble augmentation'
+      tabvalorder(jmod,jaction)=52
+      taborder(jmod,jaction,1)=10
+      taborder(jmod,jaction,2)=15
+      taborder(jmod,jaction,3)=20
+      taborder(jmod,jaction,4)=90

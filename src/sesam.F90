@@ -390,6 +390,11 @@
 !
          CALL modspct
 !
+      CASE (24)
+! -3.24- MCMC mode : MCMC sampler
+!
+         CALL modmcmc
+!
       CASE DEFAULT
          GOTO 1000
       END SELECT

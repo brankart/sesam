@@ -327,7 +327,7 @@
             CALL evalhdrobs (argconfigobs,jpoend,jpitpend)
             IF ((jpoend.EQ.0).AND.(nmode.NE.0)) GOTO 109
             SELECT CASE (nmode)
-            CASE (0,1,4,5,7,8,9,10,11,12,14,15,16,17,18,19,20,21,22,23)
+            CASE (0,1,4,5,7,8,9,10,11,12,14,15,16,17,18,19,20,21,22,23,24)
 ! -3.0- Help  config
 ! -3.1- Mode intf : 
 ! -3.4- Mode obsv : 
@@ -345,6 +345,7 @@
 ! -3.18- Mode lreg :
 ! -3.19- Mode breg :
 ! -3.20- Mode vari :
+! -3.24- Mode mcmc :
             CASE (2,3,6,13)
 ! -3.2- Mode corr : 
 ! -3.3- Mode tgop : 
@@ -374,7 +375,7 @@
             CASE (0,4)
 ! -3.0- Help  config
 ! -3.4- Mode obsv :
-            CASE (1,2,3,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,23)
+            CASE (1,2,3,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,23,24)
 ! -3.1- Mode intf :
 ! -3.2- Mode corr :
 ! -3.3- Mode ---- :
@@ -394,6 +395,7 @@
 ! -3.18- Mode lreg :
 ! -3.19- Mode breg :
 ! -3.20- Mode vari :
+! -3.24- Mode mcmc :
                GOTO 1000
             CASE DEFAULT
                GOTO 1000
@@ -439,13 +441,14 @@
 ! -3.17- Mode greg : 
 ! -3.18- Mode lreg :
 ! -3.19- Mode breg :
-            CASE (2,4,6,7,8,20,21,23)
+            CASE (2,4,6,7,8,20,21,23,24)
 ! -3.2- Mode corr :
 ! -3.4- Mode obsv :
 ! -3.6- Mode adap :
 ! -3.7- Mode diff :
 ! -3.8- Mode oerr :
 ! -3.10- Mode vari :
+! -3.10- Mode mcmc :
                GOTO 1000
             CASE DEFAULT
                GOTO 1000
@@ -694,6 +697,59 @@
             ELSE
                jprend=1
             ENDIF
+! -5.24- Mode mcmc :
+         CASE (24)
+            IF (larginxbas) THEN
+               IF (.NOT.(validextvarbas(arginxbas))) GOTO 1000
+               CALL fildirbas (fname,arginxbas,jprend,numjr,serie)
+            ELSEIF (larginybas) THEN
+               IF ((.NOT.validextvarbas(arginybas)) &
+     &              .AND.(.NOT.validextdtabas(arginybas))) GOTO 1000
+               CALL fildirbas (fname,arginybas,jprend,numjr,serie)
+            ELSEIF (larginobas) THEN
+               IF ((.NOT.validextvarbas(arginobas)) &
+     &              .AND.(.NOT.validextdtabas(arginobas)) &
+     &              .AND.(.NOT.validextobsbas(arginobas))) GOTO 1000
+               CALL fildirbas (fname,arginobas,jprend,numjr,serie)
+            ELSE
+               jprend=1
+            ENDIF
+
+            IF (larginxbasref) THEN
+               IF (.NOT.(validextvarbas(arginxbasref))) GOTO 1000
+               CALL fildirbas (fname,arginxbasref,jpperc,numjr,serie)
+            ELSEIF (larginybasref) THEN
+               IF ((.NOT.validextvarbas(arginybasref)) &
+     &              .AND.(.NOT.validextdtabas(arginybasref))) GOTO 1000
+               CALL fildirbas (fname,arginybasref,jpperc,numjr,serie)
+            ELSEIF (larginobasref) THEN
+               IF ((.NOT.validextvarbas(arginobasref)) &
+     &              .AND.(.NOT.validextdtabas(arginobasref)) &
+     &              .AND.(.NOT.validextobsbas(arginobasref))) GOTO 1000
+               CALL fildirbas (fname,arginobasref,jpperc,numjr,serie)
+            ELSE
+               jpperc=1
+            ENDIF
+
+            IF (jpperc.NE.jprend) GOTO 110
+
+            IF (largoutxbas) THEN
+               IF (.NOT.(validextvarbas(argoutxbas))) GOTO 1000
+               CALL fildirbas (fname,argoutxbas,jpsmplend,numjr,serie)
+            ELSEIF (largoutybas) THEN
+               IF (.NOT.(validextdtabas(argoutybas))) GOTO 1000
+               CALL fildirbas (fname,argoutybas,jpsmplend,numjr,serie)
+            ELSEIF (largoutobas) THEN
+               IF (.NOT.(validextobsbas(argoutobas))) GOTO 1000
+               CALL fildirbas (fname,argoutobas,jpsmplend,numjr,serie)
+            ELSE
+               GOTO 1000
+            ENDIF
+
+            IF (largiterate) THEN
+               READ(argiterate,*,IOSTAT=ios) maxiter
+               IF (ios.NE.0) GOTO 111
+            ENDIF
 !
          CASE DEFAULT
             GOTO 1000
@@ -750,6 +806,8 @@
          jpfixjpx = ( jpfixjpx - 1 ) / jpproc + 1
          jpfixjpx = jpfixjpx * jpproc
          jpfixjpx = ( jpxend - 1 ) / jpfixjpx + 1
+      ELSEIF (jpproc.GT.1) THEN
+         jpfixjpx = ( jpxend - 1 ) / jpproc + 1
       ELSE
          jpfixjpx = jpxend
       ENDIF
@@ -791,7 +849,7 @@
 ! nallmem = 2 : Vx vectors are loaded in memory block by block
 ! nallmem = 3 : Vx vectors are fully loaded in memory 
 !
-      IF (largfixjpx) THEN
+      IF (largfixjpx.OR.(jpproc.GT.1)) THEN
          nallmem=2
          jpx = jpfixjpx
       ELSE
@@ -939,10 +997,12 @@
  1000 CALL printerror2(0,1000,1,'evalconfig','evalconfig')
  1001 CALL printerror2(0,1001,3,'evalconfig','evalconfig')
 !
- 101  WRITE (texterror,*) 'Error Vy mask (dta) not included in Vx mask (var)'
+ 101  WRITE (texterror,*) 'Error Vy mask (dta) not included', &
+     &                    ' in Vx mask (var)'
       CALL printerror2(0,101,3,'evalconfig','evalconfig', &
      &     comment=texterror)
- 103  WRITE (texterror,*) 'Cannot use covariance matrices with this module'
+ 103  WRITE (texterror,*) 'Cannot use covariance matrices', &
+     &                    ' with this module'
       CALL printerror2(0,103,1,'evalconfig','evalconfig', &
      &     comment=texterror)
  107  WRITE (texterror,*) 'Bad Vx mask (var): variable ', &
@@ -958,6 +1018,13 @@
  109  WRITE (texterror,*) 'Error: empty observation vector', &
      &     ' (jpoend=',jpoend,',jpitpend=',jpitpend,')'
       CALL printerror2(0,109,3,'evalconfig','evalconfig', &
+     &     comment=texterror)
+ 110  WRITE (texterror,*) 'The two input ensembles', &
+     &                    ' must have the same size'
+      CALL printerror2(0,110,3,'evalconfig','evalconfig', &
+     &     comment=texterror)
+ 111  WRITE (texterror,*) 'Bad number of iterations'
+      CALL printerror2(0,111,3,'evalconfig','evalconfig', &
      &     comment=texterror)
 !
       END

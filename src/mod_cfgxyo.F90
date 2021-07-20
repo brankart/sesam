@@ -36,7 +36,7 @@
 ! -------------------------------------------------------------------
 !
       INTEGER, save :: nbdigits=4
-      INTEGER, save :: nallmem,jpfixjpx,jpfixjpz,jpfixjpu
+      INTEGER, save :: nallmem,jpfixjpx,jpfixjpz,jpfixjpu,maxiter
       INTEGER, dimension(1:nbxyo), save :: limjpnxyo
       INTEGER, dimension(1:nbztyp), save :: limjpnz,jpnbub,jpbubend
 !
@@ -197,7 +197,7 @@
      &     argoutobasref,argoutybasref,argoutbiasdta, &
      &     argaffectobs,argnullobs,argconfigobs,argconfigzon, &
      &     argzonindex,argincfg,arginoptcfg,argconnect, &
-     &     arginsmocfg,argoutsmocfg
+     &     arginsmocfg,argoutsmocfg,argiterate
       LOGICAL, save :: largtypeoper,largtypedtadiag, &
      &     largdiffobsref,largdiffdtaref,largdiffvarref, &
      &     largdiffobsorg,largdiffdtaorg,largdiffvarorg, &
@@ -205,7 +205,7 @@
      &     largoutobasref,largoutybasref,largoutbiasdta, &
      &     largaffectobs,largnullobs,largconfigobs,largconfigzon, &
      &     largzonindex,largincfg,larginoptcfg,largconnect, &
-     &     larginsmocfg,largoutsmocfg
+     &     larginsmocfg,largoutsmocfg,largiterate
 !
 ! -3.- Arrays with SESAM user configuration
 ! -----------------------------------------

@@ -918,6 +918,11 @@
 ! --- -inrz
          arginrz=wrd
          larginrz=.TRUE.
+      CASE (90)
+! --- -iterate
+         IF (largiterate) GOTO 102
+         argiterate = wrd
+         largiterate = .TRUE.
       CASE DEFAULT
          GOTO 1000
       END SELECT  
@@ -1795,7 +1800,14 @@
                IF (larginrz) THEN
                   WRITE(numout,*) ' reduced space file  = ', &
      &                 arginrz(1:lenv(arginrz))
-              ENDIF
+               ENDIF
+            CASE (90)
+! --- -iterate
+               IF (largiterate) THEN
+                  WRITE(numout,*) ' number of MCMC iterations  = ', &
+     &                 argiterate(1:lenv(argiterate))
+               ENDIF
+
             END SELECT  
          ENDDO
       ENDIF
