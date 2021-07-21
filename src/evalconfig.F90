@@ -718,7 +718,7 @@
             IF (larganamorphosis) THEN
                IF ((.NOT.validextvarbas(arganamorphosis)) &
      &              .AND.(.NOT.validextdtabas(arganamorphosis)) &
-     &              .AND.(.NOT.validextobsbas(arganamorphosis)) GOTO 1000
+     &              .AND.(.NOT.validextobsbas(arganamorphosis))) GOTO 1000
                CALL fildirbas (fname,arganamorphosis,jpperc,numjr,serie)
             ELSE
                jpperc=1
