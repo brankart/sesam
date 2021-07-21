@@ -68,6 +68,42 @@
 ! Action: -inxbas <file_xbas> -outxbas <file_xbas> -iterate <iteration number>
          flagxyo=1
          CALL calcmcmc(arginxbas,argoutxbas,flagxyo)
+      CASE (2)
+! Action: -inybas <file_xybas> -outybas <file_ybas> -iterate <iteration number>
+         flagxyo=2
+         CALL calcmcmc(arginybas,argoutybas,flagxyo)
+      CASE (3)
+! Action: -inobas <file_xyobas> -outobas <file_obas> -iterate <iteration number> -configobs <file_o>
+         flagxyo=3
+         CALL calcmcmc(arginobas,argoutobas,flagxyo, &
+     &                 kconfigo=argconfigobs)
+      CASE (4)
+! Action: -inxbas <file_xbas> -outxbas <file_xbas> -iterate <iteration number> -inobs <file_o> -configobs <file_o>
+         flagxyo=1
+         CALL calcmcmc(arginxbas,argoutxbas,flagxyo, &
+     &                 kconfigo=argconfigobs,kinobs=arginobs)
+      CASE (5)
+! Action: -inybas <file_xybas> -outybas <file_ybas> -iterate <iteration number> -inobs <file_o> -configobs <file_o>
+         flagxyo=2
+         CALL calcmcmc(arginybas,argoutybas,flagxyo, &
+     &                 kconfigo=argconfigobs,kinobs=arginobs)
+      CASE (6)
+! Action: -inobas <file_xyobas> -outobas <file_obas> -iterate <iteration number> -inobs <file_o> -configobs <file_o>
+         flagxyo=3
+         CALL calcmcmc(arginobas,argoutobas,flagxyo, &
+     &                 kconfigo=argconfigobs,kinobs=arginobs)
+      CASE (7)
+! Action: -inxbas <file_xbas> -outxbas <file_xbas> -iterate <iteration number> -inobs <file_o> -configobs <file_o> -inobas <dir_xyobas> -outobas <dir_obas>
+         flagxyo=1
+         CALL calcmcmc(arginxbas,argoutxbas,flagxyo, &
+     &                 kconfigo=argconfigobs,kinobs=arginobs, &
+     &                 kinobas=arginobas,koutobas=argoutobas)
+      CASE (8)
+! Action: -inybas <file_xybas> -outybas <file_ybas> -iterate <iteration number> -inobs <file_o> -configobs <file_o> -inobas <dir_xyobas> -outobas <dir_obas>
+         flagxyo=2
+         CALL calcmcmc(arginybas,argoutybas,flagxyo, &
+     &                 kconfigo=argconfigobs,kinobs=arginobs, &
+     &                 kinobas=arginobas,koutobas=argoutobas)
       CASE DEFAULT
          GOTO 1000
       END SELECT

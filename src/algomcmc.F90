@@ -38,7 +38,8 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ! -----------------------------------------------------------------
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      SUBROUTINE calcmcmc (kinbas,koutbas,kflagxyo)
+      SUBROUTINE calcmcmc (kinbas,koutbas,kflagxyo, &
+     &                     kconfigo,kinobs,kinobas,koutobas)
 !---------------------------------------------------------------------
 !
 !  Purpose : apply MCMC sampler
@@ -58,7 +59,7 @@
       use utilvalid
       use mod_spacexyo , only : &
      &     jpoend,jpitpend,jpx,jpxend,jpyend,jprend,jpsmplend, &
-     &     poscoefobs,arraynx_jpindxend
+     &     poscoefobs,gridijkobs,arraynx_jpindxend
       use hioxyo
       use hiobas
       IMPLICIT NONE
@@ -67,14 +68,19 @@
 ! ===================
       CHARACTER(len=*), intent(in) :: kinbas,koutbas
       INTEGER, intent(in) :: kflagxyo
+      CHARACTER(len=*), intent(in), optional :: kconfigo
+      CHARACTER(len=*), intent(in), optional :: kinobs
+      CHARACTER(len=*), intent(in), optional :: kinobas
+      CHARACTER(len=*), intent(in), optional :: koutobas
 !----------------------------------------------------------------------
 ! local declarations
 ! ==================
       BIGREAL, dimension(:,:,:), allocatable, save :: inens
       BIGREAL, dimension(:,:), allocatable, save :: upens
+      BIGREAL, dimension(:), allocatable, save :: vectorms
 !
       INTEGER :: allocok,jpssize,jpitpsize,jprsize,jpsmpl
-      INTEGER :: jnxyo,js,jr,jsend,jscl
+      INTEGER :: jnxyo,js,jr,jsend,jscl,flagcfg
       LOGICAL :: lectinfo
       INTEGER :: jrbasdeb,jrbasfin
       CHARACTER(len=bgword) :: dirname
@@ -97,9 +103,38 @@
       CASE (3)
          jpssize=jpoend
          jpitpsize=jpitpend
+         IF (.NOT.PRESENT(kconfigo)) GOTO 1000
       CASE DEFAULT
          GOTO 1000
       END SELECT
+
+      IF (kflagxyo.EQ.3) THEN
+! Operation performed in observation space -> read observation features
+! Read poscoefobs, vectorms and gridijkobs arrays
+!
+        allocate ( poscoefobs(1:jpssize,1:jpitpsize), stat=allocok )
+        IF (allocok.NE.0) GOTO 1001
+        poscoefobs(:,:) = type_poscoef(0,FREAL(0.0))
+!
+        allocate ( gridijkobs(1:jpssize), stat=allocok )
+        IF (allocok.NE.0) GOTO 1001
+        gridijkobs(:)=type_gridijk(FREAL(0.0),FREAL(0.0),FREAL(0.0))
+!
+        allocate ( vectorms(1:jpssize), stat=allocok )
+        IF (allocok.NE.0) GOTO 1001
+        vectorms(:) = FREAL(0.0)
+!
+        flagcfg=1
+        CALL readcfgobs (kconfigo,flagcfg, &
+     &        kvectorms=vectorms(:))
+        flagcfg=2
+        CALL readcfgobs (kconfigo,flagcfg, &
+     &        kgridijkobs=gridijkobs(:))
+        flagcfg=3
+        CALL readcfgobs (kconfigo,flagcfg, &
+     &        kposcoefobs=poscoefobs(:,:))
+
+      ENDIF
 !
 ! Allocate Cxyo array
       allocate ( inens(1:jpssize,1:jprsize,1:jpscl), stat=allocok )
@@ -141,8 +176,8 @@
           CALL readbas(dirname,inens(:,:,jscl),jnxyo,jrbasdeb,jrbasfin, &
      &                 lectinfo,kflagxyo)
         CASE (3)
-!         CALL readbas(dirname,inens(:,:,jscl),jnxyo,jrbasdeb,jrbasfin, &
-!    &                 lectinfo,kflagxyo,poscoefobs(:,:))
+          CALL readbas(dirname,inens(:,:,jscl),jnxyo,jrbasdeb,jrbasfin, &
+     &                 lectinfo,kflagxyo,poscoefobs(:,:))
         CASE DEFAULT
           GOTO 1000
         END SELECT
@@ -167,8 +202,8 @@
           CALL readbas(koutbas,upens(:,:),jnxyo,jrbasdeb,jrbasfin, &
      &                 lectinfo,kflagxyo)
         CASE (3)
-!         CALL readbas(koutbas,upens(:,:),jnxyo,jrbasdeb,jrbasfin, &
-!    &                 lectinfo,kflagxyo,poscoefobs(:,:))
+          CALL readbas(koutbas,upens(:,:),jnxyo,jrbasdeb,jrbasfin, &
+     &                 lectinfo,kflagxyo,poscoefobs(:,:))
         CASE DEFAULT
           GOTO 1000
         END SELECT
@@ -197,9 +232,9 @@
         CALL writeyobas(koutbas,upens(:,:), &
      &             jrbasdeb,jrbasfin,kflagxyo)
       CASE (3)
-!       CALL writeyobas(koutbas,upens(:,:), &
-!    &             jrbasdeb,jrbasfin,kflagxyo,vectorms(:), &
-!    &             gridijkobs(:),poscoefobs(:,:))
+        CALL writeyobas(koutbas,upens(:,:), &
+     &             jrbasdeb,jrbasfin,kflagxyo,vectorms(:), &
+     &             gridijkobs(:),poscoefobs(:,:))
       CASE DEFAULT
         GOTO 1000
       END SELECT

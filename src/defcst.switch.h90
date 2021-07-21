@@ -383,7 +383,7 @@
             arginpartobs = ''
             larginpartobs= .FALSE.
          CASE (51)
-            switab(jarg) = '-anamorphosis'
+            switab(jarg) = '-obsanam'
             swihelp(jarg)= 'dir_xyobas'
             swibool(jarg)= .TRUE.
             swiopt(jarg) = 2
@@ -3221,7 +3221,7 @@
       jmod=24
 ! --- optional switches -oestd(7) -anamorphosis(51)
       tabnumswiopt(jmod,1)=7
-      tabnumswiopt(jmod,1)=51
+      tabnumswiopt(jmod,2)=51
 ! -XIV.1- =>: -inxbas <file_xbas> -outxbas <file_xbas> -iterate <iteration number>
       jaction=1
       WRITE(tabhelporder(jmod,jaction),*) 'Ensemble augmentation'
@@ -3229,3 +3229,67 @@
       taborder(jmod,jaction,1)=10
       taborder(jmod,jaction,2)=20
       taborder(jmod,jaction,3)=90
+! -XIV.2- =>: -inybas <file_xybas> -outybas <file_ybas> -iterate <iteration number>
+      jaction=2
+      WRITE(tabhelporder(jmod,jaction),*) 'Ensemble augmentation'
+      tabvalorder(jmod,jaction)=32
+      taborder(jmod,jaction,1)=65
+      taborder(jmod,jaction,2)=66
+      taborder(jmod,jaction,3)=90
+! -XIV.3- =>: -inobas <file_xyobas> -outobas <file_obas> -iterate <iteration number> -configobs <file_o>
+      jaction=3
+      WRITE(tabhelporder(jmod,jaction),*) 'Ensemble augmentation'
+      tabvalorder(jmod,jaction)=42
+      taborder(jmod,jaction,1)=67
+      taborder(jmod,jaction,2)=68
+      taborder(jmod,jaction,3)=90
+      taborder(jmod,jaction,4)=52
+! -XIV.4- =>: -inxbas <file_xbas> -outxbas <file_xbas> -iterate <iteration number> -inobs <file_o> -configobs <file_o>
+      jaction=4
+      WRITE(tabhelporder(jmod,jaction),*) 'Ensemble observational update'
+      tabvalorder(jmod,jaction)=52
+      taborder(jmod,jaction,1)=10
+      taborder(jmod,jaction,2)=20
+      taborder(jmod,jaction,3)=90
+      taborder(jmod,jaction,4)=13
+      taborder(jmod,jaction,5)=52
+! -XIV.5- =>: -inybas <file_xybas> -outybas <file_ybas> -iterate <iteration number> -inobs <file_o> -configobs <file_o>
+      jaction=5
+      WRITE(tabhelporder(jmod,jaction),*) 'Ensemble observational update'
+      tabvalorder(jmod,jaction)=52
+      taborder(jmod,jaction,1)=65
+      taborder(jmod,jaction,2)=66
+      taborder(jmod,jaction,3)=90
+      taborder(jmod,jaction,4)=13
+      taborder(jmod,jaction,5)=52
+! -XIV.6- =>: -inobas <file_xyobas> -outobas <file_obas> -iterate <iteration number> -inobs <file_o> -configobs <file_o>
+      jaction=6
+      WRITE(tabhelporder(jmod,jaction),*) 'Ensemble observational update'
+      tabvalorder(jmod,jaction)=52
+      taborder(jmod,jaction,1)=67
+      taborder(jmod,jaction,2)=68
+      taborder(jmod,jaction,3)=90
+      taborder(jmod,jaction,4)=13
+      taborder(jmod,jaction,5)=52
+! -XIV.7- =>: -inxbas <file_xbas> -outxbas <file_xbas> -iterate <iteration number> -inobs <file_o> -configobs <file_o> -inobas <file_xyobas> -outobas <file_obas>
+      jaction=7
+      WRITE(tabhelporder(jmod,jaction),*) 'Ensemble observational update'
+      tabvalorder(jmod,jaction)=72
+      taborder(jmod,jaction,1)=10
+      taborder(jmod,jaction,2)=20
+      taborder(jmod,jaction,3)=90
+      taborder(jmod,jaction,4)=13
+      taborder(jmod,jaction,5)=52
+      taborder(jmod,jaction,6)=67
+      taborder(jmod,jaction,7)=68
+! -XIV.8- =>: -inybas <file_xybas> -outybas <file_ybas> -iterate <iteration number> -inobs <file_o> -configobs <file_o> -inobas <file_xyobas> -outobas <file_obas>
+      jaction=8
+      WRITE(tabhelporder(jmod,jaction),*) 'Ensemble observational update'
+      tabvalorder(jmod,jaction)=72
+      taborder(jmod,jaction,1)=65
+      taborder(jmod,jaction,2)=66
+      taborder(jmod,jaction,3)=90
+      taborder(jmod,jaction,4)=13
+      taborder(jmod,jaction,5)=52
+      taborder(jmod,jaction,6)=67
+      taborder(jmod,jaction,7)=68
