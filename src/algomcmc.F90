@@ -155,7 +155,7 @@
       IF (.NOT.mcmc_zero_start) THEN
 
         IF ((nprint.GE.2).AND.(jnxyo.EQ.1)) THEN
-          WRITE(numout,*) '    ==> READING initial condition',
+          WRITE(numout,*) '    ==> READING initial condition', &
      &                                  ' from the output directory'
         ENDIF
 
