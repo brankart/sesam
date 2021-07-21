@@ -39,6 +39,8 @@
       INTEGER, parameter :: jpndbs=9
 ! Maximum number of observation data sets
       INTEGER, parameter :: nbobs=nbvar*jpndbs
+! Maximum number of scales in multiple scale ensemble
+      INTEGER, parameter :: nbscl=9
 !
 !---------------------------------------------------------------------
 ! B/ SESAM configuration size parameters

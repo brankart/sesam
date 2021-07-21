@@ -715,23 +715,14 @@
                jprend=1
             ENDIF
 
-            IF (larginxbasref) THEN
-               IF (.NOT.(validextvarbas(arginxbasref))) GOTO 1000
-               CALL fildirbas (fname,arginxbasref,jpperc,numjr,serie)
-            ELSEIF (larginybasref) THEN
-               IF ((.NOT.validextvarbas(arginybasref)) &
-     &              .AND.(.NOT.validextdtabas(arginybasref))) GOTO 1000
-               CALL fildirbas (fname,arginybasref,jpperc,numjr,serie)
-            ELSEIF (larginobasref) THEN
-               IF ((.NOT.validextvarbas(arginobasref)) &
-     &              .AND.(.NOT.validextdtabas(arginobasref)) &
-     &              .AND.(.NOT.validextobsbas(arginobasref))) GOTO 1000
-               CALL fildirbas (fname,arginobasref,jpperc,numjr,serie)
+            IF (larganamorphosis) THEN
+               IF ((.NOT.validextvarbas(arganamorphosis)) &
+     &              .AND.(.NOT.validextdtabas(arganamorphosis)) &
+     &              .AND.(.NOT.validextobsbas(arganamorphosis)) GOTO 1000
+               CALL fildirbas (fname,arganamorphosis,jpperc,numjr,serie)
             ELSE
                jpperc=1
             ENDIF
-
-            IF (jpperc.NE.jprend) GOTO 110
 
             IF (largoutxbas) THEN
                IF (.NOT.(validextvarbas(argoutxbas))) GOTO 1000

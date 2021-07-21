@@ -610,11 +610,11 @@
      &        extvarbool1(indext(wrd,extvartab,nbextvar))))) GOTO 106
          IF (flagext.EQ.4) existobs=.TRUE.
       CASE (51)
-! --- -outdiaghst
+! --- -anamorphosis
          IF (.NOT.(swibool1(jcas))) GOTO 101
-         IF (largoutdiaghst) GOTO 102
-         argoutdiaghst = wrd
-         largoutdiaghst=.TRUE.
+         IF (larganamorphosis) GOTO 102
+         arganamorphosis = wrd
+         larganamorphosis=.TRUE.
       CASE (52)
 ! --- -configobs
          flagext=4
@@ -1567,10 +1567,10 @@
      &                 arginpartobs(1:lenv(arginpartobs))
                ENDIF
             CASE (51)
-! --- -argoutdiaghst (option 2)
-               IF (largoutdiaghst) THEN
-                  WRITE(numout,*) ' output diag file (outdiaghst) = ', &
-     &                 argoutdiaghst(1:lenv(argoutdiaghst))
+! --- -arganamorphosis (option 2)
+               IF (larganamorphosis) THEN
+                  WRITE(numout,*) ' anamorphosis transformation = ', &
+     &                 arganamorphosis(1:lenv(arganamorphosis))
                ENDIF
             CASE (52)
 ! --- -configobs

@@ -383,12 +383,12 @@
             arginpartobs = ''
             larginpartobs= .FALSE.
          CASE (51)
-            switab(jarg) = '-outdiaghst'
-            swihelp(jarg)= 'file_hst'
-            swibool(jarg)= .FALSE.
+            switab(jarg) = '-anamorphosis'
+            swihelp(jarg)= 'dir_xyobas'
+            swibool(jarg)= .TRUE.
             swiopt(jarg) = 2
-            argoutdiaghst= ''
-            largoutdiaghst= .FALSE.
+            arganamorphosis= ''
+            larganamorphosis= .FALSE.
          CASE (52)
             switab(jarg) = '-configobs'
             swihelp(jarg)= 'file_o'
@@ -1445,8 +1445,7 @@
 ! ------------------------------------------------------------------
 !
       jmod=7
-! --- optional switches -outdiaghst(51) -bias(8)
-      tabnumswiopt(jmod,1)=51
+! --- optional switches -bias(8)
       tabnumswiopt(jmod,2)=8
 ! -VII.1- =>: -invar <file_x> -diffvarref <file_x>
       jaction=1
@@ -3220,13 +3219,13 @@
 ! -XXIV.- MCMC module : MCMC sampler
 ! ----------------------------------
       jmod=24
-! --- optional switches -oestd(7)
+! --- optional switches -oestd(7) -anamorphosis(51)
       tabnumswiopt(jmod,1)=7
-! -XIV.1- =>: -inxbas <file_xbas> -inxbasref <file_xbas> -outxbas <file_xbas> -iterate <iteration number>
+      tabnumswiopt(jmod,1)=51
+! -XIV.1- =>: -inxbas <file_xbas> -outxbas <file_xbas> -iterate <iteration number>
       jaction=1
       WRITE(tabhelporder(jmod,jaction),*) 'Ensemble augmentation'
-      tabvalorder(jmod,jaction)=52
+      tabvalorder(jmod,jaction)=32
       taborder(jmod,jaction,1)=10
-      taborder(jmod,jaction,2)=15
-      taborder(jmod,jaction,3)=20
-      taborder(jmod,jaction,4)=90
+      taborder(jmod,jaction,2)=20
+      taborder(jmod,jaction,3)=90

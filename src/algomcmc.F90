@@ -28,6 +28,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       MODULE algomcmc
       use mod_main
+      use ensdam_mcmc_update
       IMPLICIT NONE
       PRIVATE
 
@@ -37,7 +38,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ! -----------------------------------------------------------------
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      SUBROUTINE calcmcmc (kinbas,kinbas2,koutbas,kflagxyo)
+      SUBROUTINE calcmcmc (kinbas,koutbas,kflagxyo)
 !---------------------------------------------------------------------
 !
 !  Purpose : apply MCMC sampler
@@ -46,15 +47,15 @@
 !  ------   Compute requested score (CRPS, RCRV)
 !
 !  Input : kinbas     : Input ensemble
-!  -----   kinbas2    : Second input ensemble (to compute Schur products)
+!  -----   koutbas    : Output ensemble
 !          kflagxyo   : Vector type (1=Vx,2=Vy,3=Vo)
-!          koutbas    : Output ensemble
 !
 !---------------------------------------------------------------------
 ! modules
 ! =======
       use mod_main
       use mod_cfgxyo
+      use utilvalid
       use mod_spacexyo , only : &
      &     jpoend,jpitpend,jpx,jpxend,jpyend,jprend,jpsmplend, &
      &     poscoefobs,arraynx_jpindxend
@@ -64,19 +65,19 @@
 !----------------------------------------------------------------------
 ! header declarations
 ! ===================
-      CHARACTER(len=*), intent(in) :: kinbas,kinbas2,koutbas
+      CHARACTER(len=*), intent(in) :: kinbas,koutbas
       INTEGER, intent(in) :: kflagxyo
 !----------------------------------------------------------------------
 ! local declarations
 ! ==================
-      BIGREAL, dimension(:,:), allocatable, save :: inens
-      BIGREAL, dimension(:,:), allocatable, save :: inens2
+      BIGREAL, dimension(:,:,:), allocatable, save :: inens
       BIGREAL, dimension(:,:), allocatable, save :: upens
 !
       INTEGER :: allocok,jpssize,jpitpsize,jprsize,jpsmpl
-      INTEGER :: jnxyo,js,jr,jsend
+      INTEGER :: jnxyo,js,jr,jsend,jscl
       LOGICAL :: lectinfo
       INTEGER :: jrbasdeb,jrbasfin
+      CHARACTER(len=bgword) :: dirname
 !----------------------------------------------------------------------
 !
       jprsize=jprend
@@ -101,17 +102,13 @@
       END SELECT
 !
 ! Allocate Cxyo array
-      allocate ( inens(1:jpssize,1:jprsize), stat=allocok )
+      allocate ( inens(1:jpssize,1:jprsize,1:jpscl), stat=allocok )
       IF (allocok.NE.0) GOTO 1001
-      inens(:,:) = FREAL(0.0)
-!
-      allocate ( inens2(1:jpssize,1:jprsize), stat=allocok )
-      IF (allocok.NE.0) GOTO 1001
-      inens2(:,:) = FREAL(0.0)
+      inens(:,:,:) = FREAL(0.0)
 !
       allocate ( upens(1:jpssize,1:jpsmpl), stat=allocok )
       IF (allocok.NE.0) GOTO 1001
-      inens2(:,:) = FREAL(0.0)
+      upens(:,:) = FREAL(0.0)
 !
 ! Define segment of vector to read by current processor
       jnxyo=1+jproc
@@ -121,48 +118,68 @@
         jsend=jpssize
       ENDIF
 !
-! -1.- Read input ensemble
-! ------------------------
+! -1.- Read multiple scale input ensemble
+! ---------------------------------------
 !
       IF ((nprint.GE.2).AND.(jnxyo.EQ.1)) THEN
-        WRITE(numout,*) '    ==> READING input ensemble'
+        WRITE(numout,*) '    ==> READING multiple scale input ensemble'
       ENDIF
 !
       jrbasdeb=1
       jrbasfin=jprsize
       lectinfo=.FALSE.
-      SELECT CASE (kflagxyo)
-      CASE (1,2)
-        CALL readbas(kinbas,inens(:,:),jnxyo,jrbasdeb,jrbasfin, &
-     &           lectinfo,kflagxyo)
-      CASE (3)
-!       CALL readbas(kinbas,inens(:,:),jnxyo,jrbasdeb,jrbasfin, &
-!    &           lectinfo,kflagxyo,poscoefobs(:,:))
-      CASE DEFAULT
-        GOTO 1000
-      END SELECT
+!
+! Loop on scales
+      DO jscl =1,jpscl
+
+        ! Set ensemble directory name for this scale
+        CALL fildirnam(dirname,kinbas,jscl)
+
+        ! Read ensemble in this directory
+        SELECT CASE (kflagxyo)
+        CASE (1,2)
+          CALL readbas(dirname,inens(:,:,jscl),jnxyo,jrbasdeb,jrbasfin, &
+     &                 lectinfo,kflagxyo)
+        CASE (3)
+!         CALL readbas(dirname,inens(:,:,jscl),jnxyo,jrbasdeb,jrbasfin, &
+!    &                 lectinfo,kflagxyo,poscoefobs(:,:))
+        CASE DEFAULT
+          GOTO 1000
+        END SELECT
+
+      ENDDO
+!
+! -2.- Read initial condition for MCMC sampler (if needed)
+! --------------------------------------------------------
+!
+      IF (.NOT.mcmc_zero_start) THEN
+
+        IF ((nprint.GE.2).AND.(jnxyo.EQ.1)) THEN
+          WRITE(numout,*) '    ==> READING initial condition',
+     &                                  ' from the output directory'
+        ENDIF
+
+        jrbasdeb=1
+        jrbasfin=jpsmpl
+
+        SELECT CASE (kflagxyo)
+        CASE (1,2)
+          CALL readbas(koutbas,upens(:,:),jnxyo,jrbasdeb,jrbasfin, &
+     &                 lectinfo,kflagxyo)
+        CASE (3)
+!         CALL readbas(koutbas,upens(:,:),jnxyo,jrbasdeb,jrbasfin, &
+!    &                 lectinfo,kflagxyo,poscoefobs(:,:))
+        CASE DEFAULT
+          GOTO 1000
+        END SELECT
+
+      ENDIF
 !     
-! -2.- Read second input ensmeble
-! -------------------------------
+! -3.- MCMC iteration
+! -------------------
 !
-      IF ((nprint.GE.2).AND.(jnxyo.EQ.1)) THEN
-        WRITE(numout,*) '    ==> READING second input ensemble'
-      ENDIF
-!
-      jrbasdeb=1
-      jrbasfin=jprsize
-      lectinfo=.FALSE.
-      SELECT CASE (kflagxyo)
-      CASE (1,2)
-        CALL readbas(kinbas2,inens2(:,:),jnxyo,jrbasdeb,jrbasfin, &
-     &           lectinfo,kflagxyo)
-      CASE (3)
-!       CALL readbas(kinbas2,inens2(:,:),jnxyo,jrbasdeb,jrbasfin, &
-!    &           lectinfo,kflagxyo,poscoefobs(:,:))
-      CASE DEFAULT
-        GOTO 1000
-      END SELECT
-!
+      CALL mcmc_iteration( maxiter, upens, inens, scl_mult(1:jpscl), cost_jo )
+!     
 ! -4.- Write output ensemble
 ! --------------------------
 !
@@ -189,7 +206,6 @@
 !
 ! --- deallocation
       IF (allocated(inens)) deallocate(inens)
-      IF (allocated(inens2)) deallocate(inens2)
       IF (allocated(upens)) deallocate(upens)
 !
       RETURN
@@ -208,6 +224,35 @@
      &     comment=texterror)
 !
       END SUBROUTINE
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+! -----------------------------------------------------------------
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      FUNCTION cost_jo(state)
+!---------------------------------------------------------------------
+!
+!  Purpose : observation cost function
+!
+!  Method : Callnack routine to provide to the MCMC sampler
+!  ------   Jo = -log p(yo|hx), computed using state vector as argument
+!
+!  Input : state   : state vector
+!  -----
+!---------------------------------------------------------------------
+! modules
+! =======
+      IMPLICIT NONE
+!----------------------------------------------------------------------
+! header declarations
+! ===================
+      REAL(kind=8), dimension(:), intent(in) :: state
+      REAL(kind=8) :: cost_jo
+!----------------------------------------------------------------------
+! local declarations
+! ==================
+
+      cost_jo = 0.
+
+      END FUNCTION cost_jo
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ! -----------------------------------------------------------------
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

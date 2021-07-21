@@ -65,10 +65,9 @@
 !
       SELECT CASE (actionmcmc)
       CASE (1)
-! Action: -inxbas <file_xbas> -inxbasref <file_xbas> -outxbas <file_xbas>
-!         -iterate <iteration number>
+! Action: -inxbas <file_xbas> -outxbas <file_xbas> -iterate <iteration number>
          flagxyo=1
-         CALL calcmcmc(arginxbas,arginxbasref,argoutxbas,flagxyo)
+         CALL calcmcmc(arginxbas,argoutxbas,flagxyo)
       CASE DEFAULT
          GOTO 1000
       END SELECT

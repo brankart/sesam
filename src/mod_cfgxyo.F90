@@ -152,20 +152,20 @@
 ! --> optional switches:
 ! -help -list -varmsk -dtamsk -weight -oestd -bias -outinfo -fixjpx -fixjpu
 ! -reducevar -reducedta -scale -biasdbs -oecorrel -fecorrel -coefrmax -disable
-! -inrz -outrz -outparadap -fixjpz -inpartobs -outdiaghst -inparadap -action
+! -inrz -outrz -outparadap -fixjpz -inpartobs -anamorphosis -inparadap -action
       CHARACTER(len=bgword), save :: arghelp,arglist,argvarmsk, &
      &     argdtamsk,argweight,argoestd, &
      &     argbias,argoutinfo,argfixjpx,argreducevar,argreducedta, &
      &     argscale,argbiasdbs,argoecorrel,argfecorrel, &
      &     argcoefrmax,argdisable,argoutparadap,arginrz, &
-     &     argoutrz,arginpartobs,argoutdiaghst,argfixjpz, &
+     &     argoutrz,arginpartobs,arganamorphosis,argfixjpz, &
      &     arginparadap,argfixjpu,argaction
       LOGICAL, save :: larghelp,larglist,largvarmsk,largdtamsk, &
      &     largweight,largoestd, &
      &     largbias,largoutinfo,largfixjpx,largreducevar,largreducedta, &
      &     largscale,largbiasdbs,largoecorrel,largfecorrel, &
      &     largcoefrmax,largdisable,largoutparadap,larginrz, &
-     &     largoutrz,larginpartobs,largoutdiaghst,largfixjpz, &
+     &     largoutrz,larginpartobs,larganamorphosis,largfixjpz, &
      &     larginparadap,largfixjpu,largaction
 ! --> required switches: in<...>
       CHARACTER(len=bgword), save :: arginxbas,argindbs,argindta, &
@@ -304,6 +304,9 @@
       INTEGER, SAVE :: regr_overlap_sesam=1    ! overlapping of local blocks
       REAL(KIND=8), SAVE :: regr_epsilon_sesam=0.01 ! relative difference for convergence test
       REAL(KIND=8), SAVE :: regr_rho_sesam=1.0 ! weight according to signal std (rho=1) or not (rho=0)
+! ==> Parameters for mcmc module
+      INTEGER, SAVE :: jpscl=2                       ! number of scales in multiple scale ensemble
+      INTEGER, dimension(1:nbscl), save :: scl_mult  ! multiplicity of each scale in Schur products
 !
 ! -5.- Miscellaneous variables
 ! ----------------------------

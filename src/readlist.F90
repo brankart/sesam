@@ -36,6 +36,7 @@
 ! =======
       use mod_main
       use mod_cfgxyo
+      use ensdam_mcmc_update
       IMPLICIT NONE
 !----------------------------------------------------------------------
 ! local declarations
@@ -164,11 +165,32 @@
           READ(attr,*,ERR=102) nbdigits
         CASE('DISABLE')
           READ(attr,*,ERR=102) argdisable
+!
+! Observation error type
         CASE('OBSERROR_CDF')
           READ(attr,*,ERR=102) obserror_type_sesam
         CASE('OECORRELTYP')
           READ(attr,*,ERR=102) oecorreltyp
           IF ((oecorreltyp.LE.0).OR.(oecorreltyp.GT.2)) GOTO 106
+!
+! Parameterization of MCMC sampler
+        CASE('MCMC_NSCALE')
+          READ(attr,*,ERR=102) jpscl
+          IF ((jpscl.LT.1).OR.(jpscl.GT.nbscl)) GOTO 106
+        CASE('MCMC_SCALE_MULTIPLICITY')
+          IF (indvar.LE.0) GOTO 108
+          IF (indvar.GT.nbscl) GOTO 109
+          READ(attr,*,ERR=102) scl_mult(indvar)
+        CASE('MCMC_CONTROL_PRINT')
+          READ(attr,*,ERR=102) mcmc_control_print
+        CASE('MCMC_CONVERGENCE_CHECK')
+          READ(attr,*,ERR=102) mcmc_convergence_check
+        CASE('MCMC_CONVERGENCE_STOP')
+          READ(attr,*,ERR=102) mcmc_convergence_stop
+        CASE('MCMC_ZERO_START')
+          READ(attr,*,ERR=102) mcmc_zero_start
+!
+! Parameterization of regression in SPCT module
         CASE('REGR_TYPE')
           READ(attr,*,ERR=102) regr_type_sesam
         CASE('REGR_MAXITER')
@@ -849,6 +871,10 @@
       CALL printerror2(0,106,3,'readlist','readlist',comment=texterror)
  107  WRITE (texterror,*) 'Bad nesting level in config file key: ',key
       CALL printerror2(0,107,3,'readlist','readlist',comment=texterror)
+ 108  WRITE (texterror,*) 'Missing scale index in config file key: ',key
+      CALL printerror2(0,108,3,'readlist','readlist',comment=texterror)
+ 109  WRITE (texterror,*) 'Bad scale index in config file key: ',key
+      CALL printerror2(0,109,3,'readlist','readlist',comment=texterror)
 !
       END
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -25,7 +25,8 @@
 #include "config.main.h90"
 ! -----------------------------------------------------------------
 ! --- 
-! --- SUBROUTINE fildirbas    : Create error mode filenames
+! --- SUBROUTINE fildirbas    : Set ensemble member filenames
+! --- SUBROUTINE fildirnam    : Set ensemble directory name
 ! --- FUNCTION existfile      : Check existence of all files 
 ! ---                           consituting a SESAM object
 ! --- FUNCTION validmod       : Check validity of module name
@@ -50,7 +51,8 @@
       IMPLICIT NONE
       PRIVATE
 
-      PUBLIC fildirbas,existfile,validmod,validswi,validextbas
+      PUBLIC fildirbas,fildirnam
+      PUBLIC existfile,validmod,validswi,validextbas
       PUBLIC validextdtabas,validextobsbas,validextvarbas
       PUBLIC validextzonbas,validextdbs,validextdta,validextobs
       PUBLIC validextvar,validextzon,validmsk
@@ -237,6 +239,77 @@
       CALL printerror2(0,102,3,'utilbas','fildirbas',comment=texterror)
  103  WRITE (texterror,*) 'Nb of digits in cov. directory name < 1'
       CALL printerror2(0,103,3,'utilbas','fildirbas',comment=texterror)
+!
+      END SUBROUTINE
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+! -----------------------------------------------------------------
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      SUBROUTINE fildirnam (dirnamout,dirnamin,kjscl)
+!---------------------------------------------------------------------
+!
+!  Purpose : Set directory name for one of the scale in multiple scale ensemble
+!  -------
+!  Method : Replace star charcater '$' by scale index (kjscl)
+!  ------
+!
+!  Input : dirnamin   : name of ensemble directory (with star)
+!  -----   kjscl      : scale index
+!
+!  Output : dirnamout  : actual name of the directory for the required scale
+!  ------
+!---------------------------------------------------------------------
+! module
+! ======
+      use mod_main
+      use mod_cfgxyo
+      IMPLICIT NONE
+!----------------------------------------------------------------------
+! header declarations
+! ==================
+      CHARACTER(len=*), intent(out) :: dirnamout
+      CHARACTER(len=*), intent(in) :: dirnamin
+      INTEGER, intent(in) :: kjscl
+!----------------------------------------------------------------------
+!----------------------------------------------------------------------
+! local declarations
+! ==================
+      INTEGER :: jpos, jstar, ldirnam
+      CHARACTER(len=1) :: chdigit
+!----------------------------------------------------------------------
+!
+! -1.- Analyse and check directory name
+! -------------------------------------
+!
+      ldirnam=lenv(dirnamin)
+!
+! Get index of star charcater '$' in input directory name
+      DO jpos=1,ldirnam
+        IF (dirnamin(jpos:jpos).EQ.'@') THEN
+          jstar = jpos
+          EXIT
+        ENDIF
+        IF (jpos.EQ.ldirnam) GOTO 101
+      ENDDO
+!
+! Insert scale index instead of the star character
+      IF (kjscl.GT.9) GOTO 102
+      IF (kjscl.LT.1) GOTO 103
+      WRITE (chdigit,'(i1.1)') kjscl
+      
+      dirnamout=dirnamin(1:jstar-1)//chdigit//dirnamin(jstar+1:ldirnam)
+
+      RETURN
+!
+! --- error management
+!
+ 1000 CALL printerror2(0,1000,1,'utilbas','fildirnam')
+!
+ 101  WRITE (texterror,*) 'No $ character in input ensemble name'
+      CALL printerror2(0,101,3,'utilbas','fildirnam',comment=texterror)
+ 102  WRITE (texterror,*) 'Index of scale > 9'
+      CALL printerror2(0,102,3,'utilbas','fildirnam',comment=texterror)
+ 103  WRITE (texterror,*) 'Index of scale < 1'
+      CALL printerror2(0,103,3,'utilbas','fildirnam',comment=texterror)
 !
       END SUBROUTINE
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
