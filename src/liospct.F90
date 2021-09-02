@@ -266,7 +266,6 @@
          IF (jpi1.NE.jpisize) GOTO 102
          IF (jpj1.NE.jpjsize) GOTO 102
          IF (jpk1.NE.jpksize) GOTO 102
-         IF (jpt1.NE.jptsize) GOTO 102
       ELSE
          cdrec1='SESAM spectrum file'
          CALL cdfwdim(koutspct,jpisize,jpjsize,jpksize,cdrec1)
@@ -335,7 +334,7 @@
 !
  102  WRITE (texterror,*) 'inconsistent dimensions in spectrum file:', &
      &                        koutspct(1:lenv(koutspct))
-      CALL printerror2(0,103,3,'liospct','writespct',comment=texterror)
+      CALL printerror2(0,102,3,'liospct','writespct',comment=texterror)
 !
       END SUBROUTINE
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
