@@ -327,7 +327,7 @@
             CALL evalhdrobs (argconfigobs,jpoend,jpitpend)
             IF ((jpoend.EQ.0).AND.(nmode.NE.0)) GOTO 109
             SELECT CASE (nmode)
-            CASE (0,1,4,5,7,8,9,10,11,12,14,15,16,17,18,19,20,21,22,23,24)
+            CASE (0,1,4,5,7,8,9,10,11,12,14,15,16,17,18,19,20,21,22,23,24,25)
 ! -3.0- Help  config
 ! -3.1- Mode intf : 
 ! -3.4- Mode obsv : 
@@ -375,7 +375,7 @@
             CASE (0,4)
 ! -3.0- Help  config
 ! -3.4- Mode obsv :
-            CASE (1,2,3,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,23,24)
+            CASE (1,2,3,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,23,24,25)
 ! -3.1- Mode intf :
 ! -3.2- Mode corr :
 ! -3.3- Mode ---- :
@@ -441,7 +441,7 @@
 ! -3.17- Mode greg : 
 ! -3.18- Mode lreg :
 ! -3.19- Mode breg :
-            CASE (2,4,6,7,8,20,21,23,24)
+            CASE (2,4,6,7,8,20,21,23,24,25)
 ! -3.2- Mode corr :
 ! -3.4- Mode obsv :
 ! -3.6- Mode adap :
@@ -741,7 +741,23 @@
                READ(argiterate,*,IOSTAT=ios) maxiter
                IF (ios.NE.0) GOTO 111
             ENDIF
-!
+! -5.25- Mode rank :
+         CASE (25)
+            IF (larginxbasref) THEN
+               IF (.NOT.(validextvarbas(arginxbasref))) GOTO 1000
+               CALL fildirbas (fname,arginxbasref,jprend,numjr,serie)
+            ELSEIF (larginybasref) THEN
+               IF ((.NOT.validextvarbas(arginybasref)) &
+     &              .AND.(.NOT.validextdtabas(arginybasref))) GOTO 1000
+               CALL fildirbas (fname,arginybasref,jprend,numjr,serie)
+            ELSEIF (larginobasref) THEN
+               IF ((.NOT.validextvarbas(arginobasref)) &
+     &              .AND.(.NOT.validextdtabas(arginobasref)) &
+     &              .AND.(.NOT.validextobsbas(arginobasref))) GOTO 1000
+               CALL fildirbas (fname,arginobasref,jprend,numjr,serie)
+            ELSE
+               GOTO 1000
+            ENDIF
          CASE DEFAULT
             GOTO 1000
          END SELECT

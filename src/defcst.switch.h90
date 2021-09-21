@@ -808,8 +808,13 @@
             modhelp(jmod)= 'MCMC sampler'
             modbool(jmod)= .TRUE.
             modtype(jmod)= 1
+         CASE (25)
+            modtab(jmod) = 'rank'
+            modhelp(jmod)= 'Rank within ensembles'
+            modbool(jmod)= .TRUE.
+            modtype(jmod)= 2
          CASE (nbmod+1)
-            IF (jmod.NE.25) STOP 'defcst.switch.h : bad nbmod parameter'
+            IF (jmod.NE.26) STOP 'defcst.switch.h : bad nbmod parameter'
          CASE DEFAULT
             modtab(jmod) = '----'
             modhelp(jmod)= ''
@@ -3222,21 +3227,21 @@
 ! --- optional switches -oestd(7) -anamorphosis(51)
       tabnumswiopt(jmod,1)=7
       tabnumswiopt(jmod,2)=51
-! -XIV.1- =>: -inxbas <file_xbas> -outxbas <file_xbas> -iterate <iteration number>
+! -XXIV.1- =>: -inxbas <file_xbas> -outxbas <file_xbas> -iterate <iteration number>
       jaction=1
       WRITE(tabhelporder(jmod,jaction),*) 'Ensemble augmentation'
       tabvalorder(jmod,jaction)=32
       taborder(jmod,jaction,1)=10
       taborder(jmod,jaction,2)=20
       taborder(jmod,jaction,3)=90
-! -XIV.2- =>: -inybas <file_xybas> -outybas <file_ybas> -iterate <iteration number>
+! -XXIV.2- =>: -inybas <file_xybas> -outybas <file_ybas> -iterate <iteration number>
       jaction=2
       WRITE(tabhelporder(jmod,jaction),*) 'Ensemble augmentation'
       tabvalorder(jmod,jaction)=32
       taborder(jmod,jaction,1)=65
       taborder(jmod,jaction,2)=66
       taborder(jmod,jaction,3)=90
-! -XIV.3- =>: -inobas <file_xyobas> -outobas <file_obas> -iterate <iteration number> -configobs <file_o>
+! -XXIV.3- =>: -inobas <file_xyobas> -outobas <file_obas> -iterate <iteration number> -configobs <file_o>
       jaction=3
       WRITE(tabhelporder(jmod,jaction),*) 'Ensemble augmentation'
       tabvalorder(jmod,jaction)=42
@@ -3244,7 +3249,7 @@
       taborder(jmod,jaction,2)=68
       taborder(jmod,jaction,3)=90
       taborder(jmod,jaction,4)=52
-! -XIV.4- =>: -inxbas <file_xbas> -outxbas <file_xbas> -iterate <iteration number> -inobs <file_o> -configobs <file_o>
+! -XXIV.4- =>: -inxbas <file_xbas> -outxbas <file_xbas> -iterate <iteration number> -inobs <file_o> -configobs <file_o>
       jaction=4
       WRITE(tabhelporder(jmod,jaction),*) 'Ensemble observational update'
       tabvalorder(jmod,jaction)=52
@@ -3253,7 +3258,7 @@
       taborder(jmod,jaction,3)=90
       taborder(jmod,jaction,4)=13
       taborder(jmod,jaction,5)=52
-! -XIV.5- =>: -inybas <file_xybas> -outybas <file_ybas> -iterate <iteration number> -inobs <file_o> -configobs <file_o>
+! -XXIV.5- =>: -inybas <file_xybas> -outybas <file_ybas> -iterate <iteration number> -inobs <file_o> -configobs <file_o>
       jaction=5
       WRITE(tabhelporder(jmod,jaction),*) 'Ensemble observational update'
       tabvalorder(jmod,jaction)=52
@@ -3262,7 +3267,7 @@
       taborder(jmod,jaction,3)=90
       taborder(jmod,jaction,4)=13
       taborder(jmod,jaction,5)=52
-! -XIV.6- =>: -inobas <file_xyobas> -outobas <file_obas> -iterate <iteration number> -inobs <file_o> -configobs <file_o>
+! -XXIV.6- =>: -inobas <file_xyobas> -outobas <file_obas> -iterate <iteration number> -inobs <file_o> -configobs <file_o>
       jaction=6
       WRITE(tabhelporder(jmod,jaction),*) 'Ensemble observational update'
       tabvalorder(jmod,jaction)=52
@@ -3271,7 +3276,7 @@
       taborder(jmod,jaction,3)=90
       taborder(jmod,jaction,4)=13
       taborder(jmod,jaction,5)=52
-! -XIV.7- =>: -inxbas <file_xbas> -outxbas <file_xbas> -iterate <iteration number> -inobs <file_o> -configobs <file_o> -inobas <file_xyobas> -outobas <file_obas>
+! -XXIV.7- =>: -inxbas <file_xbas> -outxbas <file_xbas> -iterate <iteration number> -inobs <file_o> -configobs <file_o> -inobas <file_xyobas> -outobas <file_obas>
       jaction=7
       WRITE(tabhelporder(jmod,jaction),*) 'Ensemble observational update'
       tabvalorder(jmod,jaction)=72
@@ -3282,7 +3287,7 @@
       taborder(jmod,jaction,5)=52
       taborder(jmod,jaction,6)=67
       taborder(jmod,jaction,7)=68
-! -XIV.8- =>: -inybas <file_xybas> -outybas <file_ybas> -iterate <iteration number> -inobs <file_o> -configobs <file_o> -inobas <file_xyobas> -outobas <file_obas>
+! -XXIV.8- =>: -inybas <file_xybas> -outybas <file_ybas> -iterate <iteration number> -inobs <file_o> -configobs <file_o> -inobas <file_xyobas> -outobas <file_obas>
       jaction=8
       WRITE(tabhelporder(jmod,jaction),*) 'Ensemble observational update'
       tabvalorder(jmod,jaction)=72
@@ -3293,3 +3298,29 @@
       taborder(jmod,jaction,5)=52
       taborder(jmod,jaction,6)=67
       taborder(jmod,jaction,7)=68
+!
+! -XXV.- RANK module : Computation of ranks
+! -----------------------------------------
+      jmod=25
+! -XXV.1- =>: -invar <file_x> -inxbasref <file_xbas> -outvar <file_x>
+      jaction=1
+      WRITE(tabhelporder(jmod,jaction),*) 'Compute rank of state vector'
+      tabvalorder(jmod,jaction)=32
+      taborder(jmod,jaction,1)=14
+      taborder(jmod,jaction,2)=15
+      taborder(jmod,jaction,3)=23
+! -XXV.2- =>: -indta <file_xy> -inybasref <file_xybas> -outdta <file_y>
+      jaction=2
+      WRITE(tabhelporder(jmod,jaction),*) 'Compute rank of data section vector'
+      tabvalorder(jmod,jaction)=32
+      taborder(jmod,jaction,1)=12
+      taborder(jmod,jaction,2)=45
+      taborder(jmod,jaction,3)=21
+! -XXV.3- =>: -inobs <file_x> -inobasref <file_xbas> -outobs <file_o>
+      jaction=3
+      WRITE(tabhelporder(jmod,jaction),*) 'Compute rank of observation vector'
+      tabvalorder(jmod,jaction)=42
+      taborder(jmod,jaction,1)=13
+      taborder(jmod,jaction,2)=74
+      taborder(jmod,jaction,3)=22
+      taborder(jmod,jaction,4)=52

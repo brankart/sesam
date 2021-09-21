@@ -55,7 +55,7 @@
 ! Number of possible commandline switches
       INTEGER, parameter :: nbarg=90
 ! Number of modules, of help keywords
-      INTEGER, parameter :: nbmod=24,nbhelp=3
+      INTEGER, parameter :: nbmod=25,nbhelp=3
 ! Number of optional switches
       INTEGER, parameter :: nbswiopt=14
 ! Maximum number of actions per module

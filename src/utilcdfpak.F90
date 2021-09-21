@@ -84,6 +84,7 @@
 ! -----------------------------------------------------------------
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       subroutine cdfrhdrpak(filename,nam,dim,nbr,moy,ect)
+      use netcdf
 
       implicit none
       include 'netcdf.inc' 
@@ -131,7 +132,8 @@
       count(1) = namell
       start(2) = 1
       count(2) = varend
-      call ncvgtc (ncid,namid,start,count,nam,namell*varend,rcode)
+      !call ncvgtc (ncid,namid,start,count,nam(1:varend),namell*varend,rcode)
+      rcode = NF90_GET_VAR(ncid,namid,nam(1:varend),start=start,count=count)
 
 ! --- close NetCDF file ---
 

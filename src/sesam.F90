@@ -395,6 +395,11 @@
 !
          CALL modmcmc
 !
+      CASE (25)
+! -3.24- RANK mode : computation of ranks of data within an ensemble
+!
+         CALL modrank
+!
       CASE DEFAULT
          GOTO 1000
       END SELECT
