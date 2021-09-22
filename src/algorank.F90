@@ -80,6 +80,7 @@
       BIGREAL, dimension(:,:), allocatable, save :: ens
       INTEGER, dimension(:), allocatable :: ranks
       BIGREAL, dimension(:), allocatable :: vectorms
+      INTEGER, dimension(:), allocatable :: rank_histogram
 !
       INTEGER :: allocok,jpssize,jpitpsize,jprsize
       INTEGER :: jnxyo,js,jr,jp,jjproc
@@ -121,6 +122,11 @@
       allocate ( ranks(1:jpssize), stat=allocok )
       IF (allocok.NE.0) GOTO 1001
       ranks(:) = 0
+!
+! Allocate array for rank histogram
+      allocate ( rank_histogram(0:jprsize), stat=allocok )
+      IF (allocok.NE.0) GOTO 1001
+      rank_histogram(:) = 0
 !
       IF (kflagxyo.EQ.3) THEN
 !
@@ -193,11 +199,11 @@
 ! -3.- Compute ranks
 ! ------------------
 !
-        CALL compute_ranks( ens, vects, ranks )
+        CALL compute_ranks( ens, vects, ranks, rank_histogram )
         vects(:) = ranks(:)
 !     
-! -4.- Write output vector
-! ------------------------
+! -4.- Write output vector with ranks
+! -----------------------------------
 !
         SELECT CASE (kflagxyo)
         CASE (1)
@@ -212,6 +218,15 @@
         END SELECT
 !
       ENDDO
+!     
+! -5.- Print rank histogram to standard output
+! --------------------------------------------
+!
+      IF (jproc.EQ.0) THEN
+        DO jr=0,jprsize
+          PRINT *, jr, rank_histogram(jr)
+        ENDDO
+      ENDIF
 !
 ! --- deallocation
       IF (allocated(vects)) deallocate(vects)
