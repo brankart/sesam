@@ -1210,7 +1210,7 @@
                IF (ANY(vectsinref(:).EQ.spvalsinref)) GOTO 103
                IF (ANY(vectsinref(:).LT.0.)) GOTO 103
                DO js=1,jpssize
-                 mu = vectsinref(js) ; nu = vectsin(js)
+                 mu = vectsinref(js) ; nu = vectsin(js) ! mu = mean, nu = std /mean
                  gammak = 1.0 / (nu * nu)
                  gammath = mu * nu *nu
                  CALL kiss_gamma(gran,gammak)
