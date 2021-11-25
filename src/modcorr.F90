@@ -48,7 +48,7 @@
       INTEGER :: actioncorr, numfila, jxyo, flagxyo, jtype
       CHARACTER(len=hgword) :: text
       CHARACTER(len=1) :: textexclusion
-      INTEGER :: ji1,jj1,jk1,indvar1,jvar1,inddta1,jdta1
+      INTEGER :: ji1,jj1,jk1,jt1,indvar1,jvar1,inddta1,jdta1
       INTEGER :: indvarmsk,inddtamsk,indvar,inddta,jx,jy
       INTEGER :: ji,jj,jk,jt,jvar,jdta
       CHARACTER(len=varlg) :: dta_nam1, var_nam1
@@ -81,7 +81,7 @@
       CASE (1)
 !
          found=.FALSE.
-         READ(text,*,ERR=103) var_nam1,ji1,jj1,jk1,jtype
+         READ(text,*,ERR=103) var_nam1,ji1,jj1,jk1,jt1,jtype
          DO jvar1 = 1,varend
             indvar1 = var_ord(jvar1)
             IF (var_nam1(1:lenv(var_nam1)) &
@@ -101,7 +101,7 @@
          DO jj=1,var_jpj(indvar)
          DO ji=1,var_jpi(indvar)
             IF (IBITS(mask(ji,jj,jk,jt),indvarmsk,1).NE.0) THEN
-              IF ((ji.EQ.ji1).AND.(jj.EQ.jj1).AND.(jk.EQ.jk1)) THEN
+              IF ((ji.EQ.ji1).AND.(jj.EQ.jj1).AND.(jk.EQ.jk1).AND.(jt.EQ.jt1)) THEN
                 jxyo=jx
                 found=.TRUE.
               ENDIF  
@@ -135,7 +135,7 @@
          DO jj=1,dta_jpj(inddta)
          DO ji=1,dta_jpi(inddta)
             IF (IBITS(mask(ji,jj,jk,jt),inddtamsk,1).NE.0) THEN
-              IF ((ji.EQ.ji1).AND.(jj.EQ.jj1).AND.(jk.EQ.jk1)) THEN
+              IF ((ji.EQ.ji1).AND.(jj.EQ.jj1).AND.(jk.EQ.jk1).AND.(jt.EQ.jt1)) THEN
                 jxyo=jy
                 found=.TRUE.
               ENDIF  
