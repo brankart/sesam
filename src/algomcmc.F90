@@ -38,6 +38,7 @@
       use ensdam_anatra
       use ensdam_obserror
       use ensdam_score_optimality
+      use ensdam_storng
       IMPLICIT NONE
       PRIVATE
 
@@ -105,6 +106,8 @@
       INTEGER :: jrbasdeb,jrbasfin
       CHARACTER(len=bgword) :: dirname
 !----------------------------------------------------------------------
+!
+      CALL kiss_load()
 !
       jprsize=jprend
       jpsmpl=jpsmplend
@@ -362,6 +365,8 @@
       IF (allocated(gridijkobs)) deallocate(gridijkobs)
       IF (allocated(vectorms)) deallocate(vectorms)
       IF (allocated(obs)) deallocate(obs)
+!
+      CALL kiss_save()
 !
       RETURN
 !
