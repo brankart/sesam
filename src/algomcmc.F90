@@ -316,11 +316,19 @@
           GOTO 1000
         END SELECT
 
+        IF (obs_ensemble) THEN
+          flago=3 ; jnobs=1
+          ! Read the same ensemble in observation space
+          CALL readbas(koutobas,upensobs(:,:),jnobs, &
+     &                 jrbasdeb,jrbasfin,lectinfo,flago,poscoefobs(:,:))
+        ENDIF
+
 !       Read restart index in MCMC chain
         WRITE(fname,'("./",A,"/",A)') koutbas(1:lenv(koutbas)), &
      &                                'mcmc_index.txt'
         INQUIRE (FILE=fname,EXIST=filexists)
         IF (filexists) THEN
+          numidx=10
           CALL openfile(numidx,fname)
           READ(numidx,*) mcmc_index
           CLOSE(UNIT=numidx)
@@ -371,7 +379,8 @@
 !     Write restart index in MCMC chain
       WRITE(fname,'("./",A,"/",A)') koutbas(1:lenv(koutbas)), &
      &                              'mcmc_index.txt'
-      CALL openfile(numidx,fname)
+      numidx=10
+      CALL openfile(numidx,fname,kstatus=clunk)
       WRITE(numidx,*) mcmc_index
       CLOSE(UNIT=numidx)
 !
