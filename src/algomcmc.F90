@@ -34,6 +34,7 @@
      &     jpperc,poscoefobs,gridijkobs,arraynx_jpindxend
       use utilmkh
       use utilroa
+      use utilfiles
       use ensdam_mcmc_update
       use ensdam_anatra
       use ensdam_obserror
@@ -102,16 +103,17 @@
 !
       INTEGER :: allocok,jpssize,jpitpsize,jprsize,jpsmpl,jposize
       INTEGER :: jnxyo,jnobs,js,jr,jsend,jscl,flagcfg,flago
-      LOGICAL :: lectinfo
-      INTEGER :: jrbasdeb,jrbasfin
-      CHARACTER(len=bgword) :: dirname
+      LOGICAL :: lectinfo,filexists
+      INTEGER :: jrbasdeb,jrbasfin,numidx
+      CHARACTER(len=bgword) :: dirname, fname
 !----------------------------------------------------------------------
 !
       CALL kiss_load()
 !
       jprsize=jprend
       jpsmpl=jpsmplend
-      jpitpsize=1
+      jpitpsize=jpitpend
+      jposize=jpoend
 !
       IF (nprint.GE.1) THEN
          WRITE(numout,*) '*** ROUTINE : sesam/modscor/calcmcmc :'
@@ -126,14 +128,10 @@
       SELECT CASE (kflagxyo)
       CASE (1)
          jpssize=jpx
-         jposize=jpoend
       CASE (2)
          jpssize=jpyend
-         jposize=jpoend
       CASE (3)
          jpssize=jpoend
-         jposize=jpoend
-         jpitpsize=jpitpend
          IF (.NOT.PRESENT(kconfigo)) GOTO 1000
       CASE DEFAULT
          GOTO 1000
@@ -318,6 +316,18 @@
           GOTO 1000
         END SELECT
 
+!       Read restart index in MCMC chain
+        WRITE(fname,'("./",A,"/",A)') koutbas(1:lenv(koutbas)), &
+     &                                'mcmc_index.txt'
+        INQUIRE (FILE=fname,EXIST=filexists)
+        IF (filexists) THEN
+          CALL openfile(numidx,fname)
+          READ(numidx,*) mcmc_index
+          CLOSE(UNIT=numidx)
+        ELSE
+          mcmc_index=1
+        ENDIF
+
       ENDIF
 !     
 ! -4.- MCMC iteration
@@ -357,6 +367,13 @@
       CASE DEFAULT
         GOTO 1000
       END SELECT
+
+!     Write restart index in MCMC chain
+      WRITE(fname,'("./",A,"/",A)') koutbas(1:lenv(koutbas)), &
+     &                              'mcmc_index.txt'
+      CALL openfile(numidx,fname)
+      WRITE(numidx,*) mcmc_index
+      CLOSE(UNIT=numidx)
 !
 ! --- deallocation
       IF (allocated(inens)) deallocate(inens)
@@ -492,7 +509,8 @@
       ENDIF
 
 ! Compute optimality score
-      CALL optimality_score(score, ensobseq, obs, cdf_obs)
+      !CALL optimality_score(score, ensobseq, obs, cdf_obs)
+      CALL optimality_score(score, ensobseq, obs, oestd)
       IF (jproc.eq.0)  PRINT *, 'OPTIMALITY:',mcmc_index,score
 
 ! Deallocate array
