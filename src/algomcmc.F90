@@ -30,7 +30,7 @@
       use mod_main
       use mod_mask
       use mod_spacexyo , only : &
-     &     jpoend,jpitpend,jpx,jpxend,jpyend,jprend,jpsmplend, &
+     &     jpo,jpoend,jpitpend,jpx,jpxend,jpyend,jprend,jpsmplend, &
      &     jpperc,poscoefobs,gridijkobs,arraynx_jpindxend
       use utilmkh
       use utilroa
@@ -102,7 +102,7 @@
       BIGREAL, dimension(:), allocatable, save :: vectorms
 !
       INTEGER :: allocok,jpssize,jpitpsize,jprsize,jpsmpl,jposize
-      INTEGER :: jnxyo,jnobs,js,jr,jsend,jscl,flagcfg,flago
+      INTEGER :: jnxyo,js,jr,jscl,flagcfg,flago
       LOGICAL :: lectinfo,filexists
       INTEGER :: jrbasdeb,jrbasfin,numidx
       CHARACTER(len=bgword) :: dirname, fname
@@ -110,10 +110,14 @@
 !
       CALL kiss_load()
 !
+! Define segment of vector to read by current processor
+      jnxyo=1+jproc
+!
       jprsize=jprend
       jpsmpl=jpsmplend
       jpitpsize=jpitpend
       jposize=jpoend
+      IF (lsplitobs) jposize=vo_idxend(jnxyo)
 !
       IF (nprint.GE.1) THEN
          WRITE(numout,*) '*** ROUTINE : sesam/modscor/calcmcmc :'
@@ -127,7 +131,8 @@
 !
       SELECT CASE (kflagxyo)
       CASE (1)
-         jpssize=jpx
+         jpssize=jpxend
+         IF (nallmem.EQ.2) jpssize=arraynx_jpindxend(jnxyo)
       CASE (2)
          jpssize=jpyend
       CASE (3)
@@ -136,7 +141,8 @@
       CASE DEFAULT
          GOTO 1000
       END SELECT
-
+!
+      flago=3 ; lectinfo=.FALSE.
 !
 ! -1.- Read observation related information
 ! -----------------------------------------
@@ -158,14 +164,14 @@
         vectorms(:) = FREAL(0.0)
 !
         flagcfg=1
-        CALL readcfgobs (kconfigo,flagcfg, &
-     &        kvectorms=vectorms(:))
+        CALL readpartcfgobs (kconfigo,flagcfg,jnxyo, &
+     &                       kvectorms=vectorms(:))
         flagcfg=2
-        CALL readcfgobs (kconfigo,flagcfg, &
-     &        kgridijkobs=gridijkobs(:))
+        CALL readpartcfgobs (kconfigo,flagcfg,jnxyo, &
+     &                       kgridijkobs=gridijkobs(:))
         flagcfg=3
-        CALL readcfgobs (kconfigo,flagcfg, &
-     &        kposcoefobs=poscoefobs(:,:))
+        CALL readpartcfgobs (kconfigo,flagcfg,jnxyo, &
+     &                       kposcoefobs=poscoefobs(:,:))
 
       ENDIF
 !
@@ -175,7 +181,8 @@
         IF (allocok.NE.0) GOTO 1001
         obs(:)=FREAL(0.0)
 !
-        CALL readvalobs(kinobs,obs(:))
+        CALL readxyo(kinobs,obs(:), &
+     &           jnxyo,lectinfo,flago,poscoefobs(:,:))
 
 ! Read observation error standard deviation
         obserror_type = obserror_type_sesam
@@ -184,12 +191,11 @@
         IF (allocok.NE.0) GOTO 1001
         oestd(:)=FREAL(0.0)
 !
-        flago=3 ; jnobs=1 ; lectinfo=.FALSE.
         IF (largoestd) THEN
           IF ((validextvar(argoestd)).OR.(validextdta(argoestd)) &
      &        .OR.(validextobs(argoestd))) THEN
             CALL readxyo(argoestd,oestd(:), &
-     &           jnobs,lectinfo,flago,poscoefobs(:,:))
+     &           jnxyo,lectinfo,flago,poscoefobs(:,:))
           ELSE
             GOTO 1000
           ENDIF
@@ -215,8 +221,7 @@
 
           jrbasdeb=1
           jrbasfin=jpperc
-          flago=3 ; jnobs=1 ; lectinfo=.FALSE.
-          CALL readbas(arganamorphosis,quantiles_ens(:,:),jnobs, &
+          CALL readbas(arganamorphosis,quantiles_ens(:,:),jnxyo, &
      &                 jrbasdeb,jrbasfin,lectinfo,flago,poscoefobs(:,:))
 
           CALL readscalbas(arganamorphosis,'percref',quantiles_ref)
@@ -248,13 +253,6 @@
         upensobs(:,:) = FREAL(0.0)
 
       ENDIF
-! Define segment of vector to read by current processor
-      jnxyo=1+jproc
-      IF (kflagxyo.EQ.1) THEN
-        jsend=arraynx_jpindxend(jnxyo)
-      ELSE
-        jsend=jpssize
-      ENDIF
 !
       IF ((nprint.GE.2).AND.(jnxyo.EQ.1)) THEN
         WRITE(numout,*) '    ==> READING multiple scale input ensemble'
@@ -283,10 +281,9 @@
         END SELECT
 
         IF (obs_ensemble) THEN
-          flago=3 ; jnobs=1
           ! Read the same ensemble in observation space
           CALL fildirnam(dirname,kinobas,jscl)
-          CALL readbas(dirname,inensobs(:,:,jscl),jnobs, &
+          CALL readbas(dirname,inensobs(:,:,jscl),jnxyo, &
      &                 jrbasdeb,jrbasfin,lectinfo,flago,poscoefobs(:,:))
         ENDIF
 
@@ -317,9 +314,8 @@
         END SELECT
 
         IF (obs_ensemble) THEN
-          flago=3 ; jnobs=1
           ! Read the same ensemble in observation space
-          CALL readbas(koutobas,upensobs(:,:),jnobs, &
+          CALL readbas(koutobas,upensobs(:,:),jnxyo, &
      &                 jrbasdeb,jrbasfin,lectinfo,flago,poscoefobs(:,:))
         ENDIF
 

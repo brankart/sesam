@@ -39,6 +39,7 @@
       INTEGER, save :: nallmem,jpfixjpx,jpfixjpz,jpfixjpu,maxiter
       INTEGER, dimension(1:nbxyo), save :: limjpnxyo
       INTEGER, dimension(1:nbztyp), save :: limjpnz,jpnbub,jpbubend
+      LOGICAL :: lsplitobs
 !
 ! Arrays with SESAM switches
 ! switab  : switch name

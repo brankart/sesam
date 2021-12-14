@@ -44,12 +44,8 @@
 !
 ! arraynx_jindxbeg   : indices pointing to the beginning of Vx segments in Vx vector
 ! arraynx_jpindxend  : sizes of Vx segments in Vx vector
-! arraynx_jindvarbeg : index of first variable in Vx segments
-! arraynx_jindkbeg   : index of first vertical level in Vx segments
-! arraynx_jindtbeg   : index of first time index in Vx segments
       INTEGER, dimension(:), allocatable, save :: arraynx_jindxbeg, &
-     &     arraynx_jpindxend,arraynx_jindvarbeg, &
-     &     arraynx_jindkbeg,arraynx_jindtbeg
+     &     arraynx_jpindxend
 !
 ! -2.- Vy space (size = jpyend)
 ! -----------------------------
@@ -67,13 +63,17 @@
 ! jpitpend : total number of interpolation points in observation operator
 ! jptp     : current number of interpolation points in observation operator
       BIGREAL, parameter :: spvalobs = 999999.0_kr
-      INTEGER, save :: jpo,jpoend,jpitp,jpitpend
+      INTEGER, save :: jpo,jpoend,jpnoend,jpitp,jpitpend
 ! gridijobs  : observation locations (2D case)
 ! gridijkobs : observation locations (3D case)
 ! poscoefobs : observation operator (interpolation points and coefficients)
       TYPE (type_gridij), dimension(:), allocatable :: gridijobs
       TYPE (type_gridijk), dimension(:), allocatable :: gridijkobs
       TYPE (type_poscoef), dimension(:,:), allocatable :: poscoefobs
+!
+! vo_idxbeg  : indices pointing to the beginning of Vo segments in Vo vector
+! vo_idxend  : sizes of Vo segments in Vo vector
+      INTEGER, dimension(:), allocatable, save :: vo_idxbeg, vo_idxend
 !
 ! -4.- Vz space (size = jpz)
 ! --------------------------

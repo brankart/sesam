@@ -61,7 +61,7 @@
       use mod_cfgxyo
       use mod_mask
       use mod_spacexyo , only : spvalvar,spvaldta,spvalobs, &
-     &     jpx,jpxend,jpo,jpitpend,jpy,poscoefobs, &
+     &     jpx,jpxend,jpoend,jpitpend,jpy,poscoefobs, &
      &     arraynx_jindxbeg,arraynx_jpindxend
       use hioxyo
       use utilvalid
@@ -121,7 +121,7 @@
          jpitpsize=1
          xyoend  = dtaend
       CASE (3)
-         jpssize=jpo
+         jpssize=jpoend
          jpitpsize=jpitpend
          xyoend  = obsend
       CASE DEFAULT
@@ -603,7 +603,7 @@
       use mod_cfgxyo
       use mod_mask
       use mod_spacexyo , only : spvalvar,spvaldta,spvalobs, &
-     &     jpx,jpxend,jpo,jpitpend,jpy,poscoefobs, &
+     &     jpx,jpxend,jpoend,jpitpend,jpy,poscoefobs, &
      &     arraynx_jindxbeg,arraynx_jpindxend
       use hioxyo
       use utilvalid
@@ -658,7 +658,7 @@
          jpitpsize=1
          xyoend  = dtaend
       CASE (3)
-         jpssize=jpo
+         jpssize=jpoend
          jpitpsize=jpitpend
          xyoend  = obsend
       CASE DEFAULT
@@ -1299,7 +1299,7 @@
       use mod_cfgxyo
       use mod_mask
       use mod_spacexyo , only : spvalvar,spvaldta,spvalobs, &
-     &     jpx,jpxend,jpo,jpitpend,jpy,poscoefobs, &
+     &     jpx,jpxend,jpoend,jpitpend,jpy,poscoefobs, &
      &     arraynx_jindxbeg,arraynx_jpindxend
       use hioxyo
       use utilvalid
@@ -1356,7 +1356,7 @@
          jpitpsize=1
          xyoend  = dtaend
       CASE (3)
-         jpssize=jpo
+         jpssize=jpoend
          jpitpsize=jpitpend
          xyoend  = obsend
       CASE DEFAULT

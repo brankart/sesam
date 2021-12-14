@@ -13,10 +13,9 @@
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ! ---                                                           ---
-! ---                   EVALCONFIG.F90                            ---
+! ---                   EVALCONFIG.F90                          ---
 ! ---                                                           ---
-! ---                                                           ---
-! --- original     : 98-06  ( C.E. Testut)                      ---
+! --- original     : 98-06 (C.E. Testut)                        ---
 ! --- modification : 99-05 (C.E. Testut)                        ---
 ! --- modification : 01-06 (C.E. Testut)                        ---
 ! --- modification : 03-02 (J.M. Brankart)                      ---
@@ -54,8 +53,7 @@
       use mod_spacexyo , only : jpdbs,jpdbsend,jpmend,jpsmplend, &
      &     jprend,jpo,jpoend,jpitp,jpitpend,jpy,jpyend,jpz,jpperc, &
      &     jpx,jpxend,jpnxend,arraynx_jindxbeg, &
-     &     arraynx_jpindxend,arraynx_jindvarbeg, &
-     &     arraynx_jindkbeg,arraynx_jindtbeg
+     &     arraynx_jpindxend,arraynx_jindvarbeg
       use hioxyo
       use hiozon
       use hiodbs
@@ -70,7 +68,7 @@
       INTEGER :: jx,jy,indvarmsk,inddtamsk,somtot,sompart
       INTEGER :: jvar,indvar,jdta,inddta,jobs,indobs,inddbs
       INTEGER :: ji,jj,jk,jt,jarg,jpisize,jpjsize,jpksize,jptsize
-      INTEGER :: nbtabnx,jtabnx,jnx
+      INTEGER :: nbtabnx,jtabnx,jnx,jno
       INTEGER, dimension(:), allocatable :: tabnx_jindxbeg, &
      &     tabnx_jpindxend,tabnx_jindvarbeg, &
      &     tabnx_jindkbeg,tabnx_jindtbeg
@@ -877,15 +875,6 @@
          allocate ( arraynx_jpindxend(1:jpnxend) , stat=allocok )
          IF (allocok.NE.0) GOTO 1001
          arraynx_jpindxend(:) = 0
-         allocate ( arraynx_jindvarbeg(1:jpnxend) , stat=allocok )
-         IF (allocok.NE.0) GOTO 1001
-         arraynx_jindvarbeg(:) = 0
-         allocate ( arraynx_jindkbeg(1:jpnxend) , stat=allocok )
-         IF (allocok.NE.0) GOTO 1001
-         arraynx_jindkbeg(:) = 0
-         allocate ( arraynx_jindtbeg(1:jpnxend) , stat=allocok )
-         IF (allocok.NE.0) GOTO 1001
-         arraynx_jindtbeg(:) = 0
 !
          arraynx_jindxbeg(1)=1
          DO jnx=2,jpnxend
@@ -897,18 +886,6 @@
          ENDDO
          arraynx_jpindxend(jpnxend)=jpxend-(jpnxend-1)*jpx
 !
-         jtabnx=1
-         DO jnx=1,jpnxend
-            DO WHILE ((jtabnx.LE.nbtabnx).AND.(.NOT. &
-     &           ((arraynx_jindxbeg(jnx).GE.tabnx_jindxbeg(jtabnx)) &
-     &           .AND.(arraynx_jindxbeg(jnx).LE. &
-     &         (tabnx_jindxbeg(jtabnx))+tabnx_jpindxend(jtabnx)-1))))
-               jtabnx=jtabnx+1
-            ENDDO
-            arraynx_jindvarbeg(jnx)=tabnx_jindvarbeg(jtabnx)
-            arraynx_jindkbeg(jnx)=tabnx_jindkbeg(jtabnx)
-            arraynx_jindtbeg(jnx)=tabnx_jindtbeg(jtabnx)
-         ENDDO
 ! Print information about Vx blocks structure
          IF (nprint.GE.2) THEN
             WRITE (numout,*)
@@ -917,10 +894,7 @@
             WRITE (numout,*) ' block Vx_start Vx_end var k t'
             DO jnx=1,jpnxend
                WRITE (numout,*) ' ',jnx,'  ',arraynx_jindxbeg(jnx), &
-     &              '  ',arraynx_jpindxend(jnx), &
-     &              '  ',arraynx_jindvarbeg(jnx), &
-     &              '  ',arraynx_jindkbeg(jnx), &
-     &              '  ',arraynx_jindtbeg(jnx)
+     &              '  ',arraynx_jpindxend(jnx)
             ENDDO
          ENDIF
          IF (SUM(arraynx_jpindxend(:)).NE.jpxend) GOTO 1000
@@ -934,15 +908,6 @@
          allocate ( arraynx_jpindxend(1:jpnxend) , stat=allocok )
          IF (allocok.NE.0) GOTO 1001
          arraynx_jpindxend(1) = jpx
-         allocate ( arraynx_jindvarbeg(1:jpnxend) , stat=allocok )
-         IF (allocok.NE.0) GOTO 1001
-         arraynx_jindvarbeg(1) = var_ord(1)
-         allocate ( arraynx_jindkbeg(1:jpnxend) , stat=allocok )
-         IF (allocok.NE.0) GOTO 1001
-         arraynx_jindkbeg(:) = 1
-         allocate ( arraynx_jindtbeg(1:jpnxend) , stat=allocok )
-         IF (allocok.NE.0) GOTO 1001
-         arraynx_jindtbeg(:) = 1
          IF (nprint.GE.3) THEN
             WRITE (numout,*)
             WRITE (numout,*) ' Vx object block structure'
@@ -951,10 +916,7 @@
             DO jnx=1,jpnxend
                WRITE (numout,'(6(1x,i9))') jnx, &
      &                    arraynx_jindxbeg(jnx), &
-     &                    arraynx_jpindxend(jnx), &
-     &                    arraynx_jindvarbeg(jnx), &
-     &                    arraynx_jindkbeg(jnx), &
-     &                    arraynx_jindtbeg(jnx)
+     &                    arraynx_jpindxend(jnx)
             ENDDO
          ENDIF
          IF (SUM(arraynx_jpindxend(:)).NE.jpxend) GOTO 1000
@@ -977,7 +939,54 @@
          WRITE (numout,*)  ' number of blocks = ',jpnxend
       ENDIF
 !
-! -9.0- Initialize arrays containing grid connections
+! -9.- Vo block configuration
+! ---------------------------
+! Set size of Vo block in memory (jpo)
+! and number of blocks (jpnoend)
+! arrayno_... ,lsplitobs
+!
+! lsplitobs = TRUE : Vo vectors are loaded in memory block by block
+! lsplitobs = FALSE : Vo vectors are fully loaded in memory
+!
+      lsplitobs = (nmode.EQ.24).AND.(jpproc.GT.1)
+
+      IF (lsplitobs) THEN
+         jpo = ( jpoend - 1 ) / jpproc + 1
+
+         jpnoend = ( jpoend - 1 ) / jpo + 1
+
+! allocate arrays
+         allocate ( vo_idxbeg(1:jpnoend) , stat=allocok )
+         IF (allocok.NE.0) GOTO 1001
+         allocate ( vo_idxend(1:jpnoend) , stat=allocok )
+         IF (allocok.NE.0) GOTO 1001
+!
+         vo_idxbeg(1)=1
+         DO jno=2,jpnoend
+            vo_idxbeg(jno)=vo_idxbeg(jno-1)+jpo
+         ENDDO
+!
+         DO jno=1,jpnoend-1
+            vo_idxend(jno)=jpo
+         ENDDO
+         vo_idxend(jpnoend)=jpoend-(jpnoend-1)*jpo
+!
+! Print information about Vx blocks structure
+         IF (nprint.GE.2) THEN
+            WRITE (numout,*)
+            WRITE (numout,*) ' Vo object block structure'
+            WRITE (numout,*) ' -------------------------'
+            WRITE (numout,*) ' block Vx_start Vx_end var k t'
+            DO jno=1,jpnoend
+               WRITE (numout,*) ' ',jno,'  ',vo_idxbeg(jno), &
+     &              '  ',vo_idxend(jno)
+            ENDDO
+         ENDIF
+         IF (SUM(vo_idxend(:)).NE.jpoend) GOTO 1000
+
+      ENDIF
+!
+! -10.- Initialize arrays containing grid connections
 ! ---------------------------------------------------
 !
       IF (largconnect) CALL connect_init
