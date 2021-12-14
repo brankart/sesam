@@ -68,6 +68,7 @@
       PUBLIC readxyo,writeyo,readfil,writenfil
       PUBLIC readvar,writevar,readdta,writedta
       PUBLIC evalhdrobs,readvalobs,readcfgobs
+      PUBLIC readpartvalobs,readpartcfgobs
       PUBLIC writeobs,writesingleobs
 
       CONTAINS
@@ -177,7 +178,11 @@
             CALL mkhytoo(vecty(:),kvects(:),kposcoefobs(:,:))
          CASE(4)
 ! Read Vo vector from obs file
-            CALL readvalobs(fninxyo,kvects(:))
+            IF (lsplitobs) THEN
+              CALL readpartvalobs(fninxyo,kjns,kvects(:))
+            ELSE
+              CALL readvalobs(fninxyo,kvects(:))
+            ENDIF
          CASE DEFAULT
             GOTO 1000
          END SELECT
@@ -1401,6 +1406,76 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ! -----------------------------------------------------------------
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      SUBROUTINE readpartvalobs(kfninobs,kjnobs,kvecto)
+!---------------------------------------------------------------------
+!
+!  Purpose : Read block of Vo vector from 'obs' file (observed value only)
+!  --------
+!  Method : Read full observation vector and
+!  ------   extract the appropriate block of data
+!
+!  Input :  kfninobs  : filename
+!  -----    kjnobs    : block index
+!
+!  Output : kvecto    : 1D vector object (block from Vo)
+!  ------
+!---------------------------------------------------------------------
+! modules
+! =======
+      use mod_main
+      use mod_cfgxyo
+      use mod_spacexyo , only : jpoend,vo_idxbeg,vo_idxend
+      IMPLICIT NONE
+!----------------------------------------------------------------------
+! header declarations
+! ===================
+      CHARACTER(len=*), intent(in) :: kfninobs
+      INTEGER, intent(in) :: kjnobs
+      BIGREAL, dimension(:), intent(out) :: kvecto
+!----------------------------------------------------------------------
+! local declarations
+! ==================
+      BIGREAL, dimension(:), allocatable :: fullobs
+      INTEGER :: jposize,allocok
+!----------------------------------------------------------------------
+!
+      IF (nprint.GE.2) THEN
+         WRITE(numout,*) '*** ROUTINE : ./readpartvalobs :'
+         WRITE(numout,*) '         read block of observation values'
+      ENDIF
+
+! Get size of input array
+      jposize = size(kvecto,1)
+      IF (jposize.NE.vo_idxend(kjnobs)) GOTO 101
+
+! Allocate full observation vector
+      allocate ( fullobs(1:jpoend), stat=allocok )
+      IF (allocok.NE.0) GOTO 1001
+
+! Read full observation vector
+      CALL readvalobs(kfninobs,fullobs(:))
+
+! Extract observation block from full observation vector
+      kvecto(1:jposize) = fullobs(vo_idxbeg(kjnobs):vo_idxbeg(kjnobs) &
+     &                                             +vo_idxend(kjnobs)-1)
+
+! Deallocate full observation vector
+      IF (allocated(fullobs)) deallocate(fullobs)
+
+      RETURN
+!
+! --- error management
+!
+ 1001 CALL printerror2(0,1001,3,'hioxyo','readpartvalobs')
+!
+ 101  WRITE (texterror,*) 'Incorrect observation block size'
+      CALL printerror2(0,101,3,'hioxyo','readpartvalobs', &
+     &     comment=texterror)
+!
+      END SUBROUTINE
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+! -----------------------------------------------------------------
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       SUBROUTINE readcfgobs(kfninobs,kflagcfg,kvectorms, &
      &     kgridijkobs,kposcoefobs)
 !---------------------------------------------------------------------
@@ -1616,6 +1691,129 @@
       CALL printerror2(0,101,3,'hioxyo','readcfgobs',comment=texterror)
  102  WRITE (texterror,*) 'Incoherence between input arrays'
       CALL printerror2(0,102,3,'hioxyo','readcfgobs',comment=texterror)
+!
+      END SUBROUTINE
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+! -----------------------------------------------------------------
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      SUBROUTINE readpartcfgobs(kfninobs,kjnobs,kvectorms, &
+     &     kgridijkobs,kposcoefobs)
+!---------------------------------------------------------------------
+!
+!  Purpose : Read block of Vo vector from 'obs' file
+!  -------   (observation configuration only)
+!
+!  Method : Read full observation vector and
+!  ------   extract the appropriate block of data
+!
+!  Input :  kfninobs    : filename
+!  -----
+!  Output : kjnobs      : block index
+!  ------   kvectorms   : associated error value (obsolete parameter)
+!           kgridijkobs : observation location (x,y,z)
+!           kposcoefobs : observation operator (interpolation points
+!                         and interpolation coefficients)
+!
+!---------------------------------------------------------------------
+! modules
+! =======
+      use mod_main
+      use mod_cfgxyo
+      use mod_spacexyo , only : jpoend,vo_idxbeg,vo_idxend
+      IMPLICIT NONE
+!----------------------------------------------------------------------
+! header declarations
+! ===================
+      CHARACTER(len=*), intent(in) :: kfninobs
+      INTEGER, intent(in) :: kjnobs
+      BIGREAL, optional, dimension(:), intent(out) :: kvectorms
+      TYPE (type_gridijk), optional, dimension(:), intent(out) ::  &
+     &     kgridijkobs
+      TYPE (type_poscoef), optional, dimension(:,:), intent(out) ::  &
+     &     kposcoefobs
+!----------------------------------------------------------------------
+! local declarations
+! ==================
+      BIGREAL, dimension(:), allocatable :: fullrms
+      TYPE (type_gridijk), dimension(:), allocatable :: fullgrid
+      TYPE (type_poscoef), dimension(:,:), allocatable :: fullposcoef
+      INTEGER :: jposize,jpitpsize,flagcfg,allocok
+!----------------------------------------------------------------------
+      IF (nprint.GE.2) THEN
+         WRITE(numout,*) '*** ROUTINE : ./readpartcfgobs :'
+         WRITE(numout,*) '      read block of observation configuration'
+      ENDIF
+!
+! Set vector size
+      IF (present(kvectorms)) THEN
+        jposize = size(kvectorms,1)
+      ENDIF
+      IF (present(kgridijkobs)) THEN
+        jposize = size(kgridijkobs,1)
+      ENDIF
+      IF (present(kposcoefobs)) THEN
+        jposize = size(kposcoefobs,1)
+        jpitpsize = size(kposcoefobs,2)
+      ENDIF
+
+      IF (jposize.NE.vo_idxend(kjnobs)) GOTO 101
+
+! Allocate full observation cfg vector
+      IF (present(kvectorms)) THEN
+        allocate ( fullrms(1:jpoend), stat=allocok )
+        IF (allocok.NE.0) GOTO 1001
+      ENDIF
+      IF (present(kgridijkobs)) THEN
+        allocate ( fullgrid(1:jpoend), stat=allocok )
+        IF (allocok.NE.0) GOTO 1001
+      ENDIF
+      IF (present(kposcoefobs)) THEN
+        allocate ( fullposcoef(1:jpoend,1:jpitpsize), stat=allocok )
+        IF (allocok.NE.0) GOTO 1001
+      ENDIF
+
+! Read full observation vector
+      IF (present(kvectorms)) THEN
+        CALL readcfgobs (kfninobs,flagcfg, &
+     &                   kvectorms=fullrms(:))
+      ENDIF
+      IF (present(kgridijkobs)) THEN
+        CALL readcfgobs (kfninobs,flagcfg, &
+     &                   kgridijkobs=fullgrid(:))
+      ENDIF
+      IF (present(kposcoefobs)) THEN
+        CALL readcfgobs (kfninobs,flagcfg, &
+     &                   kposcoefobs=fullposcoef(:,:))
+      ENDIF
+
+! Extract observation block from full observation vector
+      IF (present(kvectorms)) THEN
+        kvectorms(1:jposize) = fullrms &
+     &       (vo_idxbeg(kjnobs):vo_idxbeg(kjnobs)+vo_idxend(kjnobs)-1)
+      ENDIF
+      IF (present(kgridijkobs)) THEN
+        kgridijkobs(1:jposize) = fullgrid &
+     &       (vo_idxbeg(kjnobs):vo_idxbeg(kjnobs)+vo_idxend(kjnobs)-1)
+      ENDIF
+      IF (present(kposcoefobs)) THEN
+        kposcoefobs(1:jposize,:) = fullposcoef &
+     &       (vo_idxbeg(kjnobs):vo_idxbeg(kjnobs)+vo_idxend(kjnobs)-1,:)
+      ENDIF
+
+! Deallocate full observation vector
+      IF (allocated(fullrms)) deallocate(fullrms)
+      IF (allocated(fullgrid)) deallocate(fullgrid)
+      IF (allocated(fullposcoef)) deallocate(fullposcoef)
+
+      RETURN
+!
+! --- error management
+!
+ 1001 CALL printerror2(0,1001,1,'hioxyo','readpartcfgobs')
+!
+ 101  WRITE (texterror,*) 'Incorrect observation block size'
+      CALL printerror2(0,101,3,'hioxyo','readpartcfgobs', &
+     &     comment=texterror)
 !
       END SUBROUTINE
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

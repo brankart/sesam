@@ -31,7 +31,9 @@
       use mod_mask
       use mod_spacexyo , only : &
      &     jpo,jpoend,jpitpend,jpx,jpxend,jpyend,jprend,jpsmplend, &
-     &     jpperc,poscoefobs,gridijkobs,arraynx_jpindxend
+     &     jpperc,poscoefobs,gridijkobs,arraynx_jpindxend, &
+     &     vo_idxbeg,vo_idxend
+
       use utilmkh
       use utilroa
       use utilfiles
@@ -163,15 +165,21 @@
         IF (allocok.NE.0) GOTO 1001
         vectorms(:) = FREAL(0.0)
 !
-        flagcfg=1
-        CALL readpartcfgobs (kconfigo,flagcfg,jnxyo, &
-     &                       kvectorms=vectorms(:))
-        flagcfg=2
-        CALL readpartcfgobs (kconfigo,flagcfg,jnxyo, &
-     &                       kgridijkobs=gridijkobs(:))
-        flagcfg=3
-        CALL readpartcfgobs (kconfigo,flagcfg,jnxyo, &
-     &                       kposcoefobs=poscoefobs(:,:))
+        IF (lsplitobs) THEN
+          CALL readpartcfgobs (kconfigo,jnxyo, &
+     &                         kvectorms=vectorms(:))
+          CALL readpartcfgobs (kconfigo,jnxyo, &
+     &                         kgridijkobs=gridijkobs(:))
+          CALL readpartcfgobs (kconfigo,jnxyo, &
+     &                         kposcoefobs=poscoefobs(:,:))
+        ELSE
+          CALL readcfgobs (kconfigo,flagcfg, &
+     &                     kvectorms=vectorms(:))
+          CALL readcfgobs (kconfigo,flagcfg, &
+     &                     kgridijkobs=gridijkobs(:))
+          CALL readcfgobs (kconfigo,flagcfg, &
+     &                     kposcoefobs=poscoefobs(:,:))
+        ENDIF
 
       ENDIF
 !

@@ -52,8 +52,8 @@
       use mod_mask
       use mod_spacexyo , only : jpdbs,jpdbsend,jpmend,jpsmplend, &
      &     jprend,jpo,jpoend,jpitp,jpitpend,jpy,jpyend,jpz,jpperc, &
-     &     jpx,jpxend,jpnxend,arraynx_jindxbeg, &
-     &     arraynx_jpindxend,arraynx_jindvarbeg
+     &     jpx,jpxend,jpnxend,arraynx_jindxbeg,arraynx_jpindxend, &
+     &     jpnoend,vo_idxbeg,vo_idxend
       use hioxyo
       use hiozon
       use hiodbs
