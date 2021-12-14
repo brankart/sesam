@@ -208,7 +208,11 @@
             GOTO 1000
           ENDIF
         ELSE
-          CALL mkyorms (oestd(:),flago)
+          IF (lsplitobs) THEN
+            CALL mkpartorms (oestd(:),jnxyo)
+          ELSE
+            CALL mkyorms (oestd(:),flago)
+          ENDIF
         ENDIF
 
 ! Allocate arrays for observation equivalent to state vector

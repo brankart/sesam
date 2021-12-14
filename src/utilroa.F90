@@ -52,6 +52,7 @@
       PUBLIC algoker_u, algocoef_u, algocoef_u_sf, algomatc_u
       PUBLIC algocoeflimit_u, algocalcGi, algoker_Gi, algocalcDi
       PUBLIC algosum_Di, mkyorms, mkrs, mkcoeftodta, algocalciRi
+      PUBLIC mkpartorms
 
       CONTAINS
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1168,6 +1169,69 @@
 ! --- error management
 !
  1000 CALL printerror2(0,1000,1,'utilroa','mkyorms')
+!
+      END SUBROUTINE
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+! -----------------------------------------------------------------
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      SUBROUTINE mkpartorms (kvectorms,kjnobs)
+!---------------------------------------------------------------------
+!
+!  Purpose : Fill block of observation error standard deviation vector
+!  -------   using parameters in SESAM configuration
+!
+!  Method : Make full vector and extract appropriate block of data
+!  ------
+!
+!  Input :  kjnobs  : block index
+!  -----
+!  Output : kvectorms : observation error standard deviation vector
+!  ------
+!---------------------------------------------------------------------
+! modules
+! =======
+      use mod_cfgxyo
+      use mod_spacexyo , only : jpoend,vo_idxbeg,vo_idxend
+      IMPLICIT NONE
+!----------------------------------------------------------------------
+! header declarations
+! ===================
+      BIGREAL, dimension(:), intent(out) :: kvectorms
+      INTEGER, intent(in) :: kjnobs
+!----------------------------------------------------------------------
+! local declarations
+! ==================
+      INTEGER :: jposize,flago,allocok
+      BIGREAL, dimension(:), allocatable :: fullrms
+!----------------------------------------------------------------------
+! Get size of input array
+      jposize = size(kvectorms,1)
+      IF (jposize.NE.vo_idxend(kjnobs)) GOTO 101
+
+! Allocate full observation vector
+      allocate ( fullrms(1:jpoend), stat=allocok )
+      IF (allocok.NE.0) GOTO 1001
+
+! Read full observation vector
+      flago=3
+      CALL mkyorms(fullrms(:),flago)
+
+! Extract observation block from full observation vector
+      kvectorms(1:jposize) = fullrms &
+     &       (vo_idxbeg(kjnobs):vo_idxbeg(kjnobs)+vo_idxend(kjnobs)-1)
+
+! Deallocate full observation vector
+      IF (allocated(fullrms)) deallocate(fullrms)
+
+      RETURN
+!
+! --- error management
+!
+ 1001 CALL printerror2(0,1001,1,'utilroa','mkpartorms')
+!
+ 101  WRITE (texterror,*) 'Incorrect observation block size'
+      CALL printerror2(0,101,3,'utilroa','mkpartorms', &
+     &     comment=texterror)
 !
       END SUBROUTINE
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
