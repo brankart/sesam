@@ -793,6 +793,7 @@
 ! -------------------------------------------------------------
 ! optional switches: fixjpx, fixjpz, fixjpu
 !
+      lsplitstate = .FALSE.
       IF (largfixjpx) THEN
          READ(argfixjpx,'(I8)',IOSTAT=ios) jpfixjpx
          IF (ios.NE.0) THEN
@@ -812,6 +813,7 @@
          jpfixjpx = jpfixjpx * jpproc
          jpfixjpx = ( jpxend - 1 ) / jpfixjpx + 1
       ELSEIF (jpproc.GT.1) THEN
+         lsplitstate = .TRUE.
          jpfixjpx = ( jpxend - 1 ) / jpproc + 1
       ELSE
          jpfixjpx = jpxend

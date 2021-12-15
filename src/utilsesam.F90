@@ -388,6 +388,8 @@
       CASE (1003)
          ctext1='bad SESAM parallelization settings'
          ctext2='(usually: too many processors for this task)'
+      CASE (1004)
+         ctext1='incompatible options used'
       CASE DEFAULT
          ctext1='unknown error label'
          ctext2='upgrade SESAM error management'

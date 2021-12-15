@@ -46,6 +46,7 @@
 ! --- SUBROUTINE  readcfgobs : Read Vo vector from 'obs' file
 ! ---                          (observation configuration only)
 ! --- SUBROUTINE  writeobs   : Write Vo vector in 'obs' file
+! --- SUBROUTINE  writepartobs   : Write block of Vo vector in 'obs' file
 ! --- SUBROUTINE  writesingleobs : Write segment of Vo vector in 'obs' file
 ! ---                          (corresponding to one observation database)
 ! --- 
@@ -69,7 +70,7 @@
       PUBLIC readvar,writevar,readdta,writedta
       PUBLIC evalhdrobs,readvalobs,readcfgobs
       PUBLIC readpartvalobs,readpartcfgobs
-      PUBLIC writeobs,writesingleobs
+      PUBLIC writeobs,writepartobs,writesingleobs
 
       CONTAINS
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1828,7 +1829,7 @@
 !  Method : Loop on observation databases and call appropriate
 !  ------   routine to write individual observation files
 !
-!  Input :  kfnoutobs  : filename  
+!  Input :  kfnoutobs  : filename
 !  -----    kvecto     : 1D vector object (Vo)
 !           kvectorms   : associated error value [obsolete]
 !           kgridijkobs : observation location (x,y,z)
@@ -1978,6 +1979,131 @@
  101  WRITE (texterror,*) 'Invalid file extension: ', &
      &       kfnoutobs(1:lenv(kfnoutobs))
       CALL printerror2(0,101,3,'hioxyo','writeobs',comment=texterror)
+!
+      END SUBROUTINE
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+! -----------------------------------------------------------------
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      SUBROUTINE writepartobs(kfnoutobs,kvecto,kvectorms,kgridijkobs, &
+     &     kposcoefobs)
+!---------------------------------------------------------------------
+!
+!  Purpose : Write block of Vo vector in 'obs' file
+!  -------
+!  Method : Assemble blocks of Vo vectors
+!  ------   and write the full Vo vector in file
+!
+!  Input :  kfnoutobs  : filename
+!  -----    kvecto     : 1D vector object (Vo)
+!           kvectorms   : associated error value [obsolete]
+!           kgridijkobs : observation location (x,y,z)
+!           kposcoefobs : observation operator (interpolation points
+!                         and interpolation coefficients)
+!---------------------------------------------------------------------
+! modules
+! =======
+      use mod_main
+      use mod_cfgxyo
+      IMPLICIT NONE
+!----------------------------------------------------------------------
+! header declarations
+! ===================
+      CHARACTER(len=*), intent(in) :: kfnoutobs
+      BIGREAL, dimension(:), intent(in) :: kvecto,kvectorms
+      TYPE (type_gridijk), dimension(:), intent(in)  :: kgridijkobs
+      TYPE (type_poscoef), dimension(:,:), intent(in) :: kposcoefobs
+!----------------------------------------------------------------------
+      BIGREAL, dimension(:), allocatable :: fullobs
+      BIGREAL, dimension(:), allocatable :: fullrms
+      TYPE (type_gridijk), dimension(:), allocatable :: fullgrid
+      TYPE (type_poscoef), dimension(:,:), allocatable :: fullposcoef
+      INTEGER, dimension(:), allocatable :: fullpos
+      INTEGER :: jposize,jpitpsize,allocok
+!----------------------------------------------------------------------
+      IF (nprint.GE.2) THEN
+         WRITE(numout,*) '*** ROUTINE : ./writepartobs :'
+         WRITE(numout,*) '         write observation object'
+      ENDIF
+! Get size of input arrays
+      jposize = size(kvecto,1)
+      jpitpsize = size(kposcoefobs,2)
+! Test coherence of input arrays
+      IF (jposize.NE.size(kvectorms,1)) GOTO 1000
+      IF (jposize.NE.size(kposcoefobs,1)) GOTO 1000
+
+#if defined MPI
+! Allocate full observation vector
+      allocate ( fullobs(1:jpoend), stat=allocok )
+      IF (allocok.NE.0) GOTO 1001
+      fullobs(1:jpoend) = 0.
+      allocate ( fullrms(1:jpoend), stat=allocok )
+      IF (allocok.NE.0) GOTO 1001
+      fullrms(1:jpoend) = 0.
+      allocate ( fullgrid(1:jpoend), stat=allocok )
+      IF (allocok.NE.0) GOTO 1001
+      fullgrid(:)=type_gridijk(FREAL(0.0),FREAL(0.0),FREAL(0.0))
+      allocate ( fullposcoef(1:jpoend,1:jpitpsize), stat=allocok )
+      IF (allocok.NE.0) GOTO 1001
+      poscoefobs(:,:) = type_poscoef(0,FREAL(0.0))
+      allocate ( fullpos(1:jpoend), stat=allocok )
+      IF (allocok.NE.0) GOTO 1001
+      fullobs(1:jpoend) = 0
+! 
+! Merge grid data
+      fullobs(vo_idxbeg(kjnobs):vo_idxbeg(kjnobs)+vo_idxend(kjnobs)-1) &
+     &     = kgridijkobs(1:jposize)%longi
+      CALL mpi_allreduce(MPI_IN_PLACE,fullobs,jpoend, &
+     &     mpi_double_precision,mpi_sum,0,mpi_comm_world,mpi_code)
+      fullgrid%longi(:)=fullobs(:)
+
+      fullobs(vo_idxbeg(kjnobs):vo_idxbeg(kjnobs)+vo_idxend(kjnobs)-1) &
+     &     = kgridijkobs(1:jposize)%latj
+      CALL mpi_allreduce(MPI_IN_PLACE,fullobs,jpoend, &
+     &     mpi_double_precision,mpi_sum,0,mpi_comm_world,mpi_code)
+      fullgrid%latj(:)=fullobs(:)
+
+      fullobs(vo_idxbeg(kjnobs):vo_idxbeg(kjnobs)+vo_idxend(kjnobs)-1) &
+     &     = kgridijkobs(1:jposize)%levk
+      CALL mpi_allreduce(MPI_IN_PLACE,fullobs,jpoend, &
+     &     mpi_double_precision,mpi_sum,0,mpi_comm_world,mpi_code)
+      fullgrid%levk(:)=fullobs(:)
+
+! Merge poscoef data
+      fullpos(vo_idxbeg(kjnobs):vo_idxbeg(kjnobs)+vo_idxend(kjnobs)-1) &
+     &     = kposcoefobs(1:jposize)%pos
+      CALL mpi_allreduce(MPI_IN_PLACE,fullpos,jpoend, &
+     &     mpi_integer,mpi_sum,0,mpi_comm_world,mpi_code)
+      fullposcoef%pos(:)=fullpos(:)
+
+      fullobs(vo_idxbeg(kjnobs):vo_idxbeg(kjnobs)+vo_idxend(kjnobs)-1) &
+     &     = kposcoefobs(1:jposize)%coef
+      CALL mpi_allreduce(MPI_IN_PLACE,fullobs,jpoend, &
+     &     mpi_double_precision,mpi_sum,0,mpi_comm_world,mpi_code)
+      fullposcoef%coef(:)=fullobs(:)
+
+! Merge obs and rms data
+      fullobs(vo_idxbeg(kjnobs):vo_idxbeg(kjnobs)+vo_idxend(kjnobs)-1) &
+     &     = kvecto(1:jposize)
+      fullrms(vo_idxbeg(kjnobs):vo_idxbeg(kjnobs)+vo_idxend(kjnobs)-1) &
+     &     = kvectorms(1:jposize)
+      CALL mpi_allreduce(MPI_IN_PLACE,fullobs,jpoend, &
+     &     mpi_double_precision,mpi_sum,0,mpi_comm_world,mpi_code)
+      CALL mpi_allreduce(MPI_IN_PLACE,fullrms,jpoend, &
+     &     mpi_double_precision,mpi_sum,0,mpi_comm_world,mpi_code)
+
+! Write full observation vector
+      CALL writeobs(kfnoutobs,fullobs,fullrms,fullgrid,fullposcoef)
+
+! Deallocate full observation vector
+      IF (allocated(fullobs)) deallocate(fullobs)
+      IF (allocated(fullrms)) deallocate(fullrms)
+      IF (allocated(fullgrid)) deallocate(fullgrid)
+      IF (allocated(fullposcoef)) deallocate(fullposcoef)
+#endif
+!
+! --- error management
+!
+ 1000 CALL printerror2(0,1000,1,'hioxyo','writepartobs')
 !
       END SUBROUTINE
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

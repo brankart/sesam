@@ -31,7 +31,8 @@
       use mod_mask
       use mod_spacexyo , only : &
      &     jpo,jpoend,jpitpend,jpx,jpxend,jpyend,jprend,jpsmplend, &
-     &     jpperc,poscoefobs,gridijkobs,arraynx_jpindxend, &
+     &     jpperc,poscoefobs,gridijkobs, &
+     &     arraynx_jindxbeg,arraynx_jpindxend, &
      &     vo_idxbeg,vo_idxend
 
       use utilmkh
@@ -47,13 +48,23 @@
 
       PUBLIC calcmcmc
 
-      LOGICAL, save :: obs_constraint, obs_ensemble, obs_anam
-      INTEGER, save :: flagxyo
+      LOGICAL, save :: obs_constraint=.FALSE.  ! Observation constraint
+      LOGICAL, save :: obs_ensemble=.FALSE.    ! Ensemble in obs space
+      LOGICAL, save :: obs_anam=.FALSE.        ! Anamorphosis in obs operator
+      LOGICAL, save :: dyn_constraint=.FALSE.  ! Dynamical constraint
+      LOGICAL, save :: rebuild_state=.FALSE. ! Rebuild in cost function
+
+      INTEGER, save :: flagxyo, jnxyo
       BIGREAL, dimension(:), allocatable, save :: obs
       BIGREAL, dimension(:), allocatable, save :: oestd
       BIGREAL, dimension(:), allocatable, save :: obseq
       BIGREAL, dimension(:,:), allocatable, save :: quantiles_ens
       BIGREAL, dimension(:), allocatable, save :: quantiles_ref
+
+      ! Storage for rebulding full state vector in cost function
+      BIGREAL, dimension(:), allocatable, save :: fullstate
+
+      INTEGER, save :: njo=0 ! totel number of evaluations of the cost function
 
       CONTAINS
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -104,7 +115,7 @@
       BIGREAL, dimension(:), allocatable, save :: vectorms
 !
       INTEGER :: allocok,jpssize,jpitpsize,jprsize,jpsmpl,jposize
-      INTEGER :: jnxyo,js,jr,jscl,flagcfg,flago
+      INTEGER :: js,jr,jscl,flagcfg,flago
       LOGICAL :: lectinfo,filexists
       INTEGER :: jrbasdeb,jrbasfin,numidx
       CHARACTER(len=bgword) :: dirname, fname
@@ -120,6 +131,22 @@
       jpitpsize=jpitpend
       jposize=jpoend
       IF (lsplitobs) jposize=vo_idxend(jnxyo)
+      IF ((lsplitobs).AND.(.NOT.lsplitstate)) GOTO 1000
+!
+      SELECT CASE (kflagxyo)
+      CASE (1)
+         jpssize=jpxend
+         IF (lsplitstate) jpssize=arraynx_jpindxend(jnxyo)
+      CASE (2)
+         jpssize=jpyend
+         IF (lsplitobs) GOTO 1004
+      CASE (3)
+         jpssize=jpoend
+         IF (lsplitobs) jpssize=vo_idxend(jnxyo)
+         IF (.NOT.PRESENT(kconfigo)) GOTO 1000
+      CASE DEFAULT
+         GOTO 1000
+      END SELECT
 !
       IF (nprint.GE.1) THEN
          WRITE(numout,*) '*** ROUTINE : sesam/modscor/calcmcmc :'
@@ -130,19 +157,13 @@
       obs_constraint = PRESENT(kinobs)
       obs_ensemble = PRESENT(kinobas)
       obs_anam = larganamorphosis
-!
-      SELECT CASE (kflagxyo)
-      CASE (1)
-         jpssize=jpxend
-         IF (nallmem.EQ.2) jpssize=arraynx_jpindxend(jnxyo)
-      CASE (2)
-         jpssize=jpyend
-      CASE (3)
-         jpssize=jpoend
-         IF (.NOT.PRESENT(kconfigo)) GOTO 1000
-      CASE DEFAULT
-         GOTO 1000
-      END SELECT
+      rebuild_state = dyn_constraint .OR. (.NOT.obs_ensemble)
+      rebuild_state = rebuild_state .AND. lsplitstate
+
+      IF (rebuild_state) THEN
+        allocate ( fullstate(1:jpxend), stat=allocok )
+        IF (allocok.NE.0) GOTO 1001
+      ENDIF
 !
       flago=3 ; lectinfo=.FALSE.
 !
@@ -359,6 +380,8 @@
      &                       scl_mult(1:jpscl), cost_jo, &
      &                       my_test=convergence_test )
       ENDIF
+
+      if (jproc.eq.0) PRINT *, 'Evaluations of cost function:', njo
 !     
 ! -5.- Write output ensemble
 ! --------------------------
@@ -377,12 +400,31 @@
         CALL writeyobas(koutbas,upens(:,:), &
      &             jrbasdeb,jrbasfin,kflagxyo)
       CASE (3)
-        CALL writeyobas(koutbas,upens(:,:), &
+        IF (lsplitobs) THEN
+          CALL writepartobas(koutbas,upens(:,:),jnxyo, &
+     &             jrbasdeb,jrbasfin,vectorms(:), &
+     &             gridijkobs(:),poscoefobs(:,:))
+        ELSE
+          CALL writeyobas(koutbas,upens(:,:), &
      &             jrbasdeb,jrbasfin,kflagxyo,vectorms(:), &
      &             gridijkobs(:),poscoefobs(:,:))
+        ENDIF
       CASE DEFAULT
         GOTO 1000
       END SELECT
+
+      IF (obs_ensemble) THEN
+        ! write the same ensemble in observation space
+        IF (lsplitobs) THEN
+          CALL writepartobas(koutobas,upensobs(:,:),jnxyo, &
+     &             jrbasdeb,jrbasfin,vectorms(:), &
+     &             gridijkobs(:),poscoefobs(:,:))
+        ELSE
+          CALL writeyobas(koutobas,upensobs(:,:), &
+     &             jrbasdeb,jrbasfin,flago,vectorms(:), &
+     &             gridijkobs(:),poscoefobs(:,:))
+        ENDIF
+      ENDIF
 
 !     Write restart index in MCMC chain
       WRITE(fname,'("./",A,"/",A)') koutbas(1:lenv(koutbas)), &
@@ -399,6 +441,7 @@
       IF (allocated(gridijkobs)) deallocate(gridijkobs)
       IF (allocated(vectorms)) deallocate(vectorms)
       IF (allocated(obs)) deallocate(obs)
+      IF (allocated(fullstate)) deallocate(fullstate)
 !
       CALL kiss_save()
 !
@@ -408,6 +451,7 @@
 !
  1000 CALL printerror2(0,1000,1,'algomcmc','algomcmc')
  1001 CALL printerror2(0,1001,3,'algomcmc','algomcmc')
+ 1004 CALL printerror2(0,1004,3,'algomcmc','algomcmc')
 !
 !
  101  WRITE (texterror,*) 'Bad ...'
@@ -444,6 +488,11 @@
 
       cost_jo = 0.
 
+! Rebuild full state vector if needed
+      IF (rebuild_state) THEN
+        CALL rebuild_fullstate(state)
+      ENDIF
+
       IF (obs_constraint) THEN
 ! Compute observation equivalent from input state
         IF (obs_ensemble) THEN
@@ -451,7 +500,11 @@
         ELSE
           SELECT CASE (flagxyo)
           CASE (1)
-            CALL mkhytoo(state(tabindxtoy(:)),obseq,poscoefobs)
+            IF (rebuild_state) THEN
+              CALL mkhytoo(fullstate(tabindxtoy(:)),obseq,poscoefobs)
+            ELSE
+              CALL mkhytoo(state(tabindxtoy(:)),obseq,poscoefobs)
+            ENDIF
           CASE (2)
             CALL mkhytoo(state,obseq,poscoefobs)
           CASE (3)
@@ -465,6 +518,13 @@
 ! Evaluate observation cost function
         cost_jo = obserror_logpdf( obs, obseq, oestd )
       ENDIF
+
+#if defined MPI
+      call MPI_ALLREDUCE (MPI_IN_PLACE, cost_jo, 1,  &
+     &     MPI_DOUBLE_PRECISION,MPI_SUM,mpi_comm_world,mpi_code)
+#endif
+
+      njo = njo + 1
 
       END FUNCTION cost_jo
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -560,6 +620,39 @@
       cdf_obs = obserror_cdf( o, y, oestd(obs_idx) )
 
       END FUNCTION cdf_obs
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+! -----------------------------------------------------------------
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      SUBROUTINE rebuild_fullstate(state)
+!---------------------------------------------------------------------
+!
+!  Purpose : rebuild full state vector from blocks
+!
+!  Method : Callnack routine to provide to the MCMC sampler
+!  ------
+!
+!  Input : state     : block of state vector
+!  -----
+!---------------------------------------------------------------------
+! modules
+! =======
+      IMPLICIT NONE
+!----------------------------------------------------------------------
+! header declarations
+! ===================
+      REAL(kind=8), dimension(:), intent(in) :: state
+!----------------------------------------------------------------------
+      fullstate=0.
+
+#if defined MPI
+      fullstate(arraynx_jindxbeg(jnxyo):   &
+     &          arraynx_jindxbeg(jnxyo)+   &
+     &          arraynx_jpindxend(jnxyo)-1) = state(:)
+      CALL mpi_allreduce(MPI_IN_PLACE,fullstate,jpxend, &
+     &     mpi_double_precision,mpi_sum,0,mpi_comm_world,mpi_code)
+#endif
+
+      END SUBROUTINE
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ! -----------------------------------------------------------------
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

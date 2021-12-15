@@ -30,6 +30,7 @@
 ! --- SUBROUTINE readbas      : Read Cx, Cy or Co object from input directory
 ! --- SUBROUTINE writebas     : Write Cx object to output directory
 ! --- SUBROUTINE writeyobas   : Write Cy or Co object to output directory
+! --- SUBROUTINE writepartobas: Write block of Co object to output directory
 !
 ! --- SUBROUTINE readhdrzbas  : Read Cz configuration
 ! --- SUBROUTINE readptzbas   : Read Cz pointers
@@ -54,7 +55,7 @@
       IMPLICIT NONE
       PRIVATE
 
-      PUBLIC readbas,writebas,writeyobas
+      PUBLIC readbas,writebas,writeyobas,writepartobas
       PUBLIC readhdrzbas,readptzbas,readnbubzbas,writehdrzbas
       PUBLIC writeptzbas,readinfobas,writeinfobas
       PUBLIC readvectb,readmatzmb,readscalbas
@@ -358,6 +359,91 @@
 !
  102  WRITE (texterror,*) 'Invalid covariance directory name'
       CALL printerror2(0,102,3,'hiobas','writeyobas',comment=texterror)
+!
+      END SUBROUTINE
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+! -----------------------------------------------------------------
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      SUBROUTINE writepartobas(dirnambas,kbasesr,kjnxyo,kjrbasdeb, &
+     &     kjrbasfin,kvectsrms,kgridijkobs,kposcoefobs)
+!---------------------------------------------------------------------
+!
+!  Purpose : Write block of Co to output directory
+!  -------
+!
+!  Method : Write ensemble of vectors (error modes) defining
+!  ------   the reduced order covariance matrix
+!
+!  Input : dirnambas   : name of the directory
+!  -----   kbasesr     : covariance object (s*r array)
+!          kjnxyo      : block index
+!          kjrbasdeb   : first vector to read (in the ensemble)
+!          kjrbasfin   : last vector to read (in the ensemble)
+!          kvectsrms   : observation error (for Co vectors only) [obsolete]
+!          kgridijkobs : observation location (for Co vectors only)
+!          kposcoefobs : observation operator (for Co objects only)
+!
+!---------------------------------------------------------------------
+! modules
+! =======
+      use mod_cfgxyo
+      IMPLICIT NONE
+!----------------------------------------------------------------------
+! header declarations
+! ===================
+      CHARACTER(len=*), intent(in) :: dirnambas
+      BIGREAL, dimension(:,:), intent(in) :: kbasesr
+      INTEGER, intent(in) :: kjnxyo
+      INTEGER , intent(in) :: kjrbasdeb,kjrbasfin
+      BIGREAL, dimension(:), intent(in) :: kvectsrms
+      TYPE (type_gridijk), dimension(:), intent(in)  ::  &
+     &     kgridijkobs
+      TYPE (type_poscoef), dimension(:,:), intent(in) ::  &
+     &     kposcoefobs
+!----------------------------------------------------------------------
+! local declarations
+! ==================
+      CHARACTER(len=bgword) :: vctnam,fname
+      INTEGER :: serie,jr,jprbas
+      INTEGER :: jpssize,jprsize
+!----------------------------------------------------------------------
+!
+      IF (nprint.GE.2) THEN
+         WRITE(numout,*) '*** ROUTINE : ./writepartobas :'
+         WRITE(numout,*) '         write block of Co covariance matrix'
+         WRITE(numout,*) '    ==> WRITING directory ', &
+     &                                dirnambas(1:lenv(dirnambas))
+      ENDIF
+!
+! Check validity of output directory and routine arguments
+      jpssize = size(kbasesr,1)
+      jprsize = size(kbasesr,2)
+      IF (.NOT.(validextbas(dirnambas))) GOTO 102
+      IF (.NOT.(validextobsbas(dirnambas))) GOTO 102
+      IF (jpssize.NE.size(kvectsrms,1))  GOTO 1000
+      IF (jpssize.NE.size(kgridijkobs,1))  GOTO 1000
+      IF (jpssize.NE.size(kposcoefobs,1))  GOTO 1000
+!
+! Loop on vectors in the ensemble
+      serie=1
+      DO jr=kjrbasdeb,kjrbasfin
+! Build file name for vector number jr
+         CALL fildirbas (vctnam,dirnambas,jprbas,jr,serie)
+         WRITE(fname,'("./",A,"/",A)') dirnambas(1:lenv(dirnambas)), &
+     &        vctnam(1:lenv(vctnam))
+! Writing vector number jr
+         CALL writepartobs(fname,kbasesr(:,jr), &
+     &           kvectsrms,kgridijkobs,kposcoefobs)
+      ENDDO
+!
+      RETURN
+!
+! --- error management
+!
+ 1000 CALL printerror2(0,1000,1,'hiobas','writepartobas')
+!
+ 102  WRITE (texterror,*) 'Invalid covariance directory name'
+      CALL printerror2(0,102,3,'hiobas','writepartobas',comment=texterror)
 !
       END SUBROUTINE
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
