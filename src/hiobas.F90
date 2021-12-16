@@ -432,7 +432,7 @@
          WRITE(fname,'("./",A,"/",A)') dirnambas(1:lenv(dirnambas)), &
      &        vctnam(1:lenv(vctnam))
 ! Writing vector number jr
-         CALL writepartobs(fname,kbasesr(:,jr), &
+         CALL writepartobs(fname,kbasesr(:,jr),kjnxyo, &
      &           kvectsrms,kgridijkobs,kposcoefobs)
       ENDDO
 !

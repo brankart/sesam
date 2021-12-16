@@ -34,6 +34,7 @@
      &     jpperc,poscoefobs,gridijkobs, &
      &     arraynx_jindxbeg,arraynx_jpindxend, &
      &     vo_idxbeg,vo_idxend
+      use mod_mpitime
 
       use utilmkh
       use utilroa
@@ -136,7 +137,7 @@
       SELECT CASE (kflagxyo)
       CASE (1)
          jpssize=jpxend
-         IF (lsplitstate) jpssize=arraynx_jpindxend(jnxyo)
+         IF (lsplitstate) jpssize=jpx
       CASE (2)
          jpssize=jpyend
          IF (lsplitobs) GOTO 1004
@@ -369,7 +370,10 @@
 !     
 ! -4.- MCMC iteration
 ! -------------------
-!
+#if defined MPI
+      call MPI_TIMER(1)
+      call MPI_TIMER(0)
+#endif
       IF (obs_ensemble) THEN
         CALL mcmc_iteration( maxiter, upensobs, inensobs, &
      &                       scl_mult(1:jpscl), cost_jo, &
@@ -380,7 +384,10 @@
      &                       scl_mult(1:jpscl), cost_jo, &
      &                       my_test=convergence_test )
       ENDIF
-
+#if defined MPI
+      call MPI_TIMER(1)
+      call MPI_TIMER(0)
+#endif
       if (jproc.eq.0) PRINT *, 'Evaluations of cost function:', njo
 !     
 ! -5.- Write output ensemble
@@ -513,15 +520,15 @@
         ENDIF
 ! Perform backward anamorphosis (if requested)
         IF (obs_anam) THEN
-          call ana_backward( obseq, quantiles_ens, quantiles_ref )
+          CALL ana_backward( obseq, quantiles_ens, quantiles_ref )
         ENDIF
 ! Evaluate observation cost function
         cost_jo = obserror_logpdf( obs, obseq, oestd )
       ENDIF
 
 #if defined MPI
-      call MPI_ALLREDUCE (MPI_IN_PLACE, cost_jo, 1,  &
-     &     MPI_DOUBLE_PRECISION,MPI_SUM,mpi_comm_world,mpi_code)
+      CALL mpi_allreduce (mpi_in_place, cost_jo, 1,  &
+     &     mpi_double_precision,mpi_sum,mpi_comm_world,mpi_code)
 #endif
 
       njo = njo + 1
@@ -645,9 +652,10 @@
       fullstate=0.
 
 #if defined MPI
-      fullstate(arraynx_jindxbeg(jnxyo):   &
-     &          arraynx_jindxbeg(jnxyo)+   &
-     &          arraynx_jpindxend(jnxyo)-1) = state(:)
+      fullstate(arraynx_jindxbeg(jnxyo):    &
+     &          arraynx_jindxbeg(jnxyo)+    &
+     &          arraynx_jpindxend(jnxyo)-1) &
+     &  = state(1:arraynx_jpindxend(jnxyo))
       CALL mpi_allreduce(MPI_IN_PLACE,fullstate,jpxend, &
      &     mpi_double_precision,mpi_sum,0,mpi_comm_world,mpi_code)
 #endif

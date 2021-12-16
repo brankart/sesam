@@ -1984,8 +1984,8 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ! -----------------------------------------------------------------
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      SUBROUTINE writepartobs(kfnoutobs,kvecto,kvectorms,kgridijkobs, &
-     &     kposcoefobs)
+      SUBROUTINE writepartobs(kfnoutobs,kvecto,kjnobs,kvectorms, &
+     &     kgridijkobs,kposcoefobs)
 !---------------------------------------------------------------------
 !
 !  Purpose : Write block of Vo vector in 'obs' file
@@ -1995,6 +1995,7 @@
 !
 !  Input :  kfnoutobs  : filename
 !  -----    kvecto     : 1D vector object (Vo)
+!           kjnobs     : block index
 !           kvectorms   : associated error value [obsolete]
 !           kgridijkobs : observation location (x,y,z)
 !           kposcoefobs : observation operator (interpolation points
@@ -2004,12 +2005,14 @@
 ! =======
       use mod_main
       use mod_cfgxyo
+      use mod_spacexyo , only : jpoend,vo_idxbeg,vo_idxend
       IMPLICIT NONE
 !----------------------------------------------------------------------
 ! header declarations
 ! ===================
       CHARACTER(len=*), intent(in) :: kfnoutobs
       BIGREAL, dimension(:), intent(in) :: kvecto,kvectorms
+      INTEGER, intent(in) :: kjnobs
       TYPE (type_gridijk), dimension(:), intent(in)  :: kgridijkobs
       TYPE (type_poscoef), dimension(:,:), intent(in) :: kposcoefobs
 !----------------------------------------------------------------------
@@ -2017,7 +2020,8 @@
       BIGREAL, dimension(:), allocatable :: fullrms
       TYPE (type_gridijk), dimension(:), allocatable :: fullgrid
       TYPE (type_poscoef), dimension(:,:), allocatable :: fullposcoef
-      INTEGER, dimension(:), allocatable :: fullpos
+      INTEGER, dimension(:,:), allocatable :: fullpos
+      BIGREAL, dimension(:,:), allocatable :: fullcoef
       INTEGER :: jposize,jpitpsize,allocok
 !----------------------------------------------------------------------
       IF (nprint.GE.2) THEN
@@ -2029,70 +2033,80 @@
       jpitpsize = size(kposcoefobs,2)
 ! Test coherence of input arrays
       IF (jposize.NE.size(kvectorms,1)) GOTO 1000
+      IF (jposize.NE.size(kgridijkobs,1)) GOTO 1000
       IF (jposize.NE.size(kposcoefobs,1)) GOTO 1000
 
 #if defined MPI
 ! Allocate full observation vector
       allocate ( fullobs(1:jpoend), stat=allocok )
       IF (allocok.NE.0) GOTO 1001
-      fullobs(1:jpoend) = 0.
       allocate ( fullrms(1:jpoend), stat=allocok )
       IF (allocok.NE.0) GOTO 1001
-      fullrms(1:jpoend) = 0.
       allocate ( fullgrid(1:jpoend), stat=allocok )
       IF (allocok.NE.0) GOTO 1001
       fullgrid(:)=type_gridijk(FREAL(0.0),FREAL(0.0),FREAL(0.0))
       allocate ( fullposcoef(1:jpoend,1:jpitpsize), stat=allocok )
       IF (allocok.NE.0) GOTO 1001
-      poscoefobs(:,:) = type_poscoef(0,FREAL(0.0))
-      allocate ( fullpos(1:jpoend), stat=allocok )
+      fullposcoef(:,:) = type_poscoef(0,FREAL(0.0))
+      allocate ( fullpos(1:jpoend,1:jpitpsize), stat=allocok )
       IF (allocok.NE.0) GOTO 1001
-      fullobs(1:jpoend) = 0
+      allocate ( fullcoef(1:jpoend,1:jpitpsize), stat=allocok )
+      IF (allocok.NE.0) GOTO 1001
 ! 
 ! Merge grid data
+      fullobs(:) = 0.
       fullobs(vo_idxbeg(kjnobs):vo_idxbeg(kjnobs)+vo_idxend(kjnobs)-1) &
      &     = kgridijkobs(1:jposize)%longi
       CALL mpi_allreduce(MPI_IN_PLACE,fullobs,jpoend, &
-     &     mpi_double_precision,mpi_sum,0,mpi_comm_world,mpi_code)
-      fullgrid%longi(:)=fullobs(:)
+     &     mpi_double_precision,mpi_sum,mpi_comm_world,mpi_code)
+      fullgrid(:)%longi=fullobs(:)
 
+      fullobs(:) = 0.
       fullobs(vo_idxbeg(kjnobs):vo_idxbeg(kjnobs)+vo_idxend(kjnobs)-1) &
      &     = kgridijkobs(1:jposize)%latj
       CALL mpi_allreduce(MPI_IN_PLACE,fullobs,jpoend, &
-     &     mpi_double_precision,mpi_sum,0,mpi_comm_world,mpi_code)
-      fullgrid%latj(:)=fullobs(:)
+     &     mpi_double_precision,mpi_sum,mpi_comm_world,mpi_code)
+      fullgrid(:)%latj=fullobs(:)
 
+      fullobs(:) = 0.
       fullobs(vo_idxbeg(kjnobs):vo_idxbeg(kjnobs)+vo_idxend(kjnobs)-1) &
      &     = kgridijkobs(1:jposize)%levk
       CALL mpi_allreduce(MPI_IN_PLACE,fullobs,jpoend, &
-     &     mpi_double_precision,mpi_sum,0,mpi_comm_world,mpi_code)
-      fullgrid%levk(:)=fullobs(:)
+     &     mpi_double_precision,mpi_sum,mpi_comm_world,mpi_code)
+      fullgrid(:)%levk=fullobs(:)
 
 ! Merge poscoef data
-      fullpos(vo_idxbeg(kjnobs):vo_idxbeg(kjnobs)+vo_idxend(kjnobs)-1) &
-     &     = kposcoefobs(1:jposize)%pos
-      CALL mpi_allreduce(MPI_IN_PLACE,fullpos,jpoend, &
-     &     mpi_integer,mpi_sum,0,mpi_comm_world,mpi_code)
-      fullposcoef%pos(:)=fullpos(:)
+      fullpos(:,:) = 0
+      fullpos(vo_idxbeg(kjnobs):vo_idxbeg(kjnobs)+vo_idxend(kjnobs)-1,:) &
+     &     = kposcoefobs(1:jposize,:)%pos
+      CALL mpi_allreduce(MPI_IN_PLACE,fullpos,jpoend*jpitpsize, &
+     &     mpi_integer,mpi_sum,mpi_comm_world,mpi_code)
+      fullposcoef(:,:)%pos=fullpos(:,:)
 
-      fullobs(vo_idxbeg(kjnobs):vo_idxbeg(kjnobs)+vo_idxend(kjnobs)-1) &
-     &     = kposcoefobs(1:jposize)%coef
-      CALL mpi_allreduce(MPI_IN_PLACE,fullobs,jpoend, &
-     &     mpi_double_precision,mpi_sum,0,mpi_comm_world,mpi_code)
-      fullposcoef%coef(:)=fullobs(:)
+      fullcoef(:,:) = 0.
+      fullcoef(vo_idxbeg(kjnobs):vo_idxbeg(kjnobs)+vo_idxend(kjnobs)-1,:) &
+     &     = kposcoefobs(1:jposize,:)%coef
+      CALL mpi_allreduce(MPI_IN_PLACE,fullcoef,jpoend*jpitpsize, &
+     &     mpi_double_precision,mpi_sum,mpi_comm_world,mpi_code)
+      fullposcoef(:,:)%coef=fullcoef(:,:)
 
 ! Merge obs and rms data
+      fullobs(:) = 0.
       fullobs(vo_idxbeg(kjnobs):vo_idxbeg(kjnobs)+vo_idxend(kjnobs)-1) &
      &     = kvecto(1:jposize)
+      CALL mpi_allreduce(MPI_IN_PLACE,fullobs,jpoend, &
+     &     mpi_double_precision,mpi_sum,mpi_comm_world,mpi_code)
+
+      fullrms(:) = 0.
       fullrms(vo_idxbeg(kjnobs):vo_idxbeg(kjnobs)+vo_idxend(kjnobs)-1) &
      &     = kvectorms(1:jposize)
-      CALL mpi_allreduce(MPI_IN_PLACE,fullobs,jpoend, &
-     &     mpi_double_precision,mpi_sum,0,mpi_comm_world,mpi_code)
       CALL mpi_allreduce(MPI_IN_PLACE,fullrms,jpoend, &
-     &     mpi_double_precision,mpi_sum,0,mpi_comm_world,mpi_code)
+     &     mpi_double_precision,mpi_sum,mpi_comm_world,mpi_code)
 
 ! Write full observation vector
-      CALL writeobs(kfnoutobs,fullobs,fullrms,fullgrid,fullposcoef)
+      IF (jproc.EQ.0) THEN
+        CALL writeobs(kfnoutobs,fullobs,fullrms,fullgrid,fullposcoef)
+      ENDIF
 
 ! Deallocate full observation vector
       IF (allocated(fullobs)) deallocate(fullobs)
@@ -2100,10 +2114,13 @@
       IF (allocated(fullgrid)) deallocate(fullgrid)
       IF (allocated(fullposcoef)) deallocate(fullposcoef)
 #endif
+
+      RETURN
 !
 ! --- error management
 !
  1000 CALL printerror2(0,1000,1,'hioxyo','writepartobs')
+ 1001 CALL printerror2(0,1001,3,'hioxyo','writepartobs')
 !
       END SUBROUTINE
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
