@@ -30,6 +30,7 @@
       MODULE algospct
       use mod_main
       use ensdam_storfg
+      use ensdam_storng
       IMPLICIT NONE
       PRIVATE
 
