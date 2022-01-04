@@ -859,6 +859,10 @@
       IF (largfixjpx.OR.(jpproc.GT.1)) THEN
          nallmem=2
          jpx = jpfixjpx
+         IF (nmode.EQ.23) THEN
+            nallmem=3
+            jpx = jpxend
+         ENDIF
       ELSE
          nallmem=3
          jpx = jpxend

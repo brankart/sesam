@@ -397,12 +397,14 @@
 !       Draw random frequencies and phases for random timeseries
 !       (identical for all levels, all variables)
 !       separately for every spectral amplitude (jampl)
+        CALL kiss_load()
         CALL def_spect_init(jptspct,jpampl,0,0)
         CALL def_sample_size(jpsmpl,0,0)
         DO jampl=1,jpampl
           CALL def_spect_power(1,jampl,tspct_freq,tspct_power)
           CALL sample_freq_1d(jampl)
         ENDDO
+        CALL kiss_save()
 
         js0 = 1
         DO jsxy=1,sxyend
@@ -505,6 +507,7 @@
 ! -3.- Write output data
 ! ----------------------
 !
+      IF (jproc.EQ.0) THEN
       IF ((kargtypeoper(1:1).EQ.'-').OR.(kargtypeoper(1:1).EQ.'D') &
      &                              .OR.(kargtypeoper(1:1).EQ.'R') ) THEN
         SELECT CASE (kflagxyo)
@@ -515,6 +518,7 @@
         CASE DEFAULT
            GOTO 1000
         END SELECT
+      ENDIF
       ENDIF
 !
 ! --- deallocation
