@@ -541,6 +541,7 @@
       IF (allocated(time)) deallocate(time)
       IF (allocated(tspct_freq)) deallocate(tspct_freq)
       IF (allocated(tspct_power)) deallocate(tspct_power)
+      IF (allocated(spctstd)) deallocate(spctstd)
 
       RETURN
 !
