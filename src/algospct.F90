@@ -423,7 +423,9 @@
 !         Loop on time
           DO jt=1,sxy_jpt(indsxy)
 
-            WRITE(*,'(2a,2i4)') 'Generating time slice: ',sxy_nam(indsxy),jt
+            IF (jproc.EQ.0) THEN
+              WRITE(*,'(2a,2i4)') 'Generating time slice: ',sxy_nam(indsxy),jt
+            ENDIF
 
 !           Generate amplitude of spectral harmonics for time t           
             jampl=1
