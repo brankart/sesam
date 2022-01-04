@@ -832,7 +832,7 @@
          GOTO 1000
       END SELECT
 !
-      time(:) = FREAL(ptabt(:))
+      time(1:nt) = FREAL(ptabt(1:nt))
 !
 ! -3.- Close grid file
 ! --------------------
@@ -856,19 +856,19 @@
  101  WRITE (texterror,*) 'Unsupported file format'
       CALL printerror2(0,101,3,'hiogrd','readtime',comment=texterror)
  103  WRITE (texterror,*) 'bad dimensions in grid file'
-      CALL printerror2(0,103,3,'hiogrd','readgrd',comment=texterror)
+      CALL printerror2(0,103,3,'hiogrd','readtime',comment=texterror)
  105  WRITE (texterror,*) 'Bad NetCDF file: ',kfname
-      CALL printerror2(0,105,3,'hiogrd','readgrd',comment=texterror)
+      CALL printerror2(0,105,3,'hiogrd','readtime',comment=texterror)
  106  WRITE (texterror,*) 'Bad dimension in NetCDF file: ',kfname
-      CALL printerror2(0,106,3,'hiogrd','readgrd',comment=texterror)
+      CALL printerror2(0,106,3,'hiogrd','readtime',comment=texterror)
  107  WRITE (texterror,*) 'Bad variable in NetCDF file: ',kfname
-      CALL printerror2(0,107,3,'hiogrd','readgrd',comment=texterror)
+      CALL printerror2(0,107,3,'hiogrd','readtime',comment=texterror)
  108  WRITE (texterror,*) 'Bad dims for NetCDF variable in: ',kfname
-      CALL printerror2(0,108,3,'hiogrd','readgrd',comment=texterror)
+      CALL printerror2(0,108,3,'hiogrd','readtime',comment=texterror)
  109  WRITE (texterror,*) 'Error reading NetCDF file: ',kfname
-      CALL printerror2(0,109,3,'hiogrd','readgrd',comment=texterror)
+      CALL printerror2(0,109,3,'hiogrd','readtime',comment=texterror)
  110  WRITE (texterror,*) 'Error closing Netcdf file: ',kfname
-      CALL printerror2(0,110,3,'hiogrd','readgrd',comment=texterror)
+      CALL printerror2(0,110,3,'hiogrd','readtime',comment=texterror)
 !
       END SUBROUTINE
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -36,6 +36,7 @@
 ! =======
       use mod_main
       use mod_cfgxyo
+      use algospct, only : loc_time_scale, loc_radius_in_deg
       use ensdam_mcmc_update
       IMPLICIT NONE
 !----------------------------------------------------------------------
@@ -189,6 +190,12 @@
           READ(attr,*,ERR=102) mcmc_convergence_stop
         CASE('MCMC_ZERO_START')
           READ(attr,*,ERR=102) mcmc_zero_start
+!
+! Parameterization of localization radius fro random sampling
+        CASE('LOC_TIME_SCALE')
+          READ(attr,*,ERR=102) loc_time_scale
+        CASE('LOC_RADIUS_IN_DEG')
+          READ(attr,*,ERR=102) loc_radius_in_deg
 !
 ! Parameterization of regression in SPCT module
         CASE('REGR_TYPE')

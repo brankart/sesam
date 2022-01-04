@@ -29,10 +29,22 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       MODULE algospct
       use mod_main
+      use ensdam_storfg
       IMPLICIT NONE
       PRIVATE
 
       PUBLIC algospctvct, algospctbas
+
+      ! Public variables
+      BIGREAL, PUBLIC, save :: loc_time_scale=1.    !  Localization time scale
+      BIGREAL, PUBLIC, save :: loc_radius_in_deg=1. !  Localization radius
+
+      ! Private variables/parameters
+      INTEGER, save :: jpl  ! maximum degree of Legendre polynomials
+
+      INTEGER, parameter :: jptspct=1000  ! Number of point discretizing time power spectrum
+      INTEGER, parameter :: jpsmpl=1000   ! Size of sample of frequencies
+      BIGREAL, parameter :: pi=3.14159265358979
 
       CONTAINS
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -83,8 +95,9 @@
       BIGREAL, dimension(:), allocatable, save :: vects
       BIGREAL, dimension(:), allocatable, save :: vectorms
 !
-      INTEGER :: allocok,jpssize,jpisize,jpjsize,jpitpsize
-      INTEGER :: jnxyo,js,jr,js0,js1,jsxy,jk,jt,jpl,jl,jm,jlmin
+      INTEGER :: allocok,jpssize,jpisize,jpjsize,jpitpsize,jptsize
+      INTEGER :: jnxyo,js,jr,js0,js1,jsxy,jk,jt,jl,jm,jlmin
+      INTEGER :: jampl,jpampl
       LOGICAL :: lectinfo
       INTEGER :: flagcfg,ios
       INTEGER :: sxyend,indsxy,nbr
@@ -92,9 +105,12 @@
       INTEGER, dimension(1:nbvar) :: sxy_jpi,sxy_jpj,sxy_jpk,sxy_jpt
       CHARACTER(len=varlg), dimension(1:nbvar) :: sxy_nam
       BIGREAL :: latmin, latmax, dlatmax
-      BIGREAL, DIMENSION(:), allocatable :: lon, lat, wei, obs, obswei
+      BIGREAL, DIMENSION(:), allocatable :: lon, lat
+      BIGREAL, DIMENSION(:), allocatable :: wei, obs, obswei
       BIGREAL, DIMENSION(:,:), allocatable :: weightij
       BIGREAL, DIMENSION(:,:), allocatable :: spct, spctstd
+      BIGREAL, DIMENSION(:), allocatable :: tspct_freq, tspct_power
+      BIGREAL, DIMENSION(:,:), allocatable :: ran_timeseries
 !----------------------------------------------------------------------
 !
       IF (nprint.GE.1) THEN
@@ -116,6 +132,7 @@
 !
       IF ( (kargtypeoper(1:1).EQ.'+').OR. &
      &     (kargtypeoper(1:1).EQ.'-').OR. &
+     &     (kargtypeoper(1:1).EQ.'R').OR. &
      &     (kargtypeoper(1:1).EQ.'O') ) THEN
         jlmin = 0
         READ(kargtypeoper((posit(kargtypeoper,'_')+1): &
@@ -356,6 +373,81 @@
           ENDDO
           ENDDO
         ENDDO
+      ELSEIF (kargtypeoper(1:1).EQ.'R') THEN
+        IF (kflagxyo.GE.3) GOTO 1000
+!       Generate random field with given spectrum in space and time
+
+        jptsize=MAXVAL(sxy_jpt(:))
+        jpampl=(jpl+1)*(jpl+1)
+        allocate (ran_timeseries(1:jptsize,1:jpampl), stat=allocok )
+        IF (allocok.NE.0) GOTO 1001
+        allocate ( time(1:jptsize) , stat = allocok )
+        IF (allocok.GT.0) GOTO 1001
+        allocate ( tspct_freq(1:jptspct) , stat = allocok )
+        IF (allocok.GT.0) GOTO 1001
+        allocate ( tspct_power(1:jptspct) , stat = allocok )
+        IF (allocok.GT.0) GOTO 1001
+        allocate ( spctstd(0:jpl,-jpl:jpl), stat=allocok )
+        IF (allocok.NE.0) GOTO 1001
+
+!       Define power spectrum for spherical harmonics
+!       and define time power spectrum from parameters
+        CALL define_spct(spctstd,tspct_freq,tspct_power)
+
+!       Draw random frequencies and phases for random timeseries
+!       (identical for all levels, all variables)
+!       separately for every spectral amplitude (jampl)
+        CALL def_spect_init(jptspct,jpampl,0,0)
+        CALL def_sample_size(jpsmpl,0,0)
+        DO jampl=1,jpampl
+          CALL def_spect_power(1,jampl,tspct_freq,tspct_power)
+          CALL sample_freq_1d(jampl)
+        ENDDO
+
+        js0 = 1
+        DO jsxy=1,sxyend
+          indsxy= sxy_ord(jsxy)
+          CALL readgrd(kflagxyo,indsxy)
+          CALL readtime(kflagxyo,indsxy)
+
+!         Generate random timeseries on required time grid
+          DO jampl=1,jpampl
+            CALL gen_field_1d(jampl,                                &
+     &                  ran_timeseries(1:sxy_jpt(indsxy),jampl), &
+     &                  time(1:sxy_jpt(indsxy)))
+          ENDDO
+
+!         Loop on time
+          DO jt=1,sxy_jpt(indsxy)
+
+            WRITE(*,'(2a,2i4)') 'Generating time slice: ',sxy_nam(indsxy),jt
+
+!           Generate amplitude of spectral harmonics for time t           
+            jampl=1
+            DO jl=0,jpl
+            DO jm=-jl,jl
+              spct(jl,jm)=ran_timeseries(jt,jampl)*spctstd(jl,jm)
+              jampl=jampl+1
+            ENDDO
+            ENDDO
+
+!           Loop on levels
+            DO jk=1,sxy_jpk(indsxy)
+!
+              CALL mk8vct(lon(1:),gridij(:,:)%longi,jk,jt, &
+     &                    jsxy,nbr,kflagxyo)
+              CALL mk8vct(lat(1:),gridij(:,:)%latj, jk,jt, &
+     &                    jsxy,nbr,kflagxyo)
+!
+              js1 = js0 + nbr - 1
+              CALL back_ylm( spct(0:,-jpl:), vects(js0:js1), &
+     &                       lon(1:nbr), lat(1:nbr) )
+              js0 = js0 + nbr
+            ENDDO
+          ENDDO
+
+        ENDDO
+
       ELSEIF (kargtypeoper(1:1).EQ.'O') THEN
 !
         CALL init_regr_ylm( regr_type_sesam, regr_maxiter_sesam, regr_maxbloc_sesam, &
@@ -413,7 +505,8 @@
 ! -3.- Write output data
 ! ----------------------
 !
-      IF ((kargtypeoper(1:1).EQ.'-').OR.(kargtypeoper(1:1).EQ.'D')) THEN
+      IF ((kargtypeoper(1:1).EQ.'-').OR.(kargtypeoper(1:1).EQ.'D') &
+     &                              .OR.(kargtypeoper(1:1).EQ.'R') ) THEN
         SELECT CASE (kflagxyo)
         CASE (1)
              CALL writevar (koutxyo,vects(:),jnxyo)
@@ -437,6 +530,11 @@
       IF (allocated(poscoefobs)) deallocate(poscoefobs)
       IF (allocated(gridijkobs)) deallocate(gridijkobs)
 !
+      IF (allocated(ran_timeseries)) deallocate(ran_timeseries)
+      IF (allocated(time)) deallocate(time)
+      IF (allocated(tspct_freq)) deallocate(tspct_freq)
+      IF (allocated(tspct_power)) deallocate(tspct_power)
+
       RETURN
 !
 ! --- error management
@@ -726,6 +824,79 @@
         ENDDO
       ENDDO
 !
+      RETURN
+!
+! --- error management
+!
+ 1000 CALL printerror2(0,1000,1,'algospct','prep_obs')
+ 1001 CALL printerror2(0,1001,3,'algospct','prep_obs')
+!
+      END SUBROUTINE
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+! -----------------------------------------------------------------
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      SUBROUTINE define_spct( spctstd, tspct_freq, tspct_power )
+!---------------------------------------------------------------------
+!
+!  Purpose : Define spectrum for random timeseries and
+!            draw random amplitudes for spherical harmonics
+!
+!---------------------------------------------------------------------
+! modules
+! =======
+      use mod_main
+      IMPLICIT NONE
+!----------------------------------------------------------------------
+! header declarations
+! ===================
+      BIGREAL, DIMENSION(0:,-jpl:), INTENT( out ) :: spctstd
+      BIGREAL, DIMENSION(:), INTENT( out ) :: tspct_freq
+      BIGREAL, DIMENSION(:), INTENT( out ) :: tspct_power
+!----------------------------------------------------------------------
+! local declarations
+! ==================
+      INTEGER :: jm, jl, jtspct
+      BIGREAL :: wnbr, norm, freq, maxfreq
+!----------------------------------------------------------------------
+
+!     Loop on frequancies
+!     to define spectrum in time
+      maxfreq=2.0_kr
+      DO jtspct=1,jptspct
+        freq = maxfreq * REAL(jtspct,8) / REAL(jptspct,8)
+        tspct_power(jtspct) = EXP(-freq*freq)
+        freq = freq / loc_time_scale
+        tspct_freq(jtspct) = freq
+      ENDDO
+
+!     Loop on spherical harmonics
+!     to define the spectrum sph_spct
+      DO jl = 0, jpl
+      DO jm = -jl, jl
+        wnbr = REAL(jl,8) * 2.0_kr * pi * loc_radius_in_deg / 360._kr
+        spctstd(jl,jm) = EXP(-wnbr*wnbr)
+      ENDDO
+      ENDDO
+
+      wnbr = REAL(jpl,8) * 2.0_kr * pi * loc_radius_in_deg / 360._kr
+      PRINT *, 'Localization radius in degrees:',loc_radius_in_deg
+      PRINT *, 'Length scale corresponding to lmax:',loc_radius_in_deg/wnbr
+      IF (wnbr.LT.3.0_kr) THEN
+        PRINT *, 'Warning: increase lmax to resolve the spectrum'
+      ENDIF
+
+!     Normalize the spectrum sph_spct
+      norm = 0.
+      DO jl = 0, jpl
+      DO jm = -jl, jl
+        norm = norm + spctstd(jl,jm)
+      ENDDO
+      ENDDO
+      spctstd = spctstd / norm
+
+!     Compute square root of the power spectrum
+      spctstd = SQRT(spctstd)
+
       RETURN
 !
 ! --- error management
