@@ -72,7 +72,7 @@
 !----------------------------------------------------------------------
 ! local declarations
 ! ==================
-      CHARACTER(len=word80) :: cdrec1
+      CHARACTER(len=bgword) :: cdrec1
       INTEGER :: jpxend1, varend1, varlg1
       INTEGER, dimension(1:nbvar) :: var_ord1,var_dim1,var_nbr1
       CHARACTER(len=varlg), dimension(1:nbvar) :: var_nam1
@@ -327,7 +327,7 @@
 !----------------------------------------------------------------------
 ! local declarations
 ! ==================
-      CHARACTER(len=word80) :: cdrec1
+      CHARACTER(len=bgword) :: cdrec1
       INTEGER :: jpxend1
       INTEGER :: varend1
       INTEGER :: varlg1
@@ -519,7 +519,7 @@
 !----------------------------------------------------------------------
 ! local declarations
 ! ==================
-      CHARACTER(len=word80) :: cdrec1,cdrec2,text
+      CHARACTER(len=bgword) :: cdrec1,cdrec2,text
       INTEGER :: jpxend1,varend1,varlg1
       INTEGER :: jpxend2,varend2,varlg2
       INTEGER, dimension(1:nbvar) :: var_dim1, var_nbr1
@@ -653,7 +653,7 @@
 !----------------------------------------------------------------------
 ! local declarations
 ! ==================
-      CHARACTER(len=word80) :: cdrec1,cdrec2,text
+      CHARACTER(len=bgword) :: cdrec1,cdrec2,text
       INTEGER :: jpxend1,varend1,varlg1
       INTEGER :: jpxend2,varend2,varlg2
       INTEGER, dimension(1:nbvar) :: var_dim1, var_nbr1

@@ -43,8 +43,8 @@
       ! Private variables/parameters
       INTEGER, save :: jpl  ! maximum degree of Legendre polynomials
 
-      INTEGER, parameter :: jptspct=1000  ! Number of point discretizing time power spectrum
-      INTEGER, parameter :: jpsmpl=1000   ! Size of sample of frequencies
+      INTEGER, parameter :: jptspct=100  ! Number of point discretizing time power spectrum
+      INTEGER, parameter :: jpsmpl=100   ! Size of sample of frequencies
       BIGREAL, parameter :: pi=3.14159265358979
 
       CONTAINS

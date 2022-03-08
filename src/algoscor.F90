@@ -265,7 +265,7 @@
         CASE ('crps')
           DO js=1,jsend
             jregion = NINT(partition(js))
-            IF (ABS(FREAL(jregion)-partition(js)).GT.eps) jregion=0
+            !IF (ABS(FREAL(jregion)-partition(js)).GT.eps) jregion=0
             IF (jregion.GT.0) THEN
               nbr(jregion) = nbr(jregion) + 1
               CALL crps_cumul(ensemble(js,:),verif(js), &
@@ -275,7 +275,7 @@
         CASE ('rcrv')
           DO js=1,jsend
             jregion = NINT(partition(js))
-            IF (ABS(FREAL(jregion)-partition(js)).GT.eps) jregion=0
+            !IF (ABS(FREAL(jregion)-partition(js)).GT.eps) jregion=0
             IF (jregion.GT.0) THEN
               nbr(jregion) = nbr(jregion) + 1
               CALL rcrv_cumul(ensemble(js,:),verif(js), &

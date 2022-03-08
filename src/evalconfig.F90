@@ -958,8 +958,7 @@
 
       IF (lsplitobs) THEN
          jpo = ( jpoend - 1 ) / jpproc + 1
-
-         jpnoend = ( jpoend - 1 ) / jpo + 1
+         jpnoend = jpproc
 
 ! allocate arrays
          allocate ( vo_idxbeg(1:jpnoend) , stat=allocok )
@@ -967,15 +966,18 @@
          allocate ( vo_idxend(1:jpnoend) , stat=allocok )
          IF (allocok.NE.0) GOTO 1001
 !
-         vo_idxbeg(1)=1
-         DO jno=2,jpnoend
-            vo_idxbeg(jno)=vo_idxbeg(jno-1)+jpo
-         ENDDO
-!
-         DO jno=1,jpnoend-1
+         DO jno=1,jpnoend
             vo_idxend(jno)=jpo
          ENDDO
-         vo_idxend(jpnoend)=jpoend-(jpnoend-1)*jpo
+!
+         DO jno=1,jpnoend*jpo-jpoend
+            vo_idxend(jno)=jpo-1
+         ENDDO
+!
+         vo_idxbeg(1)=1
+         DO jno=2,jpnoend
+            vo_idxbeg(jno)=vo_idxbeg(jno-1)+vo_idxend(jno-1)
+         ENDDO
 !
 ! Print information about Vx blocks structure
          IF (nprint.GE.2) THEN
