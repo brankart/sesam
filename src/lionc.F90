@@ -197,10 +197,14 @@
       ENDIF
 !
       IF (sxy_dim.GE.3) THEN
-        ierr = NF90_INQ_DIMID(idf,zdim,idz)
-        IF (ierr.NE.0) GOTO 102
-        ierr = NF90_INQUIRE_DIMENSION(idf,idz,len=nz)
-        IF (ierr.NE.0) GOTO 102
+        IF (zdim.NE.'none') THEN
+          ierr = NF90_INQ_DIMID(idf,zdim,idz)
+          IF (ierr.NE.0) GOTO 102
+          ierr = NF90_INQUIRE_DIMENSION(idf,idz,len=nz)
+          IF (ierr.NE.0) GOTO 102
+        ELSE
+          nz = 1
+        ENDIF
         IF (sxy_jpk.NE.nz) GOTO 102
       ENDIF
 !
@@ -221,7 +225,11 @@
       IF (ierr.NE.0) GOTO 103
       ierr = NF90_INQUIRE_VARIABLE(idf,idv,ndims=ndims)
       IF (ierr.NE.0) GOTO 103
-      IF (sxy_dim.GT.ndims) GOTO 103
+      IF (zdim.NE.'none') THEN
+        IF (sxy_dim.GT.ndims) GOTO 103
+      ELSE
+        IF (sxy_dim.GT.ndims+1) GOTO 103
+      ENDIF
 !
       allocate(idims(ndims),vstart(ndims),vcount(ndims),vstrid(ndims))
       vstart(1:ndims)=1 ; vcount(1:ndims)=1 ; vstrid(1:ndims)=1
@@ -239,7 +247,9 @@
 !
       IF ( (sxy_dim.GE.1).AND.(idvx.EQ.0) ) GOTO 105
       IF ( (sxy_dim.GE.2).AND.(idvy.EQ.0) ) GOTO 105
-      IF ( (sxy_dim.GE.3).AND.(idvz.EQ.0) ) GOTO 105
+      IF (zdim.NE.'none') THEN
+        IF ( (sxy_dim.GE.3).AND.(idvz.EQ.0) ) GOTO 105
+      ENDIF
       IF ( (sxy_dim.GE.4).AND.(idvt.EQ.0) ) GOTO 105
 !
       DO idd = 1,ndims
@@ -532,10 +542,14 @@
 !
       idz = -1 ; nz = 1
       IF (sxy_dim_max.GE.3) THEN
-        ierr = NF90_INQ_DIMID(idf,zdim,idz)
-        IF (ierr.NE.0) GOTO 102
-        ierr = NF90_INQUIRE_DIMENSION(idf,idz,len=nz)
-        IF (ierr.NE.0) GOTO 102
+        IF (zdim.NE.'none') THEN
+          ierr = NF90_INQ_DIMID(idf,zdim,idz)
+          IF (ierr.NE.0) GOTO 102
+          ierr = NF90_INQUIRE_DIMENSION(idf,idz,len=nz)
+          IF (ierr.NE.0) GOTO 102
+        ELSE
+          nz = 1
+        ENDIF
         IF (jpkend.NE.nz) GOTO 102
       ENDIF
 !
@@ -569,7 +583,11 @@
          IF (ierr.NE.0) GOTO 103
          ierr = NF90_INQUIRE_VARIABLE(idf,idv,ndims=ndims)
          IF (ierr.NE.0) GOTO 103
-         IF (sxy_dim(indsxy).GT.ndims) GOTO 103
+         IF (zdim.NE.'none') THEN
+           IF (sxy_dim(indsxy).GT.ndims) GOTO 103
+         ELSE
+           IF (sxy_dim(indsxy).GT.ndims+1) GOTO 103
+         ENDIF
 !
          allocate(idims(ndims),vstart(ndims),vcount(ndims),vstrid(ndims))
 !
@@ -586,7 +604,9 @@
 !
          IF ( (sxy_dim(indsxy).GE.1).AND.(idvx.EQ.0) ) GOTO 105
          IF ( (sxy_dim(indsxy).GE.2).AND.(idvy.EQ.0) ) GOTO 105
-         IF ( (sxy_dim(indsxy).GE.3).AND.(idvz.EQ.0) ) GOTO 105
+         IF (zdim.NE.'none') THEN
+           IF ( (sxy_dim(indsxy).GE.3).AND.(idvz.EQ.0) ) GOTO 105
+         ENDIF
          IF ( (sxy_dim(indsxy).GE.4).AND.(idvt.EQ.0) ) GOTO 105
 !
          vstart(1:ndims)=1 ; vcount(1:ndims)=1 ; vstrid(1:ndims)=1
@@ -906,10 +926,12 @@
 !
       idz = -1 ; nz = 1
       IF (sxy_dim.GE.3) THEN
-        ierr = NF90_INQ_DIMID(idf,zdim,idz)
-        IF (ierr.NE.0) GOTO 102
-        ierr = NF90_INQUIRE_DIMENSION(idf,idz,len=nz)
-        IF (ierr.NE.0) GOTO 102
+        IF (zdim.NE.'none') THEN
+          ierr = NF90_INQ_DIMID(idf,zdim,idz)
+          IF (ierr.NE.0) GOTO 102
+          ierr = NF90_INQUIRE_DIMENSION(idf,idz,len=nz)
+          IF (ierr.NE.0) GOTO 102
+        ENDIF
         IF (sxy_jpk.NE.nz) GOTO 102
         IF (size(mask,3).GT.nz) GOTO 102
       ENDIF
@@ -932,7 +954,11 @@
       IF (ierr.NE.0) GOTO 103
       ierr = NF90_INQUIRE_VARIABLE(idf,idv,ndims=ndims)
       IF (ierr.NE.0) GOTO 103
-      IF (sxy_dim.GT.ndims) GOTO 103
+      IF (zdim.NE.'none') THEN
+        IF (sxy_dim.GT.ndims) GOTO 103
+      ELSE
+        IF (sxy_dim.GT.ndims+1) GOTO 103
+      ENDIF
 !
       allocate(idims(ndims),vstart(ndims),vcount(ndims),vstrid(ndims))
       vstart(1:ndims)=1 ; vcount(1:ndims)=1 ; vstrid(1:ndims)=1
@@ -950,7 +976,9 @@
 !
       IF ( (sxy_dim.GE.1).AND.(idvx.EQ.0) ) GOTO 105
       IF ( (sxy_dim.GE.2).AND.(idvy.EQ.0) ) GOTO 105
-      IF ( (sxy_dim.GE.3).AND.(idvz.EQ.0) ) GOTO 105
+      IF (zdim.NE.'none') THEN
+        IF ( (sxy_dim.GE.3).AND.(idvz.EQ.0) ) GOTO 105
+      ENDIF
       IF ( (sxy_dim.GE.4).AND.(idvt.EQ.0) ) GOTO 105
 !
       DO idd = 1,ndims
@@ -963,6 +991,7 @@
 ! Separate this operations from the reading of the mask
 ! Create for this a new routine readlev, only called in obsv module
 !
+      IF (zdim.NE.'none') THEN
       IF ((kflagxyo.EQ.2).AND.(sxy_dim.GE.3)) THEN
 ! allocation lev
         allocate ( lev(1:nz), stat=allocok )
@@ -997,6 +1026,7 @@
 !
         IF (allocated(lev)) deallocate(lev)
 !
+      ENDIF
       ENDIF
 !
 ! -3.- Read CDF mask arrays

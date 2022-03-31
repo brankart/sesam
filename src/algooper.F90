@@ -1100,6 +1100,18 @@
                IF (ANY(vectsin(:).EQ.spvalsin)) GOTO 103
                IF (ANY(vectsinref(:).EQ.spvalsinref)) GOTO 103
                vectsout(:) = vectsin(:) - vectsinref(:)
+            CASE ('stat-')
+               IF (ANY(vectsin(:).EQ.spvalsin)) GOTO 103
+               IF (ANY(vectsinref(:).EQ.spvalsinref)) GOTO 103
+               vectsout(:) = vectsin(:) - vectsinref(:)
+               print *, 'MIN in:', MINVAL(vectsin(:))
+               print *, 'MAX in:', MAXVAL(vectsin(:))
+               print *, 'MIN inref:', MINVAL(vectsinref(:))
+               print *, 'MAX inref:', MAXVAL(vectsinref(:))
+               print *, 'MIN difference:', MINVAL(vectsout(:))
+               print *, 'MAX difference:', MAXVAL(vectsout(:))
+               print *, 'RMS difference:', &
+     &             SQRT(SUM(vectsout(:)*vectsout(:))/jpssize)
             CASE ('min')
                IF (ANY(vectsin(:).EQ.spvalsin)) GOTO 103
                IF (ANY(vectsinref(:).EQ.spvalsinref)) GOTO 103

@@ -102,7 +102,7 @@
       LOGICAL :: lectinfo
       INTEGER :: flagcfg,ios
       INTEGER :: sxyend,indsxy,nbr
-      INTEGER, dimension(1:nbvar) :: sxy_ord,sxy_nbr
+      INTEGER, dimension(1:nbvar) :: sxy_ord,sxy_nbr,sxyngrd
       INTEGER, dimension(1:nbvar) :: sxy_jpi,sxy_jpj,sxy_jpk,sxy_jpt
       CHARACTER(len=varlg), dimension(1:nbvar) :: sxy_nam
       BIGREAL :: latmin, latmax, dlatmax
@@ -175,7 +175,7 @@
             sxy_jpj(indsxy)=var_jpj(indsxy)
             sxy_jpk(indsxy)=var_jpk(indsxy)
             sxy_jpt(indsxy)=var_jpt(indsxy)
-            IF (varngrd(indsxy).LE.2) GOTO 1000
+            sxyngrd(indsxy)=varngrd(indsxy)
          ENDDO
       CASE(2,3)
 ! --- dta
@@ -190,7 +190,7 @@
             sxy_jpj(indsxy)=dta_jpj(indsxy)
             sxy_jpk(indsxy)=dta_jpk(indsxy)
             sxy_jpt(indsxy)=dta_jpt(indsxy)
-            IF (dtangrd(indsxy).LE.2) GOTO 1000
+            sxyngrd(indsxy)=dtangrd(indsxy)
          ENDDO
       CASE DEFAULT
          GOTO 1000
@@ -211,6 +211,14 @@
 ! Allocate grid array
         jpisize=MAXVAL(sxy_jpi(:))
         jpjsize=MAXVAL(sxy_jpj(:))
+!
+        allocate (longi(1:jpisize), stat=allocok )
+        IF (allocok.NE.0) GOTO 1001
+        longi(:) = FREAL(0.0)
+!
+        allocate (latj(1:jpjsize), stat=allocok )
+        IF (allocok.NE.0) GOTO 1001
+        latj(:) = FREAL(0.0)
 !
         allocate (gridij(1:jpisize,1:jpjsize), stat=allocok )
         IF (allocok.NE.0) GOTO 1001
@@ -324,6 +332,7 @@
         DO jsxy=1,sxyend
           indsxy= sxy_ord(jsxy)
           CALL readgrd(kflagxyo,indsxy)
+          IF (sxyngrd(indsxy).LE.2) CALL grd1Dto2D()
           CALL proj_wei(weightij)
 !
           DO jt=1,sxy_jpt(indsxy)
@@ -355,6 +364,7 @@
         DO jsxy=1,sxyend
           indsxy= sxy_ord(jsxy)
           CALL readgrd(kflagxyo,indsxy)
+          IF (sxyngrd(indsxy).LE.2) CALL grd1Dto2D()
 !
           DO jt=1,sxy_jpt(indsxy)
           DO jk=1,sxy_jpk(indsxy)
@@ -411,6 +421,7 @@
         DO jsxy=1,sxyend
           indsxy= sxy_ord(jsxy)
           CALL readgrd(kflagxyo,indsxy)
+          IF (sxyngrd(indsxy).LE.2) CALL grd1Dto2D()
           CALL readtime(kflagxyo,indsxy)
 
 !         Generate random timeseries on required time grid
@@ -489,6 +500,7 @@
         DO jsxy=1,sxyend
           indsxy= sxy_ord(jsxy)
           CALL readgrd(kflagxyo,indsxy)
+          IF (sxyngrd(indsxy).LE.2) CALL grd1Dto2D()
 !
           DO jt=1,sxy_jpt(indsxy)
           DO jk=1,sxy_jpk(indsxy)
@@ -528,6 +540,8 @@
       IF (allocated(vects)) deallocate(vects)
       IF (allocated(spct)) deallocate(spct)
 !
+      IF (allocated(longi)) deallocate(longi)
+      IF (allocated(latj)) deallocate(latj)
       IF (allocated(gridij)) deallocate(gridij)
       IF (allocated(weightij)) deallocate(weightij)
       IF (allocated(lon)) deallocate(lon)

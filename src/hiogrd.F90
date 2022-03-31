@@ -36,7 +36,7 @@
       IMPLICIT NONE
       PRIVATE
 
-      PUBLIC readgrd, readlev, readtime
+      PUBLIC readgrd, readlev, readtime, grd1Dto2D
 
       CONTAINS
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -478,6 +478,39 @@
       CALL printerror2(0,109,3,'hiogrd','readgrd',comment=texterror)
  110  WRITE (texterror,*) 'Error closing Netcdf file: ',kfname
       CALL printerror2(0,110,3,'hiogrd','readgrd',comment=texterror)
+!
+      END SUBROUTINE
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+! -----------------------------------------------------------------
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      SUBROUTINE grd1Dto2D
+!---------------------------------------------------------------------
+!
+!  Purpose : Convert grid description from 1D to 2D arrays
+!  -------
+!---------------------------------------------------------------------
+! modules
+! =======
+
+      use mod_main
+      use mod_cfgxyo
+      use mod_coord
+      IMPLICIT NONE
+!----------------------------------------------------------------------
+! local declarations
+! ==================
+      INTEGER :: ji,jj,jpisize,jpjsize
+!----------------------------------------------------------------------
+      jpisize=SIZE(longi)
+      jpjsize=SIZE(latj)
+!
+      DO jj=1,jpjsize
+        gridij(:,jj)%longi = longi(:)
+      ENDDO
+!
+      DO ji=1,jpisize
+        gridij(ji,:)%latj = latj(:)
+      ENDDO
 !
       END SUBROUTINE
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
