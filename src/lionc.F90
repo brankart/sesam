@@ -931,9 +931,11 @@
           IF (ierr.NE.0) GOTO 102
           ierr = NF90_INQUIRE_DIMENSION(idf,idz,len=nz)
           IF (ierr.NE.0) GOTO 102
+        ELSE
+          nz=1
         ENDIF
         IF (sxy_jpk.NE.nz) GOTO 102
-        IF (size(mask,3).GT.nz) GOTO 102
+        !IF (size(mask,3).GT.nz) GOTO 102
       ENDIF
 !
       idt = -1 ; nt = 1
