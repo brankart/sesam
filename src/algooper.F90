@@ -121,6 +121,7 @@
       REAL(KIND=8), PARAMETER :: twopi=2*3.1415926535897932384626
       REAL(KIND=8), PARAMETER :: deg2rad=twopi/360.
       REAL(KIND=8), PARAMETER :: earthrad=6.371e3
+      INTEGER :: jday,jdaytarget,year,month,day
 !----------------------------------------------------------------------
       SELECT CASE (kflaganlxyo)
       CASE(1)
@@ -824,6 +825,32 @@
      &                 deallocate(gridijkobsnew)
 !     
                ENDIF
+               CASE ('jday2date')
+                  OPEN(UNIT=11,file=kincfg)
+                  READ(11,*) jdaytarget
+                  CLOSE(11)
+
+                  jday=-1
+
+                  year=1950
+                  DO WHILE (jday.LT.jdaytarget)
+                    jday=jday+daysinyear(year)
+                    year=year+1
+                  ENDDO
+                  year=year-1
+                  jday=jday-daysinyear(year)
+
+                  month=1
+                  DO WHILE (jday.LT.jdaytarget)
+                    jday=jday+daysinmonth(year,month)
+                    month=month+1
+                  ENDDO
+                  month=month-1
+                  jday=jday-daysinmonth(year,month)
+
+                  day=jdaytarget-jday
+
+                  PRINT '(a5,i4.4,i2.2,i2.2)','DATE:',year,month,day
                CASE DEFAULT
                   GOTO 101
                END SELECT
@@ -1299,7 +1326,7 @@
          END SELECT
 !
          SELECT CASE (ktextoper(1:lenv(ktextoper)))
-         CASE ('rstopa','grpobs')
+         CASE ('rstopa','grpobs','jday2date')
 ! --- Nothing
          CASE DEFAULT
 ! -3- Write out vector :
@@ -2037,6 +2064,55 @@
      &     comment=texterror)
 !
       END SUBROUTINE
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+! -----------------------------------------------------------------
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      FUNCTION daysinyear(year)
+!---------------------------------------------------------------------
+!
+!  Purpose : Get number of days in year
+!  -------
+!---------------------------------------------------------------------
+      use mod_main
+      IMPLICIT NONE
+      INTEGER, intent(in) :: year
+      INTEGER :: daysinyear
+
+      IF (MOD(year,4).EQ.0) THEN
+        daysinyear = 366
+      ELSE
+        daysinyear = 365
+      ENDIF
+
+      END FUNCTION
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+! -----------------------------------------------------------------
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      FUNCTION daysinmonth(year,month)
+!---------------------------------------------------------------------
+!
+!  Purpose : Get number of days in year
+!  -------
+!---------------------------------------------------------------------
+      use mod_main
+      IMPLICIT NONE
+      INTEGER, intent(in) :: year,month
+      INTEGER :: daysinmonth
+
+      SELECT CASE (month)
+      CASE (1,3,5,7,8,10,12)
+        daysinmonth = 31
+      CASE (4,6,9,11)
+        daysinmonth = 30
+      CASE (2)
+        daysinmonth = 28
+      END SELECT
+
+      IF ((month.EQ.2).AND.(MOD(year,4).EQ.0)) THEN
+        daysinmonth = 29
+      ENDIF
+
+      END FUNCTION
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ! -----------------------------------------------------------------
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
