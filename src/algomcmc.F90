@@ -67,6 +67,14 @@
 
       INTEGER, save :: njo=0 ! totel number of evaluations of the cost function
 
+      ! Initial and target value of cost function
+      BIGREAL, save :: cost_jini, cost_jopt
+      ! Weights for MCMC schedule
+      BIGREAL, save :: alpha, beta
+      BIGREAL, save :: mcmc_schedule_factor=0.
+      ! Number of last iterations over which weights are "averaged"
+      INTEGER, save :: mcmc_schedule_iter=5
+
       CONTAINS
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ! -----------------------------------------------------------------
@@ -116,7 +124,7 @@
       BIGREAL, dimension(:), allocatable, save :: vectorms
 !
       INTEGER :: allocok,jpssize,jpitpsize,jprsize,jpsmpl,jposize
-      INTEGER :: js,jr,jscl,flagcfg,flago
+      INTEGER :: js,jr,jscl,jsmpl,flagcfg,flago
       LOGICAL :: lectinfo,filexists
       INTEGER :: jrbasdeb,jrbasfin,numidx
       CHARACTER(len=bgword) :: dirname, fname
@@ -353,18 +361,43 @@
      &                 jrbasdeb,jrbasfin,lectinfo,flago,poscoefobs(:,:))
         ENDIF
 
-!       Read restart index in MCMC chain
+!       Read MCMC restart file
         WRITE(fname,'("./",A,"/",A)') koutbas(1:lenv(koutbas)), &
-     &                                'mcmc_index.txt'
+     &                                'mcmc_restart.txt'
         INQUIRE (FILE=fname,EXIST=filexists)
         IF (filexists) THEN
           numidx=10
           CALL openfile(numidx,fname)
           READ(numidx,*) mcmc_index
+          READ(numidx,*) cost_jini, cost_jopt
+          READ(numidx,*) mcmc_schedule, alpha, beta
           CLOSE(UNIT=numidx)
         ELSE
           mcmc_index=1
         ENDIF
+
+      ELSE
+
+!       Initialize cost_jini
+        cost_jini = 0.
+        DO jsmpl=1,jpsmpl
+          IF (obs_ensemble) THEN
+            cost_jini = cost_jini + cost_jo( upensobs(:,jsmpl) )
+          ELSE
+            cost_jini = cost_jini + cost_jo( upens(:,jsmpl) )
+          ENDIF
+        ENDDO
+        cost_jini = cost_jini / jpsmpl
+        IF (jproc.eq.0) PRINT *, 'Initial J:',cost_jini
+
+!       Initialize cost_jopt
+        cost_jopt = FREAL(jpoend) / 2._kr
+        IF (jproc.eq.0) PRINT *, 'Target J:',cost_jopt
+
+!       Initialize mcmc_schedule
+        mcmc_schedule = 0.0_kr
+        beta = 1._kr / FREAL(mcmc_schedule_iter*jpsmpl)
+        alpha = 1._kr - beta
 
       ENDIF
 !     
@@ -388,7 +421,7 @@
       call MPI_TIMER(1)
       call MPI_TIMER(0)
 #endif
-      if (jproc.eq.0) PRINT *, 'Evaluations of cost function:', njo
+      IF (jproc.eq.0) PRINT *, 'Evaluations of cost function:', njo
 !     
 ! -5.- Write output ensemble
 ! --------------------------
@@ -435,10 +468,12 @@
 
 !     Write restart index in MCMC chain
       WRITE(fname,'("./",A,"/",A)') koutbas(1:lenv(koutbas)), &
-     &                              'mcmc_index.txt'
+     &                              'mcmc_restart.txt'
       numidx=10
       CALL openfile(numidx,fname,kstatus=clunk)
       WRITE(numidx,*) mcmc_index
+      WRITE(numidx,*) cost_jini, cost_jopt
+      WRITE(numidx,*) mcmc_schedule, alpha, beta
       CLOSE(UNIT=numidx)
 !
 ! --- deallocation
@@ -492,6 +527,7 @@
       REAL(kind=8), dimension(:), intent(in) :: state
       REAL(kind=8) :: cost_jo
 !----------------------------------------------------------------------
+      REAL(kind=8) :: cost_ratio
 
       cost_jo = 0.
 
@@ -530,6 +566,13 @@
       CALL mpi_allreduce (mpi_in_place, cost_jo, 1,  &
      &     mpi_double_precision,mpi_sum,mpi_comm_world,mpi_code)
 #endif
+
+! Modify MCMC schedule as a function of J
+      IF (mcmc_schedule_factor.GT.0.) THEN
+        cost_ratio = mcmc_schedule_factor &
+     &    * ( cost_jo-cost_jopt ) / ( cost_jini-cost_jopt )
+        mcmc_schedule = alpha * mcmc_schedule + beta * cost_ratio
+      ENDIF
 
       njo = njo + 1
 
@@ -596,6 +639,9 @@
       !CALL optimality_score(score, ensobseq, obs, cdf_obs)
       CALL optimality_score(score, ensobseq, obs, oestd)
       IF (jproc.eq.0)  PRINT *, 'OPTIMALITY:',mcmc_index,score
+      IF (mcmc_schedule_factor.GT.0.) THEN
+        IF (jproc.eq.0)  PRINT *, 'SCHEDULE:',1./FREAL(mcmc_index),mcmc_schedule
+      ENDIF
 
 ! Deallocate array
       IF (allocated(ensobseq)) deallocate(ensobseq)

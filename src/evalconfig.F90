@@ -145,14 +145,21 @@
       allocate ( tabnx_jindtbeg(1:nbtabnx) , stat=allocok )
       IF (allocok.NE.0) GOTO 1001
       tabnx_jindtbeg(:) = 0
+! --- allocation var_sli_idx
+      jpksize = MAXVAL(var_jpk(1:varend))
+      jptsize = MAXVAL(var_jpt(1:varend))
+      allocate(var_sli_idx(1:varend,1:jpksize,1:jptsize), stat=allocok)
+      IF (allocok.NE.0) GOTO 1001
+      var_sli_idx(:,:,:) = 0
 !
 ! -1.- Configuration of Vx and Vy vectors
 ! ---------------------------------------
 ! Compute size and position of variables in SESAM Vx and Vy vectors:
-!        var_ind,var_nbr,dta_ind,dta_nbr
+!        var_ind,var_nbr,dta_ind,dta_nbr,var_sli_idx
 ! Compute size of SESAM Vx and Vy vectors:
 !        jpxend,jpyend
 !
+
       jpxend=1
       jpyend=1
 !
@@ -195,6 +202,7 @@
             tabnx_jindvarbeg(jtabnx)=indvar
             tabnx_jindkbeg(jtabnx)=jk
             tabnx_jindtbeg(jtabnx)=jt
+            var_sli_idx(indvar,jk,jt)=tabnx_jindxbeg(jtabnx)
             jtabnx=jtabnx+1
 !
             ENDDO
@@ -216,6 +224,7 @@
             tabnx_jindvarbeg(jtabnx)=indvar
             tabnx_jindkbeg(jtabnx)=jk
             tabnx_jindtbeg(jtabnx)=jt
+            var_sli_idx(indvar,jk,jt)=tabnx_jindxbeg(jtabnx)
             jtabnx=jtabnx+1
 !
             ENDDO

@@ -1008,6 +1008,13 @@
                END SELECT
             CASE (0)
                SELECT CASE (ktextoper(1:lenv(ktextoper)))
+               CASE ('stat')
+                  IF (ANY(vectsin(:).EQ.spvalsin)) GOTO 103
+                  vectsout(:) = vectsin(:)*vectsin(:)
+                  print *, 'MIN in:', MINVAL(vectsin(:))
+                  print *, 'MAX in:', MAXVAL(vectsin(:))
+                  print *, 'Root mean square:', &
+     &             SQRT(SUM(vectsout(:))/jpssize)
                CASE ('pow2')
                   IF (ANY(vectsin(:).EQ.spvalsin)) GOTO 103
                   vectsout(:) = vectsin(:) ** 2

@@ -31,6 +31,7 @@
       MODULE algointf
       use mod_main
       use mkdtatozon
+      use utilconstraint
       IMPLICIT NONE
       PRIVATE
 
@@ -191,7 +192,14 @@
             GOTO 1000
          END SELECT
 !     
-! -1.1- Writing xyoz object :
+! -1.2- Apply constraint if requested
+! -----------------------------------
+!
+         IF (dyn_constraint.AND.(kflagxyoz.EQ.1)) THEN
+           CALL apply_constraint(vects)
+         ENDIF
+!     
+! -1.3- Writing xyoz object :
 ! --------------------------
 !
          SELECT CASE (kflagxyoz)

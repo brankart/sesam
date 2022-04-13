@@ -72,7 +72,7 @@
 ! varfmsk : Name of the mask file for this variable field.
 !           (It must exist when running SESAM!)
 ! varemsk : Type of the varfmsk mask file (1 for bimg, 2 for dimg,
-!           3 for cdf).
+!           3 for cdf, 4 for nc).
 ! vardmsk : Dimension of the mask (usually equal to var_dim).
 ! varpmsk : Two digit integer specifying (i) the number of variable fields
 !           in the file varfmsk and (ii) the index
@@ -203,8 +203,8 @@
          varzdim(indvar)= 'depth'
          vartdim(indvar)= 'time'
 ! ==> A.3. Configuration of the mask file
-         varfmsk(indvar)= 'maskvar.cdf'
-         varemsk(indvar)= 3
+         varfmsk(indvar)= 'mask.nc'
+         varemsk(indvar)= 4
          vardmsk(indvar)= var_dim(indvar)
          varpmsk(indvar)= 11
          varvmsk(indvar)= FREAL(-9999.0)
@@ -239,8 +239,8 @@
          dtazdim(indvar)= varzdim(indvar)
          dtatdim(indvar)= vartdim(indvar)
 ! ==> B.3. Configuration of the mask file
-         dtafmsk(indvar)= 'maskdta.cdta'
-         dtaemsk(indvar)= 3
+         dtafmsk(indvar)= 'mask.ncdta'
+         dtaemsk(indvar)= 4
          dtapmsk(indvar)= 11
          dtadmsk(indvar)= dta_dim(indvar)
          dtavmsk(indvar)= FREAL(-9999.0)

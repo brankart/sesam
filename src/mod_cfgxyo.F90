@@ -217,11 +217,13 @@
 ! varend  : number of variable fields in Vx configuration
 ! var_ind : pointer of variable field in SESAM Vx vector
 ! var_nbr : size of variable field in SESAM Vx vector
+! var_sli_idx : pointer to slice of variable field in SESAM Vx vector
       INTEGER, save :: varend
       INTEGER, dimension(1:nbvar), save :: var_ord,var_dim, &
      &      var_jpi,var_jpj,var_jpk,var_jpt,var_nbr,var_ind, &
      &      varipos,varopos,varemsk,varpmsk,vardmsk, &
      &      varegrd,varngrd
+      INTEGER, dimension(:,:,:), allocatable, save :: var_sli_idx
       BIGREAL, dimension(1:nbvar), save :: var_moy,var_ect
       BIGREAL4, dimension(1:nbvar), save :: varvmsk
       BIGREAL, dimension(:,:), allocatable, save :: var_lev
