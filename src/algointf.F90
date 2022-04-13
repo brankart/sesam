@@ -32,6 +32,7 @@
       use mod_main
       use mkdtatozon
       use utilconstraint
+      use hiogrd
       IMPLICIT NONE
       PRIVATE
 
@@ -79,7 +80,7 @@
       BIGREAL, dimension(:), allocatable, save :: vectorms
 !
       INTEGER :: allocok,jpssize,jpysize,jpitpsize
-      INTEGER :: jnxyo,flagcfg,flagxyo
+      INTEGER :: jnxyo,flagcfg,flagxyo,jpisize,jpjsize
       LOGICAL :: lectinfo,lmodprint,allmemjpbub
       INTEGER :: jbub,jbub1,jdta,kjdta,jz,kjz,jprbasout1
       INTEGER :: jdtafin,jpnzsize,jzdeb,jzfin,jz1,fixjpbub
@@ -196,7 +197,25 @@
 ! -----------------------------------
 !
          IF (dyn_constraint.AND.(kflagxyoz.EQ.1)) THEN
+           IF (MAXVAL(varngrd(1:varend)).GT.1) GOTO 1000
+
+           jpisize=MAXVAL(var_jpi(1:varend))
+           jpjsize=MAXVAL(var_jpj(1:varend))
+
+           allocate (longi(1:jpisize), stat=allocok )
+           IF (allocok.NE.0) GOTO 1001
+           longi(:) = FREAL(0.0)
+
+           allocate (latj(1:jpjsize), stat=allocok )
+           IF (allocok.NE.0) GOTO 1001
+           latj(:) = FREAL(0.0)
+
+           CALL readgrd (kflagxyoz,1)
            CALL apply_constraint(vects)
+
+           IF (allocated(longi)) deallocate(longi)
+           IF (allocated(latj)) deallocate(latj)
+
          ENDIF
 !     
 ! -1.3- Writing xyoz object :
