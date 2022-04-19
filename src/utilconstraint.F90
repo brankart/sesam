@@ -29,6 +29,7 @@
       MODULE utilconstraint
       use mod_main
       use flowsampler_grid
+      use flowsampler_units
       use flowsampler_kinematics
       use flowsampler_dynamics
 
@@ -69,14 +70,15 @@
 !----------------------------------------------------------------------
 ! local declarations
 ! ==================
-      BIGREAL, dimension(:,:), allocatable :: adt   ! absolute dynamic topography
-      BIGREAL, dimension(:,:), allocatable :: u     ! zonal velocity
-      BIGREAL, dimension(:,:), allocatable :: v     ! meridional velocity
-      BIGREAL, dimension(:,:), allocatable :: omega ! relative vorticity
-      BIGREAL, dimension(:,:), allocatable :: xi    ! advection misfit
+      BIGREAL, dimension(:,:), allocatable :: adt           ! absolute dynamic topography
+      BIGREAL, dimension(:,:), allocatable :: u, u0         ! zonal velocity
+      BIGREAL, dimension(:,:), allocatable :: v, v0         ! meridional velocity
+      BIGREAL, dimension(:,:), allocatable :: omega, omega0 ! relative vorticity
+      BIGREAL, dimension(:,:), allocatable :: xi            ! advection misfit
       INTEGER :: flagxyo,jk,jt,jvar,indvar,jx
       INTEGER :: jpisize,jpjsize,jpksize,jptsize
       INTEGER :: nbr,allocok
+      BIGREAL :: dummy, dt
 !----------------------------------------------------------------------
 !
       IF (nprint.GE.1) THEN
@@ -105,6 +107,12 @@
       IF (allocok.NE.0) GOTO 1001
       allocate (xi(1:jpisize,1:jpjsize), stat=allocok )
       IF (allocok.NE.0) GOTO 1001
+      allocate (u0(1:jpisize,1:jpjsize), stat=allocok )
+      IF (allocok.NE.0) GOTO 1001
+      allocate (v0(1:jpisize,1:jpjsize), stat=allocok )
+      IF (allocok.NE.0) GOTO 1001
+      allocate (omega0(1:jpisize,1:jpjsize), stat=allocok )
+      IF (allocok.NE.0) GOTO 1001
 
 ! Initialize grid in flowsampler
       nlon = jpisize
@@ -114,6 +122,9 @@
       latmin = latj(1)
       latmax = latj(jpjsize)
       CALL defgrid()
+      physical_units=.TRUE.
+      ellipsoid_correction=.FALSE.
+      normalize_residual=.TRUE.
 
 ! Loop on 2D slice in time and along the vertical
       jpksize=MAXVAL(var_jpk(1:varend))
@@ -139,9 +150,25 @@
         ENDDO
 
 ! Apply constraint
-        call velocity(adt,u,v)
-        omega(:,:) = adt(:,:) + 2.
-        xi(:,:) = adt(:,:) + 3.
+        u0(:,:) = u(:,:) ; v0(:,:) = v(:,:) ; omega0(:,:) = omega(:,:)
+        CALL velocity(adt,u,v)
+        CALL vorticity(u,v,omega)
+
+        IF (jt.GT.1) THEN
+          dt= 86400. ; dummy=0.
+          print *, 'timestep',jt
+          !print *, 'u0',minval(u0),maxval(u0)
+          !print *, 'v0',minval(v0),maxval(v0)
+          !print *, 'omega0',minval(omega0),maxval(omega0)
+          !print *, 'u',minval(u),maxval(u)
+          !print *, 'v',minval(v),maxval(v)
+          !print *, 'omega',minval(omega),maxval(omega)
+          CALL advection(xi,omega0,u0,v0,omega,u,v,dummy,dt)
+          print *, 'xi',minval(xi),maxval(xi)
+          !xi = xi * dt
+        ELSE
+          xi(:,:) = 0.0
+        ENDIF
 
 ! Add contribution to cost function (if cost)
 
@@ -187,6 +214,9 @@
       IF (allocated(v)) deallocate(v)
       IF (allocated(omega)) deallocate(omega)
       IF (allocated(xi)) deallocate(xi)
+      IF (allocated(u0)) deallocate(u0)
+      IF (allocated(v0)) deallocate(v0)
+      IF (allocated(omega0)) deallocate(omega0)
 
       RETURN
 !
