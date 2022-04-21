@@ -37,7 +37,7 @@
       use mod_main
       use mod_cfgxyo
       use algospct, only : loc_time_scale, loc_radius_in_deg
-      use utilconstraint, only : dyn_constraint
+      use utilconstraint, only : dyn_constraint, dyn_constraint_std
       use ensdam_mcmc_update
       IMPLICIT NONE
 !----------------------------------------------------------------------
@@ -195,6 +195,8 @@
 ! Parameterization of dynamical constraint
         CASE('DYN_CONSTRAINT')
           READ(attr,*,ERR=102) dyn_constraint
+        CASE('DYN_CONSTRAINT_STD')
+          READ(attr,*,ERR=102) dyn_constraint_std
 !
 ! Parameterization of localization radius fro random sampling
         CASE('LOC_TIME_SCALE')

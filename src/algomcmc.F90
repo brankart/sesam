@@ -29,6 +29,7 @@
       MODULE algomcmc
       use mod_main
       use mod_mask
+      use mod_coord
       use mod_spacexyo , only : &
      &     jpo,jpoend,jpitpend,jpx,jpxend,jpyend,jprend,jpsmplend, &
      &     jpperc,poscoefobs,gridijkobs, &
@@ -36,9 +37,11 @@
      &     vo_idxbeg,vo_idxend
       use mod_mpitime
 
+      use hiogrd
       use utilmkh
       use utilroa
       use utilfiles
+      use utilconstraint
       use ensdam_mcmc_update
       use ensdam_anatra
       use ensdam_obserror
@@ -52,8 +55,8 @@
       LOGICAL, save :: obs_constraint=.FALSE.  ! Observation constraint
       LOGICAL, save :: obs_ensemble=.FALSE.    ! Ensemble in obs space
       LOGICAL, save :: obs_anam=.FALSE.        ! Anamorphosis in obs operator
-      LOGICAL, save :: dyn_constraint=.FALSE.  ! Dynamical constraint
-      LOGICAL, save :: rebuild_state=.FALSE. ! Rebuild in cost function
+      LOGICAL, save :: rebuild_state=.FALSE.   ! Rebuild in cost function
+      LOGICAL, save :: all_ensemble=.FALSE.    ! Ensemble concatenating state and obs
 
       INTEGER, save :: flagxyo, jnxyo
       BIGREAL, dimension(:), allocatable, save :: obs
@@ -65,10 +68,16 @@
       ! Storage for rebulding full state vector in cost function
       BIGREAL, dimension(:), allocatable, save :: fullstate
 
+      ! Vector sizes
+      INTEGER, save :: jpssize ! Size of state vector
+      INTEGER, save :: jposize ! Size of observation vector
+      INTEGER, save :: jpasize ! Size of "all" vector
+
       INTEGER, save :: njo=0 ! totel number of evaluations of the cost function
 
       ! Initial and target value of cost function
       BIGREAL, save :: cost_jini, cost_jopt
+      LOGICAL, save :: diag_in_j = .FALSE.
       ! Weights for MCMC schedule
       BIGREAL, save :: alpha, beta
       BIGREAL, save :: mcmc_schedule_factor=0.
@@ -123,8 +132,8 @@
       BIGREAL, dimension(:,:), allocatable, save :: upensobs
       BIGREAL, dimension(:), allocatable, save :: vectorms
 !
-      INTEGER :: allocok,jpssize,jpitpsize,jprsize,jpsmpl,jposize
-      INTEGER :: js,jr,jscl,jsmpl,flagcfg,flago
+      INTEGER :: allocok,jpitpsize,jprsize,jpsmpl
+      INTEGER :: js,jr,jscl,jsmpl,flagcfg,flago,jpisize,jpjsize
       LOGICAL :: lectinfo,filexists
       INTEGER :: jrbasdeb,jrbasfin,numidx
       CHARACTER(len=bgword) :: dirname, fname
@@ -168,17 +177,40 @@
       obs_anam = larganamorphosis
       rebuild_state = dyn_constraint .OR. (.NOT.obs_ensemble)
       rebuild_state = rebuild_state .AND. lsplitstate
+      all_ensemble = rebuild_state .AND. obs_ensemble
+
+      jpasize = jpssize
+      IF (all_ensemble) jpasize = jpssize + jposize
 
       IF (rebuild_state) THEN
         allocate ( fullstate(1:jpxend), stat=allocok )
         IF (allocok.NE.0) GOTO 1001
       ENDIF
 !
+! -0.- Read information related to the dynamical constraint
+! ---------------------------------------------------------
+!
+      IF (dyn_constraint) THEN
+        IF (MAXVAL(varngrd(1:varend)).GT.1) GOTO 1000
+
+        jpisize=MAXVAL(var_jpi(1:varend))
+        jpjsize=MAXVAL(var_jpj(1:varend))
+
+        allocate (longi(1:jpisize), stat=allocok )
+        IF (allocok.NE.0) GOTO 1001
+        longi(:) = FREAL(0.0)
+
+        allocate (latj(1:jpjsize), stat=allocok )
+        IF (allocok.NE.0) GOTO 1001
+        latj(:) = FREAL(0.0)
+
+        CALL readgrd(1,1)
+      ENDIF
+!
+! -1.- Read information related to observations
+! ---------------------------------------------
+!
       flago=3 ; lectinfo=.FALSE.
-!
-! -1.- Read observation related information
-! -----------------------------------------
-!
       IF ((kflagxyo.EQ.3).OR.obs_constraint) THEN
 ! Operation performed in observation space -> read observation features
 ! Read poscoefobs, vectorms and gridijkobs arrays
@@ -276,15 +308,15 @@
 ! ---------------------------------------
 !
 ! Allocate Cxyo array
-      allocate ( inens(1:jpssize,1:jprsize,1:jpscl), stat=allocok )
+      allocate ( inens(1:jpasize,1:jprsize,1:jpscl), stat=allocok )
       IF (allocok.NE.0) GOTO 1001
       inens(:,:,:) = FREAL(0.0)
 !
-      allocate ( upens(1:jpssize,1:jpsmpl), stat=allocok )
+      allocate ( upens(1:jpasize,1:jpsmpl), stat=allocok )
       IF (allocok.NE.0) GOTO 1001
       upens(:,:) = FREAL(0.0)
 !
-      IF (obs_ensemble) THEN
+      IF ((obs_ensemble).AND.(.NOT.all_ensemble)) THEN
 
         allocate ( inensobs(1:jposize,1:jprsize,1:jpscl), stat=allocok )
         IF (allocok.NE.0) GOTO 1001
@@ -313,11 +345,12 @@
         ! Read ensemble in this directory
         SELECT CASE (kflagxyo)
         CASE (1,2)
-          CALL readbas(dirname,inens(:,:,jscl),jnxyo,jrbasdeb,jrbasfin, &
-     &                 lectinfo,kflagxyo)
+          CALL readbas(dirname,inens(1:jpssize,:,jscl),jnxyo, &
+     &                 jrbasdeb,jrbasfin,lectinfo,kflagxyo)
         CASE (3)
-          CALL readbas(dirname,inens(:,:,jscl),jnxyo,jrbasdeb,jrbasfin, &
-     &                 lectinfo,kflagxyo,poscoefobs(:,:))
+          CALL readbas(dirname,inens(1:jpssize,:,jscl),jnxyo, &
+     &                 jrbasdeb,jrbasfin,lectinfo, &
+     &                 kflagxyo,poscoefobs(:,:))
         CASE DEFAULT
           GOTO 1000
         END SELECT
@@ -325,8 +358,13 @@
         IF (obs_ensemble) THEN
           ! Read the same ensemble in observation space
           CALL fildirnam(dirname,kinobas,jscl)
-          CALL readbas(dirname,inensobs(:,:,jscl),jnxyo, &
+          IF (all_ensemble) THEN
+            CALL readbas(dirname,inens(jpssize+1:jpasize,:,jscl),jnxyo,&
      &                 jrbasdeb,jrbasfin,lectinfo,flago,poscoefobs(:,:))
+          ELSE
+            CALL readbas(dirname,inensobs(:,:,jscl),jnxyo, &
+     &                 jrbasdeb,jrbasfin,lectinfo,flago,poscoefobs(:,:))
+          ENDIF
         ENDIF
 
       ENDDO
@@ -346,10 +384,10 @@
 
         SELECT CASE (kflagxyo)
         CASE (1,2)
-          CALL readbas(koutbas,upens(:,:),jnxyo,jrbasdeb,jrbasfin, &
+          CALL readbas(koutbas,upens(1:jpssize,:),jnxyo,jrbasdeb,jrbasfin, &
      &                 lectinfo,kflagxyo)
         CASE (3)
-          CALL readbas(koutbas,upens(:,:),jnxyo,jrbasdeb,jrbasfin, &
+          CALL readbas(koutbas,upens(1:jpssize,:),jnxyo,jrbasdeb,jrbasfin, &
      &                 lectinfo,kflagxyo,poscoefobs(:,:))
         CASE DEFAULT
           GOTO 1000
@@ -357,8 +395,13 @@
 
         IF (obs_ensemble) THEN
           ! Read the same ensemble in observation space
-          CALL readbas(koutobas,upensobs(:,:),jnxyo, &
-     &                 jrbasdeb,jrbasfin,lectinfo,flago,poscoefobs(:,:))
+          IF (all_ensemble) THEN
+            CALL readbas(koutobas,upens(jpssize+1:jpasize,:),jnxyo, &
+     &                   jrbasdeb,jrbasfin,lectinfo,flago,poscoefobs(:,:))
+          ELSE
+            CALL readbas(koutobas,upensobs(:,:),jnxyo, &
+     &                   jrbasdeb,jrbasfin,lectinfo,flago,poscoefobs(:,:))
+          ENDIF
         ENDIF
 
 !       Read MCMC restart file
@@ -379,15 +422,17 @@
       ELSE
 
 !       Initialize cost_jini
+        diag_in_j=.TRUE.
         cost_jini = 0.
         DO jsmpl=1,jpsmpl
-          IF (obs_ensemble) THEN
+          IF (obs_ensemble.AND.(.NOT.all_ensemble)) THEN
             cost_jini = cost_jini + cost_jo( upensobs(:,jsmpl) )
           ELSE
             cost_jini = cost_jini + cost_jo( upens(:,jsmpl) )
           ENDIF
         ENDDO
         cost_jini = cost_jini / jpsmpl
+        diag_in_j=.FALSE.
         IF (jproc.eq.0) PRINT *, 'Initial J:',cost_jini
 
 !       Initialize cost_jopt
@@ -407,7 +452,7 @@
       call MPI_TIMER(1)
       call MPI_TIMER(0)
 #endif
-      IF (obs_ensemble) THEN
+      IF ((obs_ensemble).AND.(.NOT.all_ensemble)) THEN
         CALL mcmc_iteration( maxiter, upensobs, inensobs, &
      &                       scl_mult(1:jpscl), cost_jo, &
      &                       upxens=upens, xens=inens, &
@@ -434,18 +479,18 @@
       jrbasfin=jpsmpl
       SELECT CASE (kflagxyo)
       CASE (1)
-        CALL writebas(koutbas,upens(:,:), &
+        CALL writebas(koutbas,upens(1:jpssize,:), &
      &             jnxyo,jrbasdeb,jrbasfin)
       CASE (2)
-        CALL writeyobas(koutbas,upens(:,:), &
+        CALL writeyobas(koutbas,upens(1:jpssize,:), &
      &             jrbasdeb,jrbasfin,kflagxyo)
       CASE (3)
         IF (lsplitobs) THEN
-          CALL writepartobas(koutbas,upens(:,:),jnxyo, &
+          CALL writepartobas(koutbas,upens(1:jpssize,:),jnxyo, &
      &             jrbasdeb,jrbasfin,vectorms(:), &
      &             gridijkobs(:),poscoefobs(:,:))
         ELSE
-          CALL writeyobas(koutbas,upens(:,:), &
+          CALL writeyobas(koutbas,upens(1:jpssize,:), &
      &             jrbasdeb,jrbasfin,kflagxyo,vectorms(:), &
      &             gridijkobs(:),poscoefobs(:,:))
         ENDIF
@@ -455,14 +500,26 @@
 
       IF (obs_ensemble) THEN
         ! write the same ensemble in observation space
-        IF (lsplitobs) THEN
-          CALL writepartobas(koutobas,upensobs(:,:),jnxyo, &
-     &             jrbasdeb,jrbasfin,vectorms(:), &
-     &             gridijkobs(:),poscoefobs(:,:))
+        IF (all_ensemble) THEN
+          IF (lsplitobs) THEN
+            CALL writepartobas(koutobas,upens(jpssize+1:jpasize,:),jnxyo, &
+     &               jrbasdeb,jrbasfin,vectorms(:), &
+     &               gridijkobs(:),poscoefobs(:,:))
+          ELSE
+            CALL writeyobas(koutobas,upens(jpssize+1:jpasize,:), &
+     &               jrbasdeb,jrbasfin,flago,vectorms(:), &
+     &               gridijkobs(:),poscoefobs(:,:))
+          ENDIF
         ELSE
-          CALL writeyobas(koutobas,upensobs(:,:), &
-     &             jrbasdeb,jrbasfin,flago,vectorms(:), &
-     &             gridijkobs(:),poscoefobs(:,:))
+          IF (lsplitobs) THEN
+            CALL writepartobas(koutobas,upensobs(:,:),jnxyo, &
+     &               jrbasdeb,jrbasfin,vectorms(:), &
+     &               gridijkobs(:),poscoefobs(:,:))
+          ELSE
+            CALL writeyobas(koutobas,upensobs(:,:), &
+     &               jrbasdeb,jrbasfin,flago,vectorms(:), &
+     &               gridijkobs(:),poscoefobs(:,:))
+          ENDIF
         ENDIF
       ENDIF
 
@@ -479,11 +536,15 @@
 ! --- deallocation
       IF (allocated(inens)) deallocate(inens)
       IF (allocated(upens)) deallocate(upens)
+      IF (allocated(inensobs)) deallocate(inensobs)
+      IF (allocated(upensobs)) deallocate(upensobs)
       IF (allocated(poscoefobs)) deallocate(poscoefobs)
       IF (allocated(gridijkobs)) deallocate(gridijkobs)
       IF (allocated(vectorms)) deallocate(vectorms)
       IF (allocated(obs)) deallocate(obs)
       IF (allocated(fullstate)) deallocate(fullstate)
+      IF (allocated(longi)) deallocate(longi)
+      IF (allocated(latj)) deallocate(latj)
 !
       CALL kiss_save()
 !
@@ -527,19 +588,31 @@
       REAL(kind=8), dimension(:), intent(in) :: state
       REAL(kind=8) :: cost_jo
 !----------------------------------------------------------------------
-      REAL(kind=8) :: cost_ratio
+      REAL(kind=8) :: cost_jobs, cost_jdyn, cost_ratio
 
-      cost_jo = 0.
+      cost_jobs = 0. ; cost_jdyn = 0.
 
 ! Rebuild full state vector if needed
       IF (rebuild_state) THEN
-        CALL rebuild_fullstate(state)
+        !print *, 'ok2 part',jproc,minval(state),maxval(state)
+        CALL rebuild_fullstate(state(1:jpssize)) ! cost 16s
+        !fullstate(:) = 0. ! cost 2.5s
+        !print *, 'ok3 full',jproc,minval(fullstate),maxval(fullstate)
+      ENDIF
+
+! Apply dynamical constraint
+      IF (dyn_constraint) THEN
+        !CALL apply_constraint(fullstate,cost_jdyn)
       ENDIF
 
       IF (obs_constraint) THEN
 ! Compute observation equivalent from input state
         IF (obs_ensemble) THEN
-          obseq = state
+          IF (all_ensemble) THEN
+            obseq = state(jpssize+1:jpasize)
+          ELSE
+            obseq = state
+          ENDIF
         ELSE
           SELECT CASE (flagxyo)
           CASE (1)
@@ -559,11 +632,11 @@
           CALL ana_backward( obseq, quantiles_ens, quantiles_ref )
         ENDIF
 ! Evaluate observation cost function
-        cost_jo = obserror_logpdf( obs, obseq, oestd )
+        cost_jobs = obserror_logpdf( obs, obseq, oestd )
       ENDIF
 
 #if defined MPI
-      CALL mpi_allreduce (mpi_in_place, cost_jo, 1,  &
+      CALL mpi_allreduce (mpi_in_place, cost_jobs, 1,  &
      &     mpi_double_precision,mpi_sum,mpi_comm_world,mpi_code)
 #endif
 
@@ -572,6 +645,12 @@
         cost_ratio = mcmc_schedule_factor &
      &    * ( cost_jo-cost_jopt ) / ( cost_jini-cost_jopt )
         mcmc_schedule = alpha * mcmc_schedule + beta * cost_ratio
+      ENDIF
+
+      cost_jo = cost_jobs + cost_jdyn
+
+      IF (diag_in_j) THEN
+        IF (jproc==0) PRINT *, 'Jobs, Jdyn:',cost_jobs,cost_jdyn
       ENDIF
 
       njo = njo + 1
@@ -603,9 +682,21 @@
 !----------------------------------------------------------------------
       REAL(KIND=8) :: score
       REAL(KIND=8), dimension(:,:), allocatable :: ensobseq
-      INTEGER :: jposize,jprsize,jr,allocok
+      INTEGER :: jposize,jprsize,jr,jsmpl,jpsmpl,allocok
+      REAL(KIND=8) :: cost_diag
 !
       convergence_test = .FALSE.
+
+! Check cost function
+      diag_in_j=.TRUE.
+      cost_diag = 0.
+      jpsmpl=SIZE(upens,2)
+      DO jsmpl=1,jpsmpl
+        cost_diag = cost_diag + cost_jo( upens(:,jsmpl) )
+      ENDDO
+      cost_diag = cost_diag / jpsmpl
+      diag_in_j=.FALSE.
+      IF (jproc.eq.0) PRINT *, 'Average cost function:',cost_diag
 
 ! Allocate observation equivalent of input ensemble
       jposize = SIZE(obs,1) ; jprsize = SIZE(upens,2)
@@ -614,7 +705,11 @@
 
 ! Compute observation equivalent of input ensemble
       IF (obs_ensemble) THEN
-        ensobseq = upens
+        IF (all_ensemble) THEN
+          ensobseq(1:jposize,:) = upens(jpssize+1:jpasize,:)
+        ELSE
+          ensobseq(:,:) = upens(:,:)
+        ENDIF
       ELSE
         SELECT CASE (flagxyo)
         CASE (1)
@@ -695,15 +790,23 @@
 ! ===================
       REAL(kind=8), dimension(:), intent(in) :: state
 !----------------------------------------------------------------------
-      fullstate=0.
+      INTEGER :: siz
+
+      fullstate(:)=0.
+
+      !!!! WARNING: UNreduce state if needed befor rebuilding !!!
 
 #if defined MPI
-      fullstate(arraynx_jindxbeg(jnxyo):    &
-     &          arraynx_jindxbeg(jnxyo)+    &
-     &          arraynx_jpindxend(jnxyo)-1) &
-     &  = state(1:arraynx_jpindxend(jnxyo))
-      CALL mpi_allreduce(MPI_IN_PLACE,fullstate,jpxend, &
-     &     mpi_double_precision,mpi_sum,0,mpi_comm_world,mpi_code)
+!     fullstate(arraynx_jindxbeg(jnxyo):    &
+!    &          arraynx_jindxbeg(jnxyo)+    &
+!    &          arraynx_jpindxend(jnxyo)-1) &
+!    &  = state(1:arraynx_jpindxend(jnxyo))
+!     CALL mpi_allreduce(MPI_IN_PLACE,fullstate,jpxend, &
+!    &     mpi_double_precision,mpi_sum,mpi_comm_world,mpi_code)
+      siz = arraynx_jpindxend(1)
+      CALL MPI_ALLGATHER(state,siz,MPI_DOUBLE_PRECISION, &
+     &               fullstate,siz,MPI_DOUBLE_PRECISION, &
+     &               MPI_COMM_WORLD,mpi_code)
 #endif
 
       END SUBROUTINE
