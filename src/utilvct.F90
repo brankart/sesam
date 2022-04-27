@@ -41,7 +41,7 @@
       IMPLICIT NONE
       PRIVATE
 
-      PUBLIC mk4vct,mk8vct,unmk4vct,unmk8vct
+      PUBLIC mk4vct,mk8vct,unmk4vct,unmk8vct,unmk8vct_light
 
       CONTAINS
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -433,7 +433,7 @@
 ! --- error management
 !
  1000 CALL printerror2(0,1000,1,'utilvct','unmk4vct')
- 1001 CALL printerror2(0,1001,3,'utilvct','mk4vct')
+ 1001 CALL printerror2(0,1001,3,'utilvct','unmk4vct')
 !
       END SUBROUTINE
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -567,8 +567,55 @@
 ! --- error management section
 !
  1000 CALL printerror2(0,1000,1,'utilvct','unmk8vct')
- 1001 CALL printerror2(0,1001,3,'utilvct','mk8vct')
+ 1001 CALL printerror2(0,1001,3,'utilvct','unmk8vct')
 !
+      END SUBROUTINE
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+! -----------------------------------------------------------------
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      SUBROUTINE unmk8vct_light(kvectsin,kptabij,jpisize,jpjsize,kspval)
+!---------------------------------------------------------------------
+!
+!  Purpose : Extract 2D slice (double precision) of variable field
+!  -------   from Vx or Vy 1D vector segment. Flag masked values.
+!
+!  Method :  Loop over 2D array dimensions
+!  ------    Fill umasked values with 1D Vx or Vy segment
+!
+!  Input :   kvectsin       : Segment of 1D Vx or Vy vector
+!  -----
+!
+!  Output :  kptabij        : 2D slice of variable field
+!  ------
+!
+!---------------------------------------------------------------------
+      use mod_main
+      use mod_cfgxyo
+      use mod_mask
+      IMPLICIT NONE
+!----------------------------------------------------------------------
+      BIGREAL, dimension(:), intent(in) :: kvectsin
+      BIGREAL8, dimension(:,:), intent(out) :: kptabij
+      INTEGER, intent(in) :: jpisize,jpjsize
+      BIGREAL8, intent(in) :: kspval
+!----------------------------------------------------------------------
+      INTEGER :: ji, jj, js
+!----------------------------------------------------------------------
+
+      js = 0
+      DO jj=1,jpjsize
+      DO ji=1,jpisize
+        IF (IBITS(mask(ji,jj,1,1),0,1).NE.0) THEN
+          js=js+1
+          kptabij(ji,jj)=kvectsin(js)
+        ELSE
+          kptabij(ji,jj)=kspval
+        ENDIF
+      ENDDO
+      ENDDO
+
+      RETURN
+
       END SUBROUTINE
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ! -----------------------------------------------------------------

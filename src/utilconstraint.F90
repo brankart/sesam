@@ -32,6 +32,7 @@
       use flowsampler_units
       use flowsampler_kinematics
       use flowsampler_dynamics
+      use flowsampler_adv_constraint
 
       IMPLICIT NONE
 
@@ -40,9 +41,11 @@
       ! Public variables
       LOGICAL, PUBLIC, save :: dyn_constraint=.FALSE. ! Apply dynamical constraint
       BIGREAL, PUBLIC, save :: dyn_constraint_std=1.0 ! Constraint error std
+      BIGREAL, PUBLIC, save :: dyn_constraint_dt=86400. ! Constraint timestep in seconds
 
       ! Private variables
       LOGICAL, save :: first_call=.TRUE.
+      INTEGER, save :: jpi2d, jpj2d
       BIGREAL, dimension(:,:), allocatable, save :: adt           ! absolute dynamic topography
       BIGREAL, dimension(:,:), allocatable, save :: u, u0         ! zonal velocity
       BIGREAL, dimension(:,:), allocatable, save :: v, v0         ! meridional velocity
@@ -53,7 +56,53 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ! -----------------------------------------------------------------
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      SUBROUTINE apply_constraint(vectx,cost_jdyn)
+      FUNCTION eval_constraint(vectxstep)
+!---------------------------------------------------------------------
+!
+!  Purpose : Evaluate dynamical constraint on input timestep
+!
+!  Method : convert the 1D vector into the required 2D slice of variables
+!  ------   evaluate contribution of current processor to global constraint
+!
+!  Input : vectxstep  : one timestep from Vx vector
+!  -----
+!---------------------------------------------------------------------
+! modules
+! =======
+      use mod_main
+      use mod_cfgxyo
+      use utilvct
+      IMPLICIT NONE
+!----------------------------------------------------------------------
+      BIGREAL, dimension(:), intent(in) :: vectxstep
+      BIGREAL :: eval_constraint
+!----------------------------------------------------------------------
+      INTEGER :: allocok
+
+      IF (first_call) THEN
+        first_call=.FALSE.
+        jpi2d=var_jpi(1)
+        jpj2d=var_jpj(1)
+        allocate (adt(1:jpi2d,1:jpj2d), stat=allocok )
+        IF (allocok.NE.0) GOTO 1001
+      ENDIF
+
+      CALL unmk8vct_light(vectxstep(:),adt(:,:),jpi2d,jpj2d,spval)
+
+      eval_constraint = constraint_cost(adt)
+
+      RETURN
+!
+! --- error management
+!
+ 1000 CALL printerror2(0,1000,1,'utilconstraint','eval_constraint')
+ 1001 CALL printerror2(0,1001,3,'utilconstraint','eval_constraint')
+!
+      END FUNCTION
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+! -----------------------------------------------------------------
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      SUBROUTINE apply_constraint(vectx)
 !---------------------------------------------------------------------
 !
 !  Purpose : Apply dynamical constraint on input vector
@@ -76,7 +125,6 @@
 ! header declarations
 ! ===================
       BIGREAL, dimension(:), intent(inout) :: vectx
-      BIGREAL, optional, intent(out) :: cost_jdyn
 !----------------------------------------------------------------------
 ! local declarations
 ! ==================
@@ -84,7 +132,6 @@
       INTEGER :: jpisize,jpjsize,jpksize,jptsize
       INTEGER :: nbr,allocok
       BIGREAL :: dummy, dt, variance
-      LOGICAL :: cost_eval
 !----------------------------------------------------------------------
 !
       IF (first_call.AND.(nprint.GE.1)) THEN
@@ -96,10 +143,6 @@
 ! Check dimensions : the full state vector must be recomposed
 ! before calling this routine
       IF (SIZE(vectx,1).NE.jpxend) GOTO 1000
-
-! Initialize evaluation of cost function
-      cost_eval = PRESENT(cost_jdyn)
-      IF (cost_eval) cost_jdyn = 0.0_kr
 
 ! Check that grid is regular
       IF (MAXVAL(varngrd(1:varend)).GT.1) GOTO 1000
@@ -181,19 +224,7 @@
           xi(:,:) = 0.0
         ENDIF
 
-! Add contribution to cost function (if cost)
-        IF (cost_eval) THEN
-          IF (jt.GT.1) THEN
-            DO idx=jproc,jpisize*jpjsize-1,jpproc
-              ji = 1 + MOD(idx,jpisize)
-              jj = 1 + idx/jpisize
-              cost_jdyn=cost_jdyn+xi(ji,jj)*xi(ji,jj)
-            ENDDO
-          ENDIF
-        ENDIF
-
 ! Save dependent variables (u,v,omega,xi) in Vx vector (if not cost)
-        IF (.NOT.cost_eval) THEN
         DO jvar = 1,varend
           indvar=var_ord(jvar)
           IF (var_jpk(indvar).NE.jpksize) GOTO 1000
@@ -224,22 +255,11 @@
           ENDIF
 
         ENDDO
-        ENDIF
 
       ENDDO
       ENDDO
 
-! Finalize evaluation of cost function
-      IF (cost_eval) THEN
-        variance = dyn_constraint_std * dyn_constraint_std
-        cost_jdyn = 0.5_kr * cost_jdyn / variance
-#if defined MPI
-        CALL mpi_allreduce (mpi_in_place, cost_jdyn, 1,  &
-     &       mpi_double_precision,mpi_sum,mpi_comm_world,mpi_code)
-#endif
-      ENDIF
-
- 900     RETURN
+      RETURN
 !
 ! --- error management
 !
