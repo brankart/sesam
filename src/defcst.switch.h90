@@ -3224,9 +3224,11 @@
 ! -XXIV.- MCMC module : MCMC sampler
 ! ----------------------------------
       jmod=24
-! --- optional switches -oestd(7) -anamorphosis(51)
+! --- optional switches -oestd(7) -bias(8) -anamorphosis(51) -reducevar(54)
       tabnumswiopt(jmod,1)=7
       tabnumswiopt(jmod,2)=51
+      tabnumswiopt(jmod,3)=8
+      tabnumswiopt(jmod,4)=54
 ! -XXIV.1- =>: -inxbas <file_xbas> -outxbas <file_xbas> -iterate <iteration number>
       jaction=1
       WRITE(tabhelporder(jmod,jaction),*) 'Ensemble augmentation'

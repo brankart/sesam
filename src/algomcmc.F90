@@ -41,12 +41,14 @@
       use utilmkh
       use utilroa
       use utilfiles
+      use utilvct
       use utilconstraint
       use ensdam_mcmc_update
       use ensdam_anatra
       use ensdam_obserror
       use ensdam_score_optimality
       use ensdam_storng
+      use flowsampler_adv_constraint
       IMPLICIT NONE
       PRIVATE
 
@@ -57,6 +59,7 @@
       LOGICAL, save :: obs_anam=.FALSE.        ! Anamorphosis in obs operator
       LOGICAL, save :: rebuild_state=.FALSE.   ! Rebuild in cost function
       LOGICAL, save :: all_ensemble=.FALSE.    ! Ensemble concatenating state and obs
+      LOGICAL, save :: center_reduce=.FALSE.   ! Ensemble concatenating state and obs
 
       INTEGER, save :: flagxyo, jnxyo
       BIGREAL, dimension(:), allocatable, save :: obs
@@ -64,9 +67,12 @@
       BIGREAL, dimension(:), allocatable, save :: obseq
       BIGREAL, dimension(:,:), allocatable, save :: quantiles_ens
       BIGREAL, dimension(:), allocatable, save :: quantiles_ref
+      BIGREAL, dimension(:), allocatable, save :: ens_mean
+      BIGREAL, dimension(:), allocatable, save :: ens_std
 
       ! Storage for rebulding full state vector in cost function
       BIGREAL, dimension(:), allocatable, save :: fullstate
+      BIGREAL, dimension(:), allocatable, save :: tmpstate
 
       ! Vector sizes
       INTEGER, save :: jpssize ! Size of state vector
@@ -76,13 +82,16 @@
       INTEGER, save :: njo=0 ! totel number of evaluations of the cost function
 
       ! Initial and target value of cost function
-      BIGREAL, save :: cost_jini, cost_jopt
+      BIGREAL, save :: cost_jini, cost_jopt, cost_jtest
       LOGICAL, save :: diag_in_j = .FALSE.
       ! Weights for MCMC schedule
       BIGREAL, save :: alpha, beta
       BIGREAL, save :: mcmc_schedule_factor=0.
       ! Number of last iterations over which weights are "averaged"
       INTEGER, save :: mcmc_schedule_iter=5
+      ! Debugging option
+      BIGREAL, save :: dyn_constraint_fac = 1.0
+      LOGICAL, save :: debug_constraint = .FALSE.
 
       CONTAINS
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -132,8 +141,8 @@
       BIGREAL, dimension(:,:), allocatable, save :: upensobs
       BIGREAL, dimension(:), allocatable, save :: vectorms
 !
-      INTEGER :: allocok,jpitpsize,jprsize,jpsmpl
-      INTEGER :: js,jr,jscl,jsmpl,flagcfg,flago,jpisize,jpjsize
+      INTEGER :: allocok,jpitpsize,jprsize,jpsmpl,nbr,jidx
+      INTEGER :: js,jr,jscl,jsmpl,flagcfg,flago,jpisize,jpjsize,jptsize
       LOGICAL :: lectinfo,filexists
       INTEGER :: jrbasdeb,jrbasfin,numidx
       CHARACTER(len=bgword) :: dirname, fname
@@ -178,19 +187,19 @@
       rebuild_state = dyn_constraint .OR. (.NOT.obs_ensemble)
       rebuild_state = rebuild_state .AND. lsplitstate
       all_ensemble = rebuild_state .AND. obs_ensemble
+      center_reduce = largbias
+
+      flago=3 ; lectinfo=.FALSE.
+      IF (center_reduce.AND.(.NOT.largreducevar)) GOTO 101
 
       jpasize = jpssize
       IF (all_ensemble) jpasize = jpssize + jposize
-
-      IF (rebuild_state) THEN
-        allocate ( fullstate(1:jpxend), stat=allocok )
-        IF (allocok.NE.0) GOTO 1001
-      ENDIF
 !
-! -0.- Read information related to the dynamical constraint
-! ---------------------------------------------------------
+! -0.- Read/initialize information related to the dynamical constraint
+! --------------------------------------------------------------------
 !
       IF (dyn_constraint) THEN
+        ! Read horizontal grid
         IF (MAXVAL(varngrd(1:varend)).GT.1) GOTO 1000
 
         jpisize=MAXVAL(var_jpi(1:varend))
@@ -205,12 +214,94 @@
         latj(:) = FREAL(0.0)
 
         CALL readgrd(1,1)
+
+        ! Dynamical constraint uncertainty
+        dyn_constraint_fac = 0.5_kr / ( dyn_constraint_std * dyn_constraint_std )
+
+        ! Initialize grid in flowsampler
+        nlon = jpisize
+        nlat = jpjsize
+        lonmin = longi(1)
+        lonmax = longi(jpisize)
+        latmin = latj(1)
+        latmax = latj(jpjsize)
+        CALL defgrid()
+
+        ! Define parameters in flowsampler
+        physical_units=.TRUE.
+        ellipsoid_correction=.FALSE.
+        spherical_delta=.FALSE.
+        normalize_residual=.TRUE.
+
+        ! Check validity of configuration with constraint
+        IF (varend.NE.1) GOTO 101
+        IF (var_nam(1).NE.'ADT  ') GOTO 101
+        IF (MAXVAL(varngrd(1:varend)).GT.1) GOTO 101
+        IF (obs_constraint.AND.(.NOT.all_ensemble)) GOTO 101
+        IF (.NOT.center_reduce) GOTO 101
+
+        jptsize = MAXVAL(var_jpt(1:varend))
+        jidx = MOD(jproc,jpproc/jptsize) + 1  ! index in current timestep
+        IF (MOD(jpxend,jptsize).NE.0) GOTO 101
+        IF (MOD(jpproc,jptsize).NE.0) GOTO 102
+        IF (MOD(jpisize*jpjsize,jpproc/jptsize).NE.0) GOTO 102
+        IF (jpxend.NE.jpisize*jpjsize*jptsize) THEN
+          print *, 'Land mask with dynamical constraint: not yet coded'
+          GOTO 101
+        ENDIF
+
+        ! Initialize constraint arrays
+        CALL constraint_init(jptsize,dyn_constraint_dt)
+      ENDIF
+
+      IF (rebuild_state) THEN
+        IF (dyn_constraint) THEN
+          ! Allocate state vector for one timestep for temporary work
+          allocate ( fullstate(1:jpxend/jptsize), stat=allocok )
+          IF (allocok.NE.0) GOTO 1001
+          ! Allocate state vector block for temporary work
+          allocate ( tmpstate(1:jpssize), stat=allocok )
+          IF (allocok.NE.0) GOTO 1001
+        ELSE
+          ! Allocate full state vector for temporary work
+          allocate ( fullstate(1:jpxend), stat=allocok )
+          IF (allocok.NE.0) GOTO 1001
+        ENDIF
+      ENDIF
+
+      IF (center_reduce) THEN
+        ! Allocate ensemble mean and std
+        allocate ( ens_mean(1:jpssize), stat=allocok )
+        IF (allocok.NE.0) GOTO 1001
+        allocate ( ens_std(1:jpssize), stat=allocok )
+        IF (allocok.NE.0) GOTO 1001
+
+        ! Read ensemble mean and std
+        CALL readxyo (argbias,ens_mean(:),jnxyo,lectinfo,flagxyo)
+        CALL readxyo (argreducevar,ens_std(:),jnxyo,lectinfo,flagxyo)
+
+      ENDIF
+
+      IF (dyn_constraint.AND.debug_constraint) THEN
+        CALL readxyo ('debug_in.cpak',tmpstate(:),jnxyo,lectinfo,flagxyo)
+
+        CALL rebuild_fullstate(tmpstate(1:jpssize))
+        cost_jtest=eval_constraint(fullstate)
+        cost_jtest=cost_jtest*dyn_constraint_fac
+        print *, jproc,cost_jtest
+
+        CALL mk8vct(fullstate(:),zeta1(:,:),1,1,1,nbr,1)
+
+        nbr = arraynx_jpindxend(1)
+        tmpstate(1:nbr) = fullstate((jidx-1)*nbr+1:jidx*nbr)
+        CALL writevar('debug_out.cpak',tmpstate(:),jnxyo)
+
+        STOP 'Stopping after debug'
       ENDIF
 !
 ! -1.- Read information related to observations
 ! ---------------------------------------------
 !
-      flago=3 ; lectinfo=.FALSE.
       IF ((kflagxyo.EQ.3).OR.obs_constraint) THEN
 ! Operation performed in observation space -> read observation features
 ! Read poscoefobs, vectorms and gridijkobs arrays
@@ -437,6 +528,12 @@
 
 !       Initialize cost_jopt
         cost_jopt = FREAL(jpoend) / 2._kr
+        IF (dyn_constraint) THEN
+          cost_jtest = FREAL((jpisize-2)*(jpjsize-2)*(jptsize-1)) / 2._kr
+          IF (jproc.eq.0) PRINT *, 'Target Jobs:',cost_jopt
+          IF (jproc.eq.0) PRINT *, 'Target Jdyn:',cost_jtest
+          cost_jopt = cost_jopt + cost_jtest
+        ENDIF
         IF (jproc.eq.0) PRINT *, 'Target J:',cost_jopt
 
 !       Initialize mcmc_schedule
@@ -543,6 +640,8 @@
       IF (allocated(vectorms)) deallocate(vectorms)
       IF (allocated(obs)) deallocate(obs)
       IF (allocated(fullstate)) deallocate(fullstate)
+      IF (allocated(ens_mean)) deallocate(ens_mean)
+      IF (allocated(ens_std)) deallocate(ens_std)
       IF (allocated(longi)) deallocate(longi)
       IF (allocated(latj)) deallocate(latj)
 !
@@ -557,10 +656,10 @@
  1004 CALL printerror2(0,1004,3,'algomcmc','algomcmc')
 !
 !
- 101  WRITE (texterror,*) 'Bad ...'
+ 101  WRITE (texterror,*) 'Bad dynamical constraint configuration'
       CALL printerror2(0,101,3,'algomcmc','algomcmc', &
      &     comment=texterror)
- 102  WRITE (texterror,*) 'Bad ...'
+ 102  WRITE (texterror,*) 'Incompatible number of processors'
       CALL printerror2(0,102,3,'algomcmc','algomcmc', &
      &     comment=texterror)
 !
@@ -594,15 +693,13 @@
 
 ! Rebuild full state vector if needed
       IF (rebuild_state) THEN
-        !print *, 'ok2 part',jproc,minval(state),maxval(state)
-        CALL rebuild_fullstate(state(1:jpssize)) ! cost 16s
-        !fullstate(:) = 0. ! cost 2.5s
-        !print *, 'ok3 full',jproc,minval(fullstate),maxval(fullstate)
+        CALL rebuild_fullstate(state(1:jpssize))
       ENDIF
 
 ! Apply dynamical constraint
       IF (dyn_constraint) THEN
-        !CALL apply_constraint(fullstate,cost_jdyn)
+        cost_jdyn=eval_constraint(fullstate)
+        cost_jdyn=cost_jdyn*dyn_constraint_fac
       ENDIF
 
       IF (obs_constraint) THEN
@@ -637,6 +734,8 @@
 
 #if defined MPI
       CALL mpi_allreduce (mpi_in_place, cost_jobs, 1,  &
+     &     mpi_double_precision,mpi_sum,mpi_comm_world,mpi_code)
+      CALL mpi_allreduce (mpi_in_place, cost_jdyn, 1,  &
      &     mpi_double_precision,mpi_sum,mpi_comm_world,mpi_code)
 #endif
 
@@ -792,21 +891,23 @@
 !----------------------------------------------------------------------
       INTEGER :: siz
 
-      fullstate(:)=0.
-
-      !!!! WARNING: UNreduce state if needed befor rebuilding !!!
-
 #if defined MPI
-!     fullstate(arraynx_jindxbeg(jnxyo):    &
-!    &          arraynx_jindxbeg(jnxyo)+    &
-!    &          arraynx_jpindxend(jnxyo)-1) &
-!    &  = state(1:arraynx_jpindxend(jnxyo))
-!     CALL mpi_allreduce(MPI_IN_PLACE,fullstate,jpxend, &
-!    &     mpi_double_precision,mpi_sum,mpi_comm_world,mpi_code)
-      siz = arraynx_jpindxend(1)
-      CALL MPI_ALLGATHER(state,siz,MPI_DOUBLE_PRECISION, &
-     &               fullstate,siz,MPI_DOUBLE_PRECISION, &
-     &               MPI_COMM_WORLD,mpi_code)
+      IF (dyn_constraint) THEN
+        IF (center_reduce) THEN
+          tmpstate(:) = state(:) * ens_std(:) + ens_mean(:)
+        ENDIF
+        siz = arraynx_jpindxend(1)
+        CALL MPI_ALLGATHER(tmpstate,siz,MPI_DOUBLE_PRECISION, &
+     &                    fullstate,siz,MPI_DOUBLE_PRECISION, &
+     &                    mpi_comm_timestep,mpi_code)
+      ELSE
+        fullstate(arraynx_jindxbeg(jnxyo):    &
+     &            arraynx_jindxbeg(jnxyo)+    &
+     &            arraynx_jpindxend(jnxyo)-1) &
+     &    = state(1:arraynx_jpindxend(jnxyo))
+        CALL mpi_allreduce(MPI_IN_PLACE,fullstate,jpxend, &
+     &       mpi_double_precision,mpi_sum,mpi_comm_world,mpi_code)
+      ENDIF
 #endif
 
       END SUBROUTINE
