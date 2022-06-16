@@ -42,6 +42,7 @@
       LOGICAL, PUBLIC, save :: dyn_constraint=.FALSE. ! Apply dynamical constraint
       BIGREAL, PUBLIC, save :: dyn_constraint_std=1.0 ! Constraint error std
       BIGREAL, PUBLIC, save :: dyn_constraint_dt=86400. ! Constraint timestep in seconds
+      BIGREAL, PUBLIC, parameter :: secs_in_day=86400.  ! nbr of seconds in 1 day
 
       ! Private variables
       LOGICAL, save :: first_call=.TRUE.
@@ -49,14 +50,15 @@
       BIGREAL, dimension(:,:), allocatable, save :: adt           ! absolute dynamic topography
       BIGREAL, dimension(:,:), allocatable, save :: u, u0         ! zonal velocity
       BIGREAL, dimension(:,:), allocatable, save :: v, v0         ! meridional velocity
-      BIGREAL, dimension(:,:), allocatable, save :: omega, omega0 ! relative vorticity
+      BIGREAL, dimension(:,:), allocatable, save :: omega         ! relative vorticity
+      BIGREAL, dimension(:,:), allocatable, save :: zeta, zeta0   ! potential vorticity
       BIGREAL, dimension(:,:), allocatable, save :: xi            ! advection misfit
 
       CONTAINS
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ! -----------------------------------------------------------------
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      FUNCTION eval_constraint(vectxstep)
+      FUNCTION eval_constraint(vectxstep,cost_jdis)
 !---------------------------------------------------------------------
 !
 !  Purpose : Evaluate dynamical constraint on input timestep
@@ -75,6 +77,7 @@
       IMPLICIT NONE
 !----------------------------------------------------------------------
       BIGREAL, dimension(:), intent(in) :: vectxstep
+      BIGREAL, intent(out), optional :: cost_jdis
       BIGREAL :: eval_constraint
 !----------------------------------------------------------------------
       INTEGER :: allocok
@@ -89,7 +92,11 @@
 
       CALL unmk8vct_light(vectxstep(:),adt(:,:),jpi2d,jpj2d,spval)
 
-      eval_constraint = constraint_cost(adt)
+      IF (PRESENT(cost_jdis)) THEN
+        eval_constraint = constraint_cost(adt,cost_jdis)
+      ELSE
+        eval_constraint = constraint_cost(adt)
+      ENDIF
 
       RETURN
 !
@@ -163,13 +170,15 @@
         IF (allocok.NE.0) GOTO 1001
         allocate (omega(1:jpisize,1:jpjsize), stat=allocok )
         IF (allocok.NE.0) GOTO 1001
+        allocate (zeta(1:jpisize,1:jpjsize), stat=allocok )
+        IF (allocok.NE.0) GOTO 1001
         allocate (xi(1:jpisize,1:jpjsize), stat=allocok )
         IF (allocok.NE.0) GOTO 1001
         allocate (u0(1:jpisize,1:jpjsize), stat=allocok )
         IF (allocok.NE.0) GOTO 1001
         allocate (v0(1:jpisize,1:jpjsize), stat=allocok )
         IF (allocok.NE.0) GOTO 1001
-        allocate (omega0(1:jpisize,1:jpjsize), stat=allocok )
+        allocate (zeta0(1:jpisize,1:jpjsize), stat=allocok )
         IF (allocok.NE.0) GOTO 1001
       ENDIF
 
@@ -183,7 +192,11 @@
       CALL defgrid()
       physical_units=.TRUE.
       ellipsoid_correction=.FALSE.
-      normalize_residual=.TRUE.
+      normalize_residual=.FALSE.
+      qg_model=.TRUE.
+      pv_model=.FALSE.
+      adt_ref=-1.
+      rossby_radius=3.d4
 
 ! Loop on 2D slice in time and along the vertical
       DO jt=1,jptsize
@@ -204,22 +217,26 @@
         ENDDO
 
 ! Apply constraint
-        u0(:,:) = u(:,:) ; v0(:,:) = v(:,:) ; omega0(:,:) = omega(:,:)
-        !if (jproc==0) print *, 'ok5 adt',minval(adt),maxval(adt)
+        u0(:,:) = u(:,:) ; v0(:,:) = v(:,:) ; zeta0(:,:) = zeta(:,:)
         CALL velocity(adt,u,v)
         CALL vorticity(u,v,omega)
+        zeta(:,:) = omega(:,:)
+        CALL add_pv_term(zeta,adt)
 
         IF (jt.GT.1) THEN
-          dt= 86400. ; dummy=0.
+          dt = dyn_constraint_dt ; dummy=0.
           !if (jproc==0) print *, 'ok6 u0',minval(u0),maxval(u0)
           !if (jproc==0) print *, 'ok6 v0',minval(v0),maxval(v0)
-          !if (jproc==0) print *, 'ok6 omega0',minval(omega0),maxval(omega0)
+          !if (jproc==0) print *, 'ok6 zeta0',minval(zeta0),maxval(zeta0)
           !if (jproc==0) print *, 'ok6 u',minval(u),maxval(u)
           !if (jproc==0) print *, 'ok6 v',minval(v),maxval(v)
-          !if (jproc==0) print *, 'ok6 omega',minval(omega),maxval(omega)
+          !if (jproc==0) print *, 'ok6 zeta',minval(zeta),maxval(zeta)
           !xi(:,:) = 0.0
-          CALL advection(xi,omega0,u0,v0,omega,u,v,dummy,dt)
+          CALL advection(xi,zeta0,u0,v0,zeta,u,v,dummy,dt)
           !if (jproc==0) print *, 'xi',jt,minval(xi),maxval(xi)
+          IF (.NOT.normalize_residual) xi = xi * secs_in_day * secs_in_day
+          print *, 'Timestep : ',jt,'Misfit : ', &
+     &              SQRT( SUM(xi*xi)/((jpisize-2)*(jpjsize-2)) )
         ELSE
           xi(:,:) = 0.0
         ENDIF

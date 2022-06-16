@@ -39,6 +39,7 @@
       use algospct, only : loc_time_scale, loc_radius_in_deg
       use utilconstraint, only : dyn_constraint, dyn_constraint_std, &
      &                           dyn_constraint_dt
+      use algomcmc, only : oestd_inflation
       use ensdam_mcmc_update
       IMPLICIT NONE
 !----------------------------------------------------------------------
@@ -190,8 +191,6 @@
           READ(attr,*,ERR=102) mcmc_convergence_check
         CASE('MCMC_CONVERGENCE_STOP')
           READ(attr,*,ERR=102) mcmc_convergence_stop
-        CASE('MCMC_ZERO_START')
-          READ(attr,*,ERR=102) mcmc_zero_start
 !
 ! Parameterization of dynamical constraint
         CASE('DYN_CONSTRAINT')
@@ -200,6 +199,10 @@
           READ(attr,*,ERR=102) dyn_constraint_dt
         CASE('DYN_CONSTRAINT_STD')
           READ(attr,*,ERR=102) dyn_constraint_std
+!
+! Parameterization of MCMC sampler
+        CASE('OESTD_INFLATION')
+          READ(attr,*,ERR=102) oestd_inflation
 !
 ! Parameterization of localization radius fro random sampling
         CASE('LOC_TIME_SCALE')

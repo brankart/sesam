@@ -375,7 +375,7 @@
      &     sxy_jpi,sxy_jpj,sxy_jpk,sxy_jpt,sxy_nbr,sxyngrd,sxyegrd
       INTEGER :: jsxy,indsxy,sompartxynbr,jtxy
       INTEGER, dimension(1:nbvar) :: txy_indtab
-      CHARACTER(len=bgword), dimension(1:nbvar) :: sxy_nam
+      CHARACTER(len=bgword), dimension(1:nbvar) :: sxy_nam,sxyzdim
       CHARACTER(len=bgword), dimension(1:nbvar) :: sxyfgrd,sxyfmsk
       INTEGER :: ji, jj, jk, jt
       INTEGER :: jpiend, jpjend, jpkend, jptend
@@ -411,6 +411,10 @@
             sxyngrd(indsxy)=dtangrd(indsxy)
             sxyfgrd(indsxy)=dtafgrd(indsxy)
             sxyegrd(indsxy)=dtaegrd(indsxy)
+            sxyzdim(indsxy)=varzdim(indsxy)
+            IF (sxyzdim(indsxy).NE.'none') THEN
+              zdim = sxyzdim(indsxy)
+            ENDIF
          ENDDO
 !
          jtxy=1
@@ -418,7 +422,6 @@
          indsxy=sxy_ord(jsxy)
          xdim = varxdim(indsxy)
          ydim = varydim(indsxy)
-         zdim = varzdim(indsxy)
          tdim = vartdim(indsxy)
 !
       CASE(2)
@@ -441,6 +444,10 @@
             sxyngrd(indsxy)=dtangrd(indsxy)
             sxyfgrd(indsxy)=dtafgrd(indsxy)
             sxyegrd(indsxy)=dtaegrd(indsxy)
+            sxyzdim(indsxy)=dtazdim(indsxy)
+            IF (sxyzdim(indsxy).NE.'none') THEN
+              zdim = sxyzdim(indsxy)
+            ENDIF
          ENDDO
 !
          jtxy=1
@@ -448,7 +455,6 @@
          indsxy=sxy_ord(jsxy)
          xdim = dtaxdim(indsxy)
          ydim = dtaydim(indsxy)
-         zdim = dtazdim(indsxy)
          tdim = dtatdim(indsxy)
 !
       CASE DEFAULT
@@ -583,7 +589,7 @@
          IF (ierr.NE.0) GOTO 103
          ierr = NF90_INQUIRE_VARIABLE(idf,idv,ndims=ndims)
          IF (ierr.NE.0) GOTO 103
-         IF (zdim.NE.'none') THEN
+         IF (sxyzdim(indsxy).NE.'none') THEN
            IF (sxy_dim(indsxy).GT.ndims) GOTO 103
          ELSE
            IF (sxy_dim(indsxy).GT.ndims+1) GOTO 103
@@ -604,7 +610,7 @@
 !
          IF ( (sxy_dim(indsxy).GE.1).AND.(idvx.EQ.0) ) GOTO 105
          IF ( (sxy_dim(indsxy).GE.2).AND.(idvy.EQ.0) ) GOTO 105
-         IF (zdim.NE.'none') THEN
+         IF (sxyzdim(indsxy).NE.'none') THEN
            IF ( (sxy_dim(indsxy).GE.3).AND.(idvz.EQ.0) ) GOTO 105
          ENDIF
          IF ( (sxy_dim(indsxy).GE.4).AND.(idvt.EQ.0) ) GOTO 105
@@ -674,11 +680,11 @@
       CALL printerror2(0,101,3,'lionc','writenc',comment=texterror)
  102  WRITE (texterror,*) 'Bad dimension in NetCDF file: ',kfnoutnc
       CALL printerror2(0,102,3,'lionc','writenc',comment=texterror)
- 103  WRITE (texterror,*) 'Bad variable in NetCDF file: ',sxy_nam
+ 103  WRITE (texterror,*) 'Bad variable in NetCDF file: ',sxy_nam(indsxy)
       CALL printerror2(0,103,3,'lionc','writenc',comment=texterror)
  104  WRITE (texterror,*) 'Error writing NetCDF variable'
       CALL printerror2(0,104,3,'lionc','writenc',comment=texterror)
- 105  WRITE (texterror,*) 'Bad dimensions for NetCDF variable: ',sxy_nam
+ 105  WRITE (texterror,*) 'Bad dimensions for NetCDF variable: ',sxy_nam(indsxy)
       CALL printerror2(0,105,3,'lionc','writenc',comment=texterror)
  106  WRITE (texterror,*) 'Output .nc file does not exist: ',kfnoutnc
       CALL printerror2(0,106,3,'lionc','writenc',comment=texterror)

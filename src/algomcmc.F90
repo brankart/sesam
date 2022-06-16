@@ -54,6 +54,8 @@
 
       PUBLIC calcmcmc
 
+      BIGREAL, PUBLIC, save :: oestd_inflation=1. ! Observation error inflation factor
+
       LOGICAL, save :: obs_constraint=.FALSE.  ! Observation constraint
       LOGICAL, save :: obs_ensemble=.FALSE.    ! Ensemble in obs space
       LOGICAL, save :: obs_anam=.FALSE.        ! Anamorphosis in obs operator
@@ -143,7 +145,7 @@
 !
       INTEGER :: allocok,jpitpsize,jprsize,jpsmpl,nbr,jidx
       INTEGER :: js,jr,jscl,jsmpl,flagcfg,flago,jpisize,jpjsize,jptsize
-      LOGICAL :: lectinfo,filexists
+      LOGICAL :: lectinfo,mcmc_restart
       INTEGER :: jrbasdeb,jrbasfin,numidx
       CHARACTER(len=bgword) :: dirname, fname
 !----------------------------------------------------------------------
@@ -215,8 +217,25 @@
 
         CALL readgrd(1,1)
 
+        ! Define parameters in flowsampler
+        physical_units=.TRUE.
+        ellipsoid_correction=.FALSE.
+        spherical_delta=.FALSE.
+        normalize_residual=.FALSE.
+        qg_model=.TRUE.
+        pv_model=.FALSE.
+        adt_ref=-1.
+        rossby_radius=3.d4
+        dissip_rate=-0.3d-11
+        dissip_rate=-1.d-21
+        dissip_rate=0.
+
         ! Dynamical constraint uncertainty
         dyn_constraint_fac = 0.5_kr / ( dyn_constraint_std * dyn_constraint_std )
+        IF (.NOT.normalize_residual) THEN
+          dyn_constraint_fac = dyn_constraint_fac * ( secs_in_day * secs_in_day )
+          dyn_constraint_fac = dyn_constraint_fac * ( secs_in_day * secs_in_day )
+        ENDIF
 
         ! Initialize grid in flowsampler
         nlon = jpisize
@@ -226,12 +245,6 @@
         latmin = latj(1)
         latmax = latj(jpjsize)
         CALL defgrid()
-
-        ! Define parameters in flowsampler
-        physical_units=.TRUE.
-        ellipsoid_correction=.FALSE.
-        spherical_delta=.FALSE.
-        normalize_residual=.TRUE.
 
         ! Check validity of configuration with constraint
         IF (varend.NE.1) GOTO 101
@@ -290,7 +303,8 @@
         cost_jtest=cost_jtest*dyn_constraint_fac
         print *, jproc,cost_jtest
 
-        CALL mk8vct(fullstate(:),zeta1(:,:),1,1,1,nbr,1)
+        !For debug
+        !CALL mk8vct(fullstate(:),zeta1(:,:),1,1,1,nbr,1)
 
         nbr = arraynx_jpindxend(1)
         tmpstate(1:nbr) = fullstate((jidx-1)*nbr+1:jidx*nbr)
@@ -367,6 +381,9 @@
             CALL mkyorms (oestd(:),flago)
           ENDIF
         ENDIF
+
+! Observation error standard deviation inflation
+        oestd(:)=oestd(:)*oestd_inflation
 
 ! Allocate arrays for observation equivalent to state vector
         allocate ( obseq(1:jposize), stat=allocok )
@@ -462,8 +479,22 @@
 !
 ! -3.- Read initial condition for MCMC sampler (if needed)
 ! --------------------------------------------------------
-!
-      IF (.NOT.mcmc_zero_start) THEN
+! Check MCMC restart file
+      WRITE(fname,'("./",A,"/",A)') koutbas(1:lenv(koutbas)), &
+     &                                'mcmc_restart.txt'
+      INQUIRE (FILE=fname,EXIST=mcmc_restart)
+
+      IF (mcmc_restart) THEN
+
+!       Read MCMC restart file
+        numidx=10
+        CALL openfile(numidx,fname)
+        READ(numidx,*) mcmc_index
+        READ(numidx,*) cost_jini, cost_jopt
+        READ(numidx,*) mcmc_schedule, alpha, beta
+        CLOSE(UNIT=numidx)
+
+!       Read MCMC initial condition
 
         IF ((nprint.GE.2).AND.(jnxyo.EQ.1)) THEN
           WRITE(numout,*) '    ==> READING initial condition', &
@@ -495,22 +526,14 @@
           ENDIF
         ENDIF
 
-!       Read MCMC restart file
-        WRITE(fname,'("./",A,"/",A)') koutbas(1:lenv(koutbas)), &
-     &                                'mcmc_restart.txt'
-        INQUIRE (FILE=fname,EXIST=filexists)
-        IF (filexists) THEN
-          numidx=10
-          CALL openfile(numidx,fname)
-          READ(numidx,*) mcmc_index
-          READ(numidx,*) cost_jini, cost_jopt
-          READ(numidx,*) mcmc_schedule, alpha, beta
-          CLOSE(UNIT=numidx)
-        ELSE
-          mcmc_index=1
-        ENDIF
-
       ELSE
+
+          mcmc_index=1
+
+      ENDIF
+
+! Initializations at first iteration
+      IF (mcmc_index.EQ.1) THEN
 
 !       Initialize cost_jini
         diag_in_j=.TRUE.
@@ -595,7 +618,7 @@
         GOTO 1000
       END SELECT
 
-      IF (obs_ensemble) THEN
+      IF ((obs_ensemble).AND.(.NOT.mcmc_restart)) THEN
         ! write the same ensemble in observation space
         IF (all_ensemble) THEN
           IF (lsplitobs) THEN
@@ -687,7 +710,7 @@
       REAL(kind=8), dimension(:), intent(in) :: state
       REAL(kind=8) :: cost_jo
 !----------------------------------------------------------------------
-      REAL(kind=8) :: cost_jobs, cost_jdyn, cost_ratio
+      REAL(kind=8) :: cost_jobs, cost_jdyn, cost_jdis, cost_ratio
 
       cost_jobs = 0. ; cost_jdyn = 0.
 
@@ -698,7 +721,12 @@
 
 ! Apply dynamical constraint
       IF (dyn_constraint) THEN
-        cost_jdyn=eval_constraint(fullstate)
+        IF (dissip_rate.NE.0.) THEN
+          cost_jdyn=eval_constraint(fullstate,cost_jdis)
+          cost_jdis=cost_jdis*dyn_constraint_fac
+        ELSE
+          cost_jdyn=eval_constraint(fullstate)
+        ENDIF
         cost_jdyn=cost_jdyn*dyn_constraint_fac
       ENDIF
 
@@ -737,6 +765,10 @@
      &     mpi_double_precision,mpi_sum,mpi_comm_world,mpi_code)
       CALL mpi_allreduce (mpi_in_place, cost_jdyn, 1,  &
      &     mpi_double_precision,mpi_sum,mpi_comm_world,mpi_code)
+      IF (dissip_rate.NE.0.) THEN
+        CALL mpi_allreduce (mpi_in_place, cost_jdis, 1,  &
+     &       mpi_double_precision,mpi_sum,mpi_comm_world,mpi_code)
+      ENDIF
 #endif
 
 ! Modify MCMC schedule as a function of J
@@ -747,9 +779,14 @@
       ENDIF
 
       cost_jo = cost_jobs + cost_jdyn
+      IF (dissip_rate.NE.0.) cost_jo = cost_jo + cost_jdis
 
       IF (diag_in_j) THEN
-        IF (jproc==0) PRINT *, 'Jobs, Jdyn:',cost_jobs,cost_jdyn
+        IF (dissip_rate.NE.0.) THEN
+          IF (jproc==0) PRINT *, 'Jobs, Jdyn, Jdis:',cost_jobs,cost_jdyn,cost_jdis
+        ELSE
+          IF (jproc==0) PRINT *, 'Jobs, Jdyn:',cost_jobs,cost_jdyn
+        ENDIF
       ENDIF
 
       njo = njo + 1
@@ -831,7 +868,9 @@
 
 ! Compute optimality score
       !CALL optimality_score(score, ensobseq, obs, cdf_obs)
+      oestd(:)=oestd(:)/oestd_inflation
       CALL optimality_score(score, ensobseq, obs, oestd)
+      oestd(:)=oestd(:)*oestd_inflation
       IF (jproc.eq.0)  PRINT *, 'OPTIMALITY:',mcmc_index,score
       IF (mcmc_schedule_factor.GT.0.) THEN
         IF (jproc.eq.0)  PRINT *, 'SCHEDULE:',1./FREAL(mcmc_index),mcmc_schedule

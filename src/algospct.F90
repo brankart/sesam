@@ -352,7 +352,7 @@
              vects(js0:js1) = vects(js0:js1) * wei(1:nbr)
              CALL proj_ylm( spct(0:,-jpl:), vects(js0:js1), &
      &                      lon(1:nbr), lat(1:nbr) )
-             CALL writespct(koutxyo,spct,kflagxyo,jsxy,jk,jt)
+             IF (jproc.EQ.0) CALL writespct(koutxyo,spct,kflagxyo,jsxy,jk,jt)
              js0 = js0 + nbr
 !
           ENDDO
@@ -415,7 +415,10 @@
           CALL def_spect_power(1,jampl,tspct_freq,tspct_power)
           CALL sample_freq_1d(jampl)
         ENDDO
-        CALL kiss_save()
+#if defined MPI
+        IF (jproc.EQ.0) CALL kiss_save()
+        CALL MPI_BARRIER(MPI_COMM_WORLD,mpi_code)
+#endif
 
         js0 = 1
         DO jsxy=1,sxyend
