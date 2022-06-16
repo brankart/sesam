@@ -390,6 +390,8 @@
 ! -1.- Get variable characteristics from SESAM configuration
 ! ----------------------------------------------------------
 !
+      zdim = 'none'
+
       SELECT CASE(kflagxyo)
       CASE(1)
 ! --- var
