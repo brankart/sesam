@@ -414,9 +414,6 @@
             sxyfgrd(indsxy)=dtafgrd(indsxy)
             sxyegrd(indsxy)=dtaegrd(indsxy)
             sxyzdim(indsxy)=varzdim(indsxy)
-            IF (sxyzdim(indsxy).NE.'none') THEN
-              zdim = sxyzdim(indsxy)
-            ENDIF
          ENDDO
 !
          jtxy=1
@@ -425,6 +422,13 @@
          xdim = varxdim(indsxy)
          ydim = varydim(indsxy)
          tdim = vartdim(indsxy)
+         DO jtxy = 1,txyend
+           jsxy=ktxy_indmsk(jtxy)
+           indsxy=sxy_ord(jsxy)
+           IF (varzdim(indsxy).NE.'none') THEN
+              zdim = varzdim(indsxy)
+           ENDIF
+         ENDDO
 !
       CASE(2)
 ! --- dta
@@ -447,9 +451,6 @@
             sxyfgrd(indsxy)=dtafgrd(indsxy)
             sxyegrd(indsxy)=dtaegrd(indsxy)
             sxyzdim(indsxy)=dtazdim(indsxy)
-            IF (sxyzdim(indsxy).NE.'none') THEN
-              zdim = sxyzdim(indsxy)
-            ENDIF
          ENDDO
 !
          jtxy=1
@@ -458,6 +459,13 @@
          xdim = dtaxdim(indsxy)
          ydim = dtaydim(indsxy)
          tdim = dtatdim(indsxy)
+         DO jtxy = 1,txyend
+           jsxy=ktxy_indmsk(jtxy)
+           indsxy=sxy_ord(jsxy)
+           IF (dtazdim(indsxy).NE.'none') THEN
+              zdim = dtazdim(indsxy)
+           ENDIF
+         ENDDO
 !
       CASE DEFAULT
          GOTO 1000
