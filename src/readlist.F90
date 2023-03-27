@@ -36,7 +36,8 @@
 ! =======
       use mod_main
       use mod_cfgxyo
-      use algospct, only : loc_time_scale, loc_radius_in_deg
+      use algospct, only : loc_time_scale, loc_radius_in_deg, &
+     &                     spct_first_only
       use utilconstraint, only : dyn_constraint, dyn_constraint_std, &
      &                           dyn_constraint_dt
       use algomcmc, only : oestd_inflation
@@ -209,6 +210,8 @@
           READ(attr,*,ERR=102) loc_time_scale
         CASE('LOC_RADIUS_IN_DEG')
           READ(attr,*,ERR=102) loc_radius_in_deg
+        CASE('SPCT_FIRST_ONLY')
+          READ(attr,*,ERR=102) spct_first_only
 !
 ! Parameterization of regression in SPCT module
         CASE('REGR_TYPE')

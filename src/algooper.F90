@@ -71,6 +71,7 @@
       use ensdam_stoanam
       use ensdam_anaqua
       use ensdam_interp
+      use ensdam_obserror
       use utilvct
       use utilvalid
       IMPLICIT NONE
@@ -901,6 +902,22 @@
                         vectsout(js) = vectsin(js) / cst
                      ENDIF
                   ENDDO    
+               CASE ('min')
+                  DO js=1,jpssize
+                     IF (vectsin(js).EQ.spvalsin) THEN
+                        vectsout(js) = spvals
+                     ELSE
+                        vectsout(js) = MIN( vectsin(js) , cst )
+                     ENDIF
+                  ENDDO
+               CASE ('max')
+                  DO js=1,jpssize
+                     IF (vectsin(js).EQ.spvalsin) THEN
+                        vectsout(js) = spvals
+                     ELSE
+                        vectsout(js) = MAX( vectsin(js) , cst )
+                     ENDIF
+                  ENDDO
                CASE ('inv')
                   IF (ANY(vectsin(:).EQ.spvalsin)) GOTO 103
                   DO js=1,jpssize
@@ -1265,6 +1282,18 @@
                   CALL gau_to_beta(vectsout(js),vectsin(js),mu,0.166_kr)
                 ENDIF
                ENDDO
+            CASE ('lognormal')
+               obserror_type='lognormal'
+
+               CALL kiss_load()
+               IF (ANY(vectsin(:).EQ.spvalsin)) GOTO 103
+               IF (ANY(vectsin(:).LE.0.)) GOTO 103
+               IF (ANY(vectsinref(:).EQ.spvalsinref)) GOTO 103
+               IF (ANY(vectsinref(:).LT.0.)) GOTO 103
+               DO js=1,jpssize
+                  CALL obserror_sample(vectsinref(js),vectsin(js),vectsout(js))
+               ENDDO
+               CALL kiss_save()
             CASE ('gamma')
                CALL kiss_load()
                IF (ANY(vectsin(:).EQ.spvalsin)) GOTO 103

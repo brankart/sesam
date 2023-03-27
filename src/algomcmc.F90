@@ -30,6 +30,7 @@
       use mod_main
       use mod_mask
       use mod_coord
+      use mod_cfgxyo
       use mod_spacexyo , only : &
      &     jpo,jpoend,jpitpend,jpx,jpxend,jpyend,jprend,jpsmplend, &
      &     jpperc,poscoefobs,gridijkobs, &
@@ -120,7 +121,6 @@
 ! modules
 ! =======
       use mod_main
-      use mod_cfgxyo
       use utilvalid
       use hioxyo
       use hiobas
@@ -186,7 +186,7 @@
       obs_constraint = PRESENT(kinobs)
       obs_ensemble = PRESENT(kinobas)
       obs_anam = larganamorphosis
-      rebuild_state = dyn_constraint .OR. (.NOT.obs_ensemble)
+      rebuild_state = dyn_constraint .OR. ( (.NOT.obs_ensemble) .AND.  obs_constraint )
       rebuild_state = rebuild_state .AND. lsplitstate
       all_ensemble = rebuild_state .AND. obs_ensemble
       center_reduce = largbias
@@ -550,14 +550,20 @@
         IF (jproc.eq.0) PRINT *, 'Initial J:',cost_jini
 
 !       Initialize cost_jopt
-        cost_jopt = FREAL(jpoend) / 2._kr
-        IF (dyn_constraint) THEN
-          cost_jtest = FREAL((jpisize-2)*(jpjsize-2)*(jptsize-1)) / 2._kr
-          IF (jproc.eq.0) PRINT *, 'Target Jobs:',cost_jopt
-          IF (jproc.eq.0) PRINT *, 'Target Jdyn:',cost_jtest
-          cost_jopt = cost_jopt + cost_jtest
+        IF  ( (obserror_type_sesam.EQ.'gaussian') .OR. &
+       &      (obserror_type_sesam.EQ.'lognormal')  ) THEN
+          cost_jopt = FREAL(jpoend) / 2._kr
+          cost_jopt = cost_jopt / (oestd_inflation * oestd_inflation)
+          IF (dyn_constraint) THEN
+            cost_jtest = FREAL((jpisize-2)*(jpjsize-2)*(jptsize-1)) / 2._kr
+            IF (jproc.eq.0) PRINT *, 'Target Jobs:',cost_jopt
+            IF (jproc.eq.0) PRINT *, 'Target Jdyn:',cost_jtest
+            cost_jopt = cost_jopt + cost_jtest
+          ENDIF
+          IF (jproc.eq.0) PRINT *, 'Target J:',cost_jopt
+        ELSE
+          cost_jopt = 0.
         ENDIF
-        IF (jproc.eq.0) PRINT *, 'Target J:',cost_jopt
 
 !       Initialize mcmc_schedule
         mcmc_schedule = 0.0_kr
@@ -714,6 +720,8 @@
 
       cost_jobs = 0. ; cost_jdyn = 0.
 
+      !IF (jproc==0) print *, 'call to jo:',mcmc_index,njo
+
 ! Rebuild full state vector if needed
       IF (rebuild_state) THEN
         CALL rebuild_fullstate(state(1:jpssize))
@@ -789,6 +797,8 @@
         ENDIF
       ENDIF
 
+      !IF (jproc==0) print *, 'end call to jo:',mcmc_index,njo
+
       njo = njo + 1
 
       END FUNCTION cost_jo
@@ -834,50 +844,57 @@
       diag_in_j=.FALSE.
       IF (jproc.eq.0) PRINT *, 'Average cost function:',cost_diag
 
+      IF (obs_constraint) THEN
 ! Allocate observation equivalent of input ensemble
-      jposize = SIZE(obs,1) ; jprsize = SIZE(upens,2)
-      allocate ( ensobseq(1:jposize,1:jprsize), stat=allocok )
-      IF (allocok.NE.0) GOTO 1001
+        jposize = SIZE(obs,1) ; jprsize = SIZE(upens,2)
+        allocate ( ensobseq(1:jposize,1:jprsize), stat=allocok )
+        IF (allocok.NE.0) GOTO 1001
 
 ! Compute observation equivalent of input ensemble
-      IF (obs_ensemble) THEN
-        IF (all_ensemble) THEN
-          ensobseq(1:jposize,:) = upens(jpssize+1:jpasize,:)
+        IF (obs_ensemble) THEN
+          IF (all_ensemble) THEN
+            ensobseq(1:jposize,:) = upens(jpssize+1:jpasize,:)
+          ELSE
+            ensobseq(:,:) = upens(:,:)
+          ENDIF
         ELSE
-          ensobseq(:,:) = upens(:,:)
+          SELECT CASE (flagxyo)
+          CASE (1)
+            DO jr=1,jprsize
+              CALL mkhytoo(upens(tabindxtoy(:),jr),ensobseq(:,jr),poscoefobs)
+            ENDDO
+          CASE (2)
+            DO jr=1,jprsize
+              CALL mkhytoo(upens(:,jr),ensobseq(:,jr),poscoefobs)
+            ENDDO
+          CASE (3)
+            ensobseq = upens
+          END SELECT
         ENDIF
-      ELSE
-        SELECT CASE (flagxyo)
-        CASE (1)
-          DO jr=1,jprsize
-            CALL mkhytoo(upens(tabindxtoy(:),jr),ensobseq(:,jr),poscoefobs)
-          ENDDO
-        CASE (2)
-          DO jr=1,jprsize
-            CALL mkhytoo(upens(:,jr),ensobseq(:,jr),poscoefobs)
-          ENDDO
-        CASE (3)
-          ensobseq = upens
-        END SELECT
-      ENDIF
 
 ! Perform backward anamorphosis (if requested)
-      IF (obs_anam) THEN
-        call ana_backward( ensobseq, quantiles_ens, quantiles_ref )
-      ENDIF
+        IF (obs_anam) THEN
+          call ana_backward( ensobseq, quantiles_ens, quantiles_ref )
+        ENDIF
 
 ! Compute optimality score
-      !CALL optimality_score(score, ensobseq, obs, cdf_obs)
-      oestd(:)=oestd(:)/oestd_inflation
-      CALL optimality_score(score, ensobseq, obs, oestd)
-      oestd(:)=oestd(:)*oestd_inflation
-      IF (jproc.eq.0)  PRINT *, 'OPTIMALITY:',mcmc_index,score
-      IF (mcmc_schedule_factor.GT.0.) THEN
-        IF (jproc.eq.0)  PRINT *, 'SCHEDULE:',1./FREAL(mcmc_index),mcmc_schedule
-      ENDIF
+        oestd(:)=oestd(:)/oestd_inflation
+        IF (obserror_type_sesam.EQ.'gaussian') THEN
+          CALL optimality_score(score, ensobseq, obs, oestd)
+        ELSE
+          CALL optimality_score(score, ensobseq, obs, cdf_obs)
+        ENDIF
+        oestd(:)=oestd(:)*oestd_inflation
+
+        IF (jproc.eq.0)  PRINT *, 'OPTIMALITY:',mcmc_index,score
+        IF (mcmc_schedule_factor.GT.0.) THEN
+          IF (jproc.eq.0)  PRINT *, 'SCHEDULE:',1./FREAL(mcmc_index),mcmc_schedule
+        ENDIF
 
 ! Deallocate array
-      IF (allocated(ensobseq)) deallocate(ensobseq)
+        IF (allocated(ensobseq)) deallocate(ensobseq)
+
+      ENDIF
 
       RETURN
 !
@@ -903,7 +920,7 @@
       REAL(KIND=8) :: cdf_obs
 !----------------------------------------------------------------------
 
-      cdf_obs = obserror_cdf( o, y, oestd(obs_idx) )
+      call obserror_cdf( o, y, oestd(obs_idx), cdf_obs )
 
       END FUNCTION cdf_obs
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

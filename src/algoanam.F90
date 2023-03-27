@@ -771,7 +771,7 @@
       SELECT CASE (obserror_type_sesam)
       CASE ('gaussian')
         print *, 'Warning: non-optimal algorithm for a Gaussian pdf'
-      CASE ('gamma','beta')
+      CASE ('gamma','beta','lognormal')
       CASE DEFAULT
         print *, 'Warning: unknown observation error pdf'
       END SELECT

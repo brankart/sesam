@@ -39,6 +39,7 @@
       ! Public variables
       BIGREAL, PUBLIC, save :: loc_time_scale=1.    !  Localization time scale
       BIGREAL, PUBLIC, save :: loc_radius_in_deg=1. !  Localization radius
+      LOGICAL, PUBLIC, save :: spct_first_only=.FALSE. !  Compute only first level of first variable
 
       ! Private variables/parameters
       INTEGER, save :: jpl  ! maximum degree of Legendre polynomials
@@ -428,11 +429,13 @@
           CALL readtime(kflagxyo,indsxy)
 
 !         Generate random timeseries on required time grid
-          DO jampl=1,jpampl
-            CALL gen_field_1d(jampl,                                &
+          IF ((jsxy.EQ.1).OR.(.NOT.spct_first_only)) THEN
+            DO jampl=1,jpampl
+              CALL gen_field_1d(jampl,                                &
      &                  ran_timeseries(1:sxy_jpt(indsxy),jampl), &
      &                  time(1:sxy_jpt(indsxy)))
-          ENDDO
+            ENDDO
+          ENDIF
 
 !         Loop on time
           DO jt=1,sxy_jpt(indsxy)
