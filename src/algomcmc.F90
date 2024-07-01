@@ -765,14 +765,17 @@
           CALL ana_backward( obseq, quantiles_ens, quantiles_ref )
         ENDIF
 ! Evaluate observation cost function
+        ! OPENACC
         cost_jobs = obserror_logpdf( obs, obseq, oestd )
       ENDIF
 
 #if defined MPI
       CALL mpi_allreduce (mpi_in_place, cost_jobs, 1,  &
      &     mpi_double_precision,mpi_sum,mpi_comm_world,mpi_code)
-      CALL mpi_allreduce (mpi_in_place, cost_jdyn, 1,  &
-     &     mpi_double_precision,mpi_sum,mpi_comm_world,mpi_code)
+      IF (dyn_constraint) THEN
+        CALL mpi_allreduce (mpi_in_place, cost_jdyn, 1,  &
+     &       mpi_double_precision,mpi_sum,mpi_comm_world,mpi_code)
+      ENDIF
       IF (dissip_rate.NE.0.) THEN
         CALL mpi_allreduce (mpi_in_place, cost_jdis, 1,  &
      &       mpi_double_precision,mpi_sum,mpi_comm_world,mpi_code)
