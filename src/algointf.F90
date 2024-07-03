@@ -196,6 +196,7 @@
 ! -1.2- Apply constraint if requested
 ! -----------------------------------
 !
+#ifdef FLOWSAMPLER
          IF (dyn_constraint.AND.(kflagxyoz.EQ.1)) THEN
            IF (MAXVAL(varngrd(1:varend)).GT.1) GOTO 1000
 
@@ -217,6 +218,7 @@
            IF (allocated(latj)) deallocate(latj)
 
          ENDIF
+#endif
 !     
 ! -1.3- Writing xyoz object :
 ! --------------------------

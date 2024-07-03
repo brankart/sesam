@@ -49,7 +49,9 @@
       use ensdam_obserror
       use ensdam_score_optimality
       use ensdam_storng
+#ifdef FLOWSAMPLER
       use flowsampler_adv_constraint
+#endif
       IMPLICIT NONE
       PRIVATE
 
@@ -95,6 +97,11 @@
       ! Debugging option
       BIGREAL, save :: dyn_constraint_fac = 1.0
       LOGICAL, save :: debug_constraint = .FALSE.
+
+#ifndef FLOWSAMPELR
+      LOGICAL, save :: dyn_constraint = .FALSE.
+      BIGREAL, save :: dissip_rate = 0.
+#endif
 
       CONTAINS
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -200,6 +207,7 @@
 ! -0.- Read/initialize information related to the dynamical constraint
 ! --------------------------------------------------------------------
 !
+#ifdef FLOWSAMPLER
       IF (dyn_constraint) THEN
         ! Read horizontal grid
         IF (MAXVAL(varngrd(1:varend)).GT.1) GOTO 1000
@@ -266,6 +274,7 @@
         ! Initialize constraint arrays
         CALL constraint_init(jptsize,dyn_constraint_dt)
       ENDIF
+#endif
 
       IF (rebuild_state) THEN
         IF (dyn_constraint) THEN
@@ -295,6 +304,7 @@
 
       ENDIF
 
+#ifdef FLOWSAMPLER
       IF (dyn_constraint.AND.debug_constraint) THEN
         CALL readxyo ('debug_in.cpak',tmpstate(:),jnxyo,lectinfo,flagxyo)
 
@@ -312,6 +322,7 @@
 
         STOP 'Stopping after debug'
       ENDIF
+#endif
 !
 ! -1.- Read information related to observations
 ! ---------------------------------------------
@@ -578,6 +589,7 @@
       call MPI_TIMER(1)
       call MPI_TIMER(0)
 #endif
+      !$acc data copyin(obs,oestd)
       IF ((obs_ensemble).AND.(.NOT.all_ensemble)) THEN
         CALL mcmc_iteration( maxiter, upensobs, inensobs, &
      &                       scl_mult(1:jpscl), cost_jo, &
@@ -588,6 +600,7 @@
      &                       scl_mult(1:jpscl), cost_jo, &
      &                       my_test=convergence_test )
       ENDIF
+      !$acc end data
 #if defined MPI
       call MPI_TIMER(1)
       call MPI_TIMER(0)
@@ -728,6 +741,7 @@
       ENDIF
 
 ! Apply dynamical constraint
+#ifdef FLOWSAMPELR
       IF (dyn_constraint) THEN
         IF (dissip_rate.NE.0.) THEN
           cost_jdyn=eval_constraint(fullstate,cost_jdis)
@@ -737,6 +751,7 @@
         ENDIF
         cost_jdyn=cost_jdyn*dyn_constraint_fac
       ENDIF
+#endif
 
       IF (obs_constraint) THEN
 ! Compute observation equivalent from input state
@@ -767,11 +782,13 @@
 ! Evaluate observation cost function
         ! OPENACC
         cost_jobs = obserror_logpdf( obs, obseq, oestd )
+        !cost_jobs = 0.
       ENDIF
 
 #if defined MPI
       CALL mpi_allreduce (mpi_in_place, cost_jobs, 1,  &
      &     mpi_double_precision,mpi_sum,mpi_comm_world,mpi_code)
+# ifdef FLOWSAMPELR
       IF (dyn_constraint) THEN
         CALL mpi_allreduce (mpi_in_place, cost_jdyn, 1,  &
      &       mpi_double_precision,mpi_sum,mpi_comm_world,mpi_code)
@@ -780,6 +797,7 @@
         CALL mpi_allreduce (mpi_in_place, cost_jdis, 1,  &
      &       mpi_double_precision,mpi_sum,mpi_comm_world,mpi_code)
       ENDIF
+# endif
 #endif
 
 ! Modify MCMC schedule as a function of J
@@ -956,9 +974,11 @@
           tmpstate(:) = state(:) * ens_std(:) + ens_mean(:)
         ENDIF
         siz = arraynx_jpindxend(1)
+# if defined FLOWSAMPLER
         CALL MPI_ALLGATHER(tmpstate,siz,MPI_DOUBLE_PRECISION, &
      &                    fullstate,siz,MPI_DOUBLE_PRECISION, &
      &                    mpi_comm_timestep,mpi_code)
+# endif
       ELSE
         fullstate(arraynx_jindxbeg(jnxyo):    &
      &            arraynx_jindxbeg(jnxyo)+    &

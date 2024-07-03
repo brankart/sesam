@@ -33,7 +33,9 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       MODULE utilcdfpak
       use mod_main
+      use netcdf
       IMPLICIT NONE
+      include 'netcdf.inc'
       PRIVATE
 
       PUBLIC cdfrdimpak,cdfrhdrpak,cdfrpak
@@ -46,7 +48,6 @@
       subroutine cdfrdimpak(filename,jpx,varend,namelength,title)
 
       implicit none
-      include 'netcdf.inc' 
 
       integer jpx,varend,namelength
       character*(*) filename,title
@@ -84,10 +85,8 @@
 ! -----------------------------------------------------------------
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       subroutine cdfrhdrpak(filename,nam,dim,nbr,moy,ect)
-      use netcdf
 
       implicit none
-      include 'netcdf.inc' 
 
       character*(*) filename
       BIGREAL4 moy(*),ect(*)
@@ -146,7 +145,6 @@
       subroutine cdfrpak(filename,x,idx0,idx1)
 
       implicit none
-      include 'netcdf.inc' 
 
       BIGREAL4 x(*)
       integer idx0,idx1
@@ -182,7 +180,6 @@
       subroutine cdfwdimpak(filename,jpx,varend,namelength,title)
 
       implicit none
-      include 'netcdf.inc' 
 
       integer jpx,varend,namelength
       character*(*) filename,title
@@ -237,7 +234,6 @@
       subroutine cdfwhdrpak(filename,nam,dim,nbr,moy,ect)
 
       implicit none
-      include 'netcdf.inc' 
 
       character*(*) filename
       BIGREAL4 moy(*),ect(*)
@@ -296,7 +292,6 @@
       subroutine cdfwpak(filename,x,idx0,idx1)
 
       implicit none
-      include 'netcdf.inc' 
 
       character*(*) filename
       BIGREAL4 x(*)

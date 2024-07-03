@@ -38,8 +38,10 @@
       use mod_cfgxyo
       use algospct, only : loc_time_scale, loc_radius_in_deg, &
      &                     spct_first_only
+#ifdef FLOWSAMPLER
       use utilconstraint, only : dyn_constraint, dyn_constraint_std, &
      &                           dyn_constraint_dt
+#endif
       use algomcmc, only : oestd_inflation
       use ensdam_mcmc_update
       IMPLICIT NONE
@@ -194,12 +196,14 @@
           READ(attr,*,ERR=102) mcmc_convergence_stop
 !
 ! Parameterization of dynamical constraint
+#ifdef FLOWSAMPLER
         CASE('DYN_CONSTRAINT')
           READ(attr,*,ERR=102) dyn_constraint
         CASE('DYN_CONSTRAINT_DT')
           READ(attr,*,ERR=102) dyn_constraint_dt
         CASE('DYN_CONSTRAINT_STD')
           READ(attr,*,ERR=102) dyn_constraint_std
+#endif
 !
 ! Parameterization of MCMC sampler
         CASE('OESTD_INFLATION')

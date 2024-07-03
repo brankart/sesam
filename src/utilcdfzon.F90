@@ -41,7 +41,9 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       MODULE utilcdfzon
       use mod_main
+      use netcdf
       IMPLICIT NONE
+      include 'netcdf.inc'
       PRIVATE
 
       PUBLIC cdfrdimzon,cdfrhdrzon,cdfrptzon,cdfrbubidxzon
@@ -55,7 +57,6 @@
      &     dtaend,namelength,title)
 
       implicit none
-      include 'netcdf.inc'
 
       integer jpi,jpj,jpk,jpt,jpbub,jpz,dtaend,namelength
       character*(*) filename,title
@@ -105,7 +106,6 @@
       SUBROUTINE cdfrhdrzon(filename,nam,dim,nbr,moy,ect)
 
       implicit none
-      include 'netcdf.inc'
 
       character*(*) filename
       BIGREAL4 moy(*),ect(*)
@@ -167,7 +167,6 @@
      &   ptdtatime,ptbublon,ptbublat,ptbubdepth,ptbubtime,jz0,jz1,jd0,jd1)
 
       implicit none
-      include 'netcdf.inc'
 
       character*(*) filename
       integer ptbubidx(*)
@@ -228,7 +227,6 @@
       SUBROUTINE cdfrbubidxzon(filename,ptbubidx,jz0,jz1,jd0,jd1)
 
       implicit none
-      include 'netcdf.inc'
 
       character*(*) filename
       integer ptbubidx(*)
@@ -264,7 +262,6 @@
       SUBROUTINE cdfrbubzon(filename,bub,bubidx,bubcount)
 
       implicit none
-      include 'netcdf.inc'
 
       character*(*) filename
       BIGREAL4 bub(*)
@@ -325,7 +322,6 @@
      &                   dtaend,namelength,title)
 
       implicit none
-      include 'netcdf.inc' 
 
       integer jpi,jpj,jpk,jpt,jpbub,jpz,dtaend,namelength
       character*(*) filename,title
@@ -400,7 +396,6 @@
       SUBROUTINE cdfwhdrzon(filename,nam,dim,nbr,moy,ect)
 
       implicit none
-      include 'netcdf.inc'
 
       character*(*) filename
       BIGREAL4 moy(*),ect(*)
@@ -459,7 +454,6 @@
      &   ptdtatime,ptbublon,ptbublat,ptbubdepth,ptbubtime,jz0,jz1,jd0,jd1)
 
       implicit none
-      include 'netcdf.inc'
 
       character*(*) filename
       integer ptbubidx(*)
@@ -520,7 +514,6 @@
       SUBROUTINE cdfwbubzon(filename,bub,bubidx,bubcount)
 
       implicit none
-      include 'netcdf.inc'
 
       character*(*) filename
       BIGREAL4 bub(*)

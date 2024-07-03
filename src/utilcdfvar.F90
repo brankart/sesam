@@ -39,7 +39,9 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       MODULE utilcdfvar
       use mod_main
+      use netcdf
       IMPLICIT NONE
+      include 'netcdf.inc'
       PRIVATE
 
       PUBLIC cdfrdim,cdfrsli,cdfrtab,cdfwdim,cdfwsli,cdfwtab
@@ -52,7 +54,6 @@
       subroutine cdfrdim(filename,imax,jmax,kmax,tmax,title)
 
       implicit none
-      include 'netcdf.inc' 
 
       integer*4 imax,jmax,kmax,tmax
       character*(*) filename,title
@@ -92,7 +93,6 @@
       subroutine cdfrsli(filename,varname,dcut,icut,idx,c)
 
       implicit none
-      include 'netcdf.inc' 
 
       character*(*) filename,varname
       integer*4 dcut,icut
@@ -149,7 +149,6 @@
       subroutine cdfrtab(filename,varname,idx,c)
 
       implicit none
-      include 'netcdf.inc' 
 
       character*(*) filename,varname
       integer*4 idx
@@ -230,7 +229,6 @@
       subroutine cdfwdim(filename,imax,jmax,kmax,title)
 
       implicit none
-      include 'netcdf.inc' 
 
       integer*4 imax,jmax,kmax
       character*(*) filename,title
@@ -270,7 +268,6 @@
       subroutine cdfwsli(filename,varname,dcut,icut,idx,time,c)
 
       implicit none
-      include 'netcdf.inc' 
 
       character*(*) filename,varname
       integer*4 dcut,icut,idx
@@ -345,7 +342,6 @@
       subroutine cdfwtab(filename,varname,idx,time,c)
 
       implicit none
-      include 'netcdf.inc' 
 
       character*(*) filename,varname
       integer*4 idx
@@ -442,7 +438,6 @@
       subroutine cdfwvar(filename,varname,spval,unit,name,ndim)
 
       implicit none
-      include 'netcdf.inc' 
 
       BIGREAL4 spval
       character*(*) filename,varname,unit,name
@@ -522,7 +517,6 @@
       subroutine cdfrloc(filename,lon,lat,depth,unit)
 
       implicit none
-      include 'netcdf.inc' 
 
       character*(*) filename,unit(4)
       BIGREAL4 spval,lon(*),lat(*),depth(*)
@@ -601,7 +595,6 @@
       subroutine cdfwloc(filename,lon,lat,depth,unit)
 
       implicit none
-      include 'netcdf.inc' 
 
       character*(*) filename,unit(4)
       BIGREAL4 spval,lon(*),lat(*),depth(*)
@@ -683,7 +676,6 @@
       SUBROUTINE cdfrvar(filename,varname,spval,unit,name,ndim)
 
       implicit none
-      include 'netcdf.inc'
 
       character*(*) filename,varname,unit,name
       BIGREAL4 spval
@@ -720,7 +712,6 @@
       SUBROUTINE cdfrtim(filename,time)
 
       implicit none
-      include 'netcdf.inc'
 
       character*(*) filename
       BIGREAL4 time(*)
@@ -759,7 +750,6 @@
       SUBROUTINE cdfrpos(filename,lon,lat,spval,unit)
 
       implicit none
-      include 'netcdf.inc'
 
       character*(*) filename,unit
       BIGREAL4 lon(*),lat(*),spval
@@ -825,7 +815,6 @@
       subroutine cdfwpos(filename,lon,lat,spval,unit)
 
       implicit none
-      include 'netcdf.inc' 
 
       character*(*) filename,unit
       BIGREAL4 spval,lon(*),lat(*)

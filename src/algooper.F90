@@ -975,14 +975,14 @@
                         vectsout(js) = vectsin(js)
                      ENDIF
                   ENDDO
-               CASE ('masknan')
-                  DO js=1,jpssize
-                     IF (isnan(vectsin(js))) THEN
-                        vectsout(js) = cst
-                     ELSE
-                        vectsout(js) = vectsin(js)
-                     ENDIF
-                  ENDDO
+!              CASE ('masknan')
+!                 DO js=1,jpssize
+!                    IF (isnan(vectsin(js))) THEN
+!                       vectsout(js) = cst
+!                    ELSE
+!                       vectsout(js) = vectsin(js)
+!                    ENDIF
+!                 ENDDO
                CASE ('maskcst')
                   DO js=1,jpssize
                      IF (vectsin(js).EQ.cst) THEN
