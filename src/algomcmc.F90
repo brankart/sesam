@@ -27,6 +27,9 @@
 ! -----------------------------------------------------------------
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       MODULE algomcmc
+#ifdef OPENACC
+      use openacc
+#endif
       use mod_main
       use mod_mask
       use mod_coord
@@ -782,7 +785,7 @@
 ! Evaluate observation cost function
         ! OPENACC
         cost_jobs = obserror_logpdf( obs, obseq, oestd )
-        !cost_jobs = 0.
+        cost_jobs = 0.
       ENDIF
 
 #if defined MPI
