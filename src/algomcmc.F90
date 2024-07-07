@@ -47,7 +47,11 @@
       use utilfiles
       use utilvct
       use utilconstraint
+!!#ifdef OPENACC
+!!    use ensdam_mcmc_update_obs
+!!#else
       use ensdam_mcmc_update
+!!#endif
       use ensdam_anatra
       use ensdam_obserror
       use ensdam_score_optimality
@@ -546,6 +550,8 @@
 
       ENDIF
 
+      !$acc data copyin(upensobs,obs,oestd) create(obseq)
+
 ! Initializations at first iteration
       IF (mcmc_index.EQ.1) THEN
 
@@ -592,7 +598,20 @@
       call MPI_TIMER(1)
       call MPI_TIMER(0)
 #endif
-      !$acc data copyin(obs,oestd)
+!ifdef OPENACC
+!     IF ((obs_ensemble).AND.(.NOT.all_ensemble)) THEN
+!       CALL mcmc_iteration( maxiter, upensobs, inensobs, &
+!    &                       scl_mult(1:jpscl), &
+!    &                       upxens=upens, xens=inens, &
+!    &                       my_test=convergence_test, &
+!    &                       obs=obs, oestd=oestd )
+!     ELSE
+!       CALL mcmc_iteration( maxiter, upens, inens, &
+!    &                       scl_mult(1:jpscl), &
+!    &                       my_test=convergence_test, &
+!    &                       obs=obs, oestd=oestd )
+!     ENDIF
+!else
       IF ((obs_ensemble).AND.(.NOT.all_ensemble)) THEN
         CALL mcmc_iteration( maxiter, upensobs, inensobs, &
      &                       scl_mult(1:jpscl), cost_jo, &
@@ -603,7 +622,11 @@
      &                       scl_mult(1:jpscl), cost_jo, &
      &                       my_test=convergence_test )
       ENDIF
-      !$acc end data
+!#endif
+
+     !$acc end data
+
+
 #if defined MPI
       call MPI_TIMER(1)
       call MPI_TIMER(0)
@@ -733,6 +756,8 @@
       REAL(kind=8) :: cost_jo
 !----------------------------------------------------------------------
       REAL(kind=8) :: cost_jobs, cost_jdyn, cost_jdis, cost_ratio
+      INTEGER :: jo, jpo
+      REAL(kind=8) :: cost_one
 
       cost_jobs = 0. ; cost_jdyn = 0.
 
@@ -783,9 +808,21 @@
           CALL ana_backward( obseq, quantiles_ens, quantiles_ref )
         ENDIF
 ! Evaluate observation cost function
-        ! OPENACC
-        cost_jobs = obserror_logpdf( obs, obseq, oestd )
+#ifdef OPENACC
+        jpo = SIZE(obs,1)
         cost_jobs = 0.
+        !$acc data present(state,obs,oestd)
+        !$acc parallel loop private(cost_one) reduction(+:cost_jobs)
+        DO jo = 1,jpo
+          cost_one  = ( state(jo) - obs(jo) ) / oestd(jo)
+          cost_jobs = cost_jobs + 0.5 * cost_one * cost_one
+        ENDDO
+        !$acc end parallel loop
+        !$acc end data
+        !cost_jobs = 0.
+#else
+        cost_jobs = obserror_logpdf( obs, obseq, oestd )
+#endif
       ENDIF
 
 #if defined MPI
