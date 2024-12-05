@@ -851,11 +851,11 @@
       CASE (4)
 ! --- NC format
 !
-         vcount(1:ndimt)=0
+         vcount(1:ndimt)=1
          DO idd = 1,ndimt
            IF (idimt(idd).EQ.idt) vcount(idd)=kjpt
          ENDDO
-         IF (ALL(vcount(1:ndimt).EQ.0)) GOTO 108
+         !IF (ALL(vcount(1:ndimt).EQ.1)) GOTO 108
 !
          ierr = NF90_GET_VAR(idf,idtv,ptabt,start=vstart, &
      &                       count=vcount,stride=vstrid)
