@@ -1,0 +1,28 @@
+# Fortran settings
+# module load nvidia-compilers/24.3
+# module load openmpi/4.0.5-cuda
+# module load netcdf-fortran/4.5.3-mpi-cuda
+FC = mpifort
+LD = mpifort
+CPPFLAGS = -DMPI -DOPENACC
+CPPDEFS = -DMPI -DOPENACC
+#CPPFLAGS = -DMPI
+#CPPDEFS = -DMPI
+#NETCDF_INC = -I/gpfslocalsup/spack_soft/netcdf-fortran/4.5.3/nvhpc-24.3-6txleriq4w2lkpuknl2voa244jhikevq/include
+#NETCDF_LIB = -L/gpfslocalsup/spack_soft/netcdf-fortran/4.5.3/nvhpc-24.3-6txleriq4w2lkpuknl2voa244jhikevq/lib
+NETCDF_INC = -I/gpfslocalsup/spack_soft/netcdf-fortran/4.5.3/nvhpc-24.3-lelwxxjhhkcnwng4eq2n74a3zwrpvnba/include
+NETCDF_LIB =
+#FFLAGS = -acc=gpu,noautopar -gpu=cc70,managed -Minfo=accel -fpic $(NETCDF_INC) $(IDEV_PATH) -I${HOME}/include_gpu
+#LDFLAGS = -acc=gpu,noautopar -gpu=cc70,managed -Minfo=accel -lnetcdff $(NETCDF_LIB) -L$(HOME)/lib -lensdam
+FFLAGS = -acc -Minfo=accel -fpic $(NETCDF_INC) $(IDEV_PATH) -I${HOME}/include_gpu
+LDFLAGS = -acc -Minfo=accel -lnetcdff $(NETCDF_LIB) -L$(HOME)/lib -lensdam_gpu
+#FFLAGS = -fpic $(NETCDF_INC) $(IDEV_PATH) -I${HOME}/include_gpu
+#LDFLAGS = -lnetcdff $(NETCDF_LIB) -L$(HOME)/lib -lensdam
+LIST =
+
+# f2py settings
+NCDFLIB = /smplocal/pub/NetCDF/4.1.3/seq/lib/
+FVENDOR = intelem
+FCOMPILER = /smplocal/pub/Modules/IDRIS/wrappers/mpiifort
+F2PYFLAGS = --fcompiler=$(FVENDOR) --f90exec=$(FCOMPILER)
+
