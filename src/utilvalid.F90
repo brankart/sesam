@@ -244,7 +244,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ! -----------------------------------------------------------------
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      SUBROUTINE fildirnam (dirnamout,dirnamin,kjscl)
+      SUBROUTINE fildirnam (dirnamout,dirnamin,kjscl,ktype)
 !---------------------------------------------------------------------
 !
 !  Purpose : Set directory name for one of the scale in multiple scale ensemble
@@ -254,6 +254,7 @@
 !
 !  Input : dirnamin   : name of ensemble directory (with star)
 !  -----   kjscl      : scale index
+!          ktype      : type of ensemble (usually A, B, C,...)
 !
 !  Output : dirnamout  : actual name of the directory for the required scale
 !  ------
@@ -269,6 +270,7 @@
       CHARACTER(len=*), intent(out) :: dirnamout
       CHARACTER(len=*), intent(in) :: dirnamin
       INTEGER, intent(in) :: kjscl
+      CHARACTER(len=1), intent(in), optional :: ktype
 !----------------------------------------------------------------------
 !----------------------------------------------------------------------
 ! local declarations
@@ -296,7 +298,11 @@
       IF (kjscl.LT.1) GOTO 103
       WRITE (chdigit,'(i1.1)') kjscl
       
-      dirnamout=dirnamin(1:jstar-1)//chdigit//dirnamin(jstar+1:ldirnam)
+      IF (PRESENT(ktype)) THEN
+        dirnamout=dirnamin(1:jstar-1)//chdigit//ktype//dirnamin(jstar+1:ldirnam)
+      ELSE
+        dirnamout=dirnamin(1:jstar-1)//chdigit//dirnamin(jstar+1:ldirnam)
+      ENDIF
 
       RETURN
 !

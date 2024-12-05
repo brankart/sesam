@@ -40,6 +40,8 @@
       use mod_cfgxyo
       use mod_spacexyo , only : jpmend
       use algomcmc
+      use algomcmc_adap , only : calcmcmc_adap
+      use ensdam_mcmc_update , only : mcmc_adap_type
       IMPLICIT NONE
 !----------------------------------------------------------------------
 ! local declarations
@@ -95,9 +97,15 @@
       CASE (7)
 ! Action: -inxbas <file_xbas> -outxbas <file_xbas> -iterate <iteration number> -inobs <file_o> -configobs <file_o> -inobas <dir_xyobas> -outobas <dir_obas>
          flagxyo=1
-         CALL calcmcmc(arginxbas,argoutxbas,flagxyo, &
-     &                 kconfigo=argconfigobs,kinobs=arginobs, &
-     &                 kinobas=arginobas,koutobas=argoutobas)
+         IF (mcmc_adap_type>=0) THEN
+           CALL calcmcmc_adap(arginxbas,argoutxbas,flagxyo, &
+     &                        kconfigo=argconfigobs,kinobs=arginobs, &
+     &                        kinobas=arginobas,koutobas=argoutobas)
+         ELSE
+           CALL calcmcmc(arginxbas,argoutxbas,flagxyo, &
+     &                   kconfigo=argconfigobs,kinobs=arginobs, &
+     &                   kinobas=arginobas,koutobas=argoutobas)
+         ENDIF
       CASE (8)
 ! Action: -inybas <file_xybas> -outybas <file_ybas> -iterate <iteration number> -inobs <file_o> -configobs <file_o> -inobas <dir_xyobas> -outobas <dir_obas>
          flagxyo=2

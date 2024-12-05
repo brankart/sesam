@@ -43,6 +43,7 @@
      &                           dyn_constraint_dt
 #endif
       use algomcmc, only : oestd_inflation
+
       use ensdam_mcmc_update
       IMPLICIT NONE
 !----------------------------------------------------------------------
@@ -194,6 +195,11 @@
           READ(attr,*,ERR=102) mcmc_convergence_check
         CASE('MCMC_CONVERGENCE_STOP')
           READ(attr,*,ERR=102) mcmc_convergence_stop
+
+        CASE('MCMC_ADAP_TYPE')
+          READ(attr,*,ERR=102) mcmc_adap_type
+        CASE('OESTD_INFLATION')
+          READ(attr,*,ERR=102) oestd_inflation
 !
 ! Parameterization of dynamical constraint
 #ifdef FLOWSAMPLER
@@ -204,10 +210,6 @@
         CASE('DYN_CONSTRAINT_STD')
           READ(attr,*,ERR=102) dyn_constraint_std
 #endif
-!
-! Parameterization of MCMC sampler
-        CASE('OESTD_INFLATION')
-          READ(attr,*,ERR=102) oestd_inflation
 !
 ! Parameterization of localization radius fro random sampling
         CASE('LOC_TIME_SCALE')
