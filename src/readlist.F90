@@ -37,12 +37,13 @@
       use mod_main
       use mod_cfgxyo
       use algospct, only : loc_time_scale, loc_radius_in_deg, &
-     &                     spct_first_only
+     &                     loc_radius_vary, spct_first_only
 #ifdef FLOWSAMPLER
       use utilconstraint, only : dyn_constraint, dyn_constraint_std, &
      &                           dyn_constraint_dt
 #endif
       use algomcmc, only : oestd_inflation
+      use algomcmc_adap, only : mcmc_adap_ratio, mcmc_prior
 
       use ensdam_mcmc_update
       IMPLICIT NONE
@@ -195,11 +196,15 @@
           READ(attr,*,ERR=102) mcmc_convergence_check
         CASE('MCMC_CONVERGENCE_STOP')
           READ(attr,*,ERR=102) mcmc_convergence_stop
+        CASE('OESTD_INFLATION')
+          READ(attr,*,ERR=102) oestd_inflation
 
         CASE('MCMC_ADAP_TYPE')
           READ(attr,*,ERR=102) mcmc_adap_type
-        CASE('OESTD_INFLATION')
-          READ(attr,*,ERR=102) oestd_inflation
+        CASE('MCMC_ADAP_RATIO')
+          READ(attr,*,ERR=102) mcmc_adap_ratio
+        CASE('MCMC_PRIOR')
+          READ(attr,*,ERR=102) mcmc_prior
 !
 ! Parameterization of dynamical constraint
 #ifdef FLOWSAMPLER
@@ -216,6 +221,8 @@
           READ(attr,*,ERR=102) loc_time_scale
         CASE('LOC_RADIUS_IN_DEG')
           READ(attr,*,ERR=102) loc_radius_in_deg
+        CASE('LOC_RADIUS_VARY')
+          READ(attr,*,ERR=102) loc_radius_vary
         CASE('SPCT_FIRST_ONLY')
           READ(attr,*,ERR=102) spct_first_only
 !

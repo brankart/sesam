@@ -769,7 +769,7 @@
       ENDIF
 
 ! Apply dynamical constraint
-#ifdef FLOWSAMPELR
+#ifdef FLOWSAMPLER
       IF (dyn_constraint) THEN
         IF (dissip_rate.NE.0.) THEN
           cost_jdyn=eval_constraint(fullstate,cost_jdis)

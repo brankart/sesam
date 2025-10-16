@@ -245,6 +245,11 @@
             IF (nprint.GE.3) THEN
               WRITE(numout,*) ' Observation ',jdbs, &
      &                        ' located : ',ji,jj,jk,jt
+              WRITE(numout,*) ' Location ', &
+     &                   kgriddbs(jdbs)%lon, &
+     &                   kgriddbs(jdbs)%lat, &
+     &                   kgriddbs(jdbs)%dep, &
+     &                   kgriddbs(jdbs)%tim
             ENDIF
 !
 ! 3b - check if grid cell is inside observation mask

@@ -31,6 +31,7 @@
       use mod_main
       use ensdam_storfg
       use ensdam_storng
+      use utilfiles
       IMPLICIT NONE
       PRIVATE
 
@@ -40,6 +41,8 @@
       BIGREAL, PUBLIC, save :: loc_time_scale=1.    !  Localization time scale
       BIGREAL, PUBLIC, save :: loc_radius_in_deg=1. !  Localization radius
       LOGICAL, PUBLIC, save :: spct_first_only=.FALSE. !  Compute only first level of first variable
+      LOGICAL, PUBLIC, save :: loc_radius_vary=.FALSE. !  Does localization radius vary with depth
+      BIGREAL, PUBLIC, DIMENSION(:), ALLOCATABLE, save :: loc_radius_array ! Localization radius
 
       ! Private variables/parameters
       INTEGER, save :: jpl  ! maximum degree of Legendre polynomials
@@ -83,6 +86,7 @@
       use liospct
       use utilvct
       use utilvalid
+      use liocpak
       use ensdam_sphylm
       IMPLICIT NONE
 !----------------------------------------------------------------------
@@ -97,8 +101,11 @@
       BIGREAL, dimension(:), allocatable, save :: vects
       BIGREAL, dimension(:), allocatable, save :: vectorms
 !
+      LOGICAL:: slice2d=.true.      ! Perform operation on 2D slices (R case, flagxyo=1)
+      LOGICAL:: slice2dfull=.true.  ! Perform operation on full 2D slices before masking (in 3D)
+
       INTEGER :: allocok,jpssize,jpisize,jpjsize,jpitpsize,jptsize
-      INTEGER :: jnxyo,js,jr,js0,js1,jsxy,jk,jt,jl,jm,jlmin
+      INTEGER :: jnxyo,js,jr,js0,js1,jsxy,jk,jt,jl,jm,jlmin,jpkmax
       INTEGER :: jampl,jpampl
       LOGICAL :: lectinfo
       INTEGER :: flagcfg,ios
@@ -113,6 +120,9 @@
       BIGREAL, DIMENSION(:,:), allocatable :: spct, spctstd
       BIGREAL, DIMENSION(:), allocatable :: tspct_freq, tspct_power
       BIGREAL, DIMENSION(:,:), allocatable :: ran_timeseries
+      BIGREAL, DIMENSION(:,:), allocatable :: vects_slice
+      LOGICAL :: existence, newradius
+      INTEGER :: loc_radius_nbr  ! number of different localization radii
 !----------------------------------------------------------------------
 !
       IF (nprint.GE.1) THEN
@@ -196,9 +206,46 @@
       CASE DEFAULT
          GOTO 1000
       END SELECT
+
+      jpkmax = MAXVAL(sxy_jpk(1:sxyend))
+
+! Read localization radius (if it vary along the vertical)
+      loc_radius_nbr=1
+      IF (loc_radius_vary) THEN
+        ALLOCATE(loc_radius_array(jpkmax))
+        CALL openfile(10,'loc_radius_array.txt')
+        DO jk=1,jpkmax
+          READ(10,*) loc_radius_array(jk)
+          IF (.NOT.ANY(loc_radius_array(jk).EQ.loc_radius_array(1:jk-1))) THEN
+            loc_radius_nbr=loc_radius_nbr+1
+          ENDIF
+        ENDDO
+        CLOSE(10)
+      ENDIF
+!
+! Check if we can work wlice by slice
+      slice2d = slice2d .AND. (kargtypeoper(1:1).EQ.'R')
+      slice2d = slice2d .AND. (kflagxyo.EQ.1)
+      IF (kflagxyo.EQ.1) THEN
+        slice2d = slice2d .AND. (indext(koutxyo,extvartab,nbextvar).EQ.5)
+      ENDIF
+
+! Check if full slice will be used
+      slice2dfull = slice2d
+      slice2dfull = slice2dfull .AND. (jpkmax.GT.1)
+      slice2dfull = slice2dfull .AND. (loc_radius_nbr.LT.sxy_jpk(indsxy)/2)
 !
 ! Allocate Vxyo arrays
-      allocate ( vects(1:jpssize), stat=allocok )
+      IF (slice2d) THEN
+        jpisize=MAXVAL(sxy_jpi(:))
+        jpjsize=MAXVAL(sxy_jpj(:))
+        allocate ( vects(1:jpisize*jpjsize), stat=allocok )
+        IF (slice2dfull) THEN
+          allocate ( vects_slice(1:jpisize,1:jpjsize), stat=allocok )
+        ENDIF
+      ELSE
+        allocate ( vects(1:jpssize), stat=allocok )
+      ENDIF
       IF (allocok.NE.0) GOTO 1001
       vects(:) = FREAL(0.0)
 !
@@ -404,7 +451,7 @@
 
 !       Define power spectrum for spherical harmonics
 !       and define time power spectrum from parameters
-        CALL define_spct(spctstd,tspct_freq,tspct_power)
+        CALL define_spct(spctstd,tspct_freq,tspct_power,0)
 
 !       Draw random frequencies and phases for random timeseries
 !       (identical for all levels, all variables)
@@ -416,8 +463,8 @@
           CALL def_spect_power(1,jampl,tspct_freq,tspct_power)
           CALL sample_freq_1d(jampl)
         ENDDO
-#if defined MPI
         IF (jproc.EQ.0) CALL kiss_save()
+#if defined MPI
         CALL MPI_BARRIER(MPI_COMM_WORLD,mpi_code)
 #endif
 
@@ -441,30 +488,87 @@
           DO jt=1,sxy_jpt(indsxy)
 
             IF (jproc.EQ.0) THEN
-              WRITE(*,'(2a,2i4)') 'Generating time slice: ',sxy_nam(indsxy),jt
+              print '(2a,2i4)', 'Time slice: ',sxy_nam(indsxy),jt
             ENDIF
 
 !           Generate amplitude of spectral harmonics for time t           
-            jampl=1
-            DO jl=0,jpl
-            DO jm=-jl,jl
-              spct(jl,jm)=ran_timeseries(jt,jampl)*spctstd(jl,jm)
-              jampl=jampl+1
-            ENDDO
-            ENDDO
+            IF (.NOT.loc_radius_vary) THEN
+              jampl=1
+              DO jl=0,jpl
+              DO jm=-jl,jl
+                spct(jl,jm)=ran_timeseries(jt,jampl)*spctstd(jl,jm)
+                jampl=jampl+1
+              ENDDO
+              ENDDO
+            ENDIF
+
+!           Decide if we work with full 2D slices
+            slice2dfull = slice2d
+            slice2dfull = slice2dfull .AND. (sxy_jpk(indsxy).GT.1)
+            slice2dfull = slice2dfull .AND. (loc_radius_nbr.LT.sxy_jpk(indsxy)/2)
 
 !           Loop on levels
             DO jk=1,sxy_jpk(indsxy)
 !
-              CALL mk8vct(lon(1:),gridij(:,:)%longi,jk,jt, &
-     &                    jsxy,nbr,kflagxyo)
-              CALL mk8vct(lat(1:),gridij(:,:)%latj, jk,jt, &
-     &                    jsxy,nbr,kflagxyo)
+              newradius=jk.EQ.1
+              IF (loc_radius_vary) THEN
+                newradius=.TRUE.
+                IF (jk.GT.1) newradius = loc_radius_array(jk) .NE. loc_radius_array(jk-1)
+
+                IF ( (.NOT.slice2dfull) .OR. newradius ) THEN
+                  CALL define_spct(spctstd,tspct_freq,tspct_power,jk)
+                  jampl=1
+                  DO jl=0,jpl
+                  DO jm=-jl,jl
+                    spct(jl,jm)=ran_timeseries(jt,jampl)*spctstd(jl,jm)
+                    jampl=jampl+1
+                  ENDDO
+                  ENDDO
+                ENDIF
+              ENDIF
+
+              IF (slice2dfull) THEN
+                IF (newradius) THEN
+                  nbr = jpisize*jpjsize
+                  lon = RESHAPE(gridij(:,:)%longi, [nbr])
+                  lat = RESHAPE(gridij(:,:)%latj,  [nbr])
+                ENDIF
+              ELSE
+                CALL mk8vct(lon(1:),gridij(:,:)%longi,jk,jt, &
+     &                      jsxy,nbr,kflagxyo)
+                CALL mk8vct(lat(1:),gridij(:,:)%latj, jk,jt, &
+     &                      jsxy,nbr,kflagxyo)
+              ENDIF
 !
-              js1 = js0 + nbr - 1
-              CALL back_ylm( spct(0:,-jpl:), vects(js0:js1), &
-     &                       lon(1:nbr), lat(1:nbr) )
-              js0 = js0 + nbr
+              IF (slice2d) THEN
+                vects(:) = FREAL(0.0)
+                IF ( (.NOT.slice2dfull) .OR. newradius ) THEN
+                  IF (jproc.EQ.0) print *, ' Computing slice: jt, jk =',jt,jk
+                  CALL back_ylm( spct(0:,-jpl:), vects(1:nbr), &
+     &                           lon(1:nbr), lat(1:nbr) )
+                ENDIF
+                IF (jproc.EQ.0) THEN
+                  IF (slice2dfull) THEN
+                    IF (newradius) THEN
+                      vects_slice = RESHAPE(vects,[jpisize,jpjsize])
+                    ENDIF
+                    CALL mk8vct(vects(1:),vects_slice(:,:),jk,jt, &
+     &                          jsxy,nbr,kflagxyo)
+                    js1 = js0 + nbr - 1
+                    CALL writepartcpak2(koutxyo,vects(1:nbr),js0,js1)
+                    js0 = js0 + nbr
+                  ELSE
+                    js1 = js0 + nbr - 1
+                    CALL writepartcpak2(koutxyo,vects(1:nbr),js0,js1)
+                    js0 = js0 + nbr
+                  ENDIF
+                ENDIF
+              ELSE
+                js1 = js0 + nbr - 1
+                CALL back_ylm( spct(0:,-jpl:), vects(js0:js1), &
+     &                         lon(1:nbr), lat(1:nbr) )
+                js0 = js0 + nbr
+              ENDIF
             ENDDO
           ENDDO
 
@@ -533,9 +637,11 @@
      &                              .OR.(kargtypeoper(1:1).EQ.'R') ) THEN
         SELECT CASE (kflagxyo)
         CASE (1)
-             CALL writevar (koutxyo,vects(:),jnxyo)
+          IF (.NOT.slice2d) THEN
+            CALL writevar (koutxyo,vects(:),jnxyo)
+          ENDIF
         CASE (2)
-             CALL writedta (koutxyo,vects(:))
+          CALL writedta (koutxyo,vects(:))
         CASE DEFAULT
            GOTO 1000
         END SELECT
@@ -544,7 +650,9 @@
 !
 ! --- deallocation
       IF (allocated(vects)) deallocate(vects)
+      IF (allocated(vects_slice)) deallocate(vects_slice)
       IF (allocated(spct)) deallocate(spct)
+      IF (allocated(loc_radius_array)) deallocate(loc_radius_array)
 !
       IF (allocated(longi)) deallocate(longi)
       IF (allocated(latj)) deallocate(latj)
@@ -863,7 +971,7 @@
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ! -----------------------------------------------------------------
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      SUBROUTINE define_spct( spctstd, tspct_freq, tspct_power )
+      SUBROUTINE define_spct( spctstd, tspct_freq, tspct_power, kjk )
 !---------------------------------------------------------------------
 !
 !  Purpose : Define spectrum for random timeseries and
@@ -880,37 +988,53 @@
       BIGREAL, DIMENSION(0:,-jpl:), INTENT( out ) :: spctstd
       BIGREAL, DIMENSION(:), INTENT( out ) :: tspct_freq
       BIGREAL, DIMENSION(:), INTENT( out ) :: tspct_power
+      INTEGER, INTENT( in ) :: kjk  ! vertical level (0 if none)
 !----------------------------------------------------------------------
 ! local declarations
 ! ==================
       INTEGER :: jm, jl, jtspct
       BIGREAL :: wnbr, norm, freq, maxfreq
+      BIGREAL :: loc_radius
+      LOGICAL :: set_time_spectrum
 !----------------------------------------------------------------------
+
+      set_time_spectrum = .TRUE.
+      IF (loc_radius_vary) THEN
+        loc_radius = loc_radius_array(kjk)
+        set_time_spectrum = .FALSE.
+        IF (kjk==0) set_time_spectrum = .TRUE.
+      ELSE
+        loc_radius = loc_radius_in_deg
+      ENDIF
 
 !     Loop on frequancies
 !     to define spectrum in time
-      maxfreq=2.0_kr
-      DO jtspct=1,jptspct
-        freq = maxfreq * REAL(jtspct,8) / REAL(jptspct,8)
-        tspct_power(jtspct) = EXP(-freq*freq)
-        freq = freq / loc_time_scale
-        tspct_freq(jtspct) = freq
-      ENDDO
+      IF (set_time_spectrum) THEN
+        maxfreq=2.0_kr
+        DO jtspct=1,jptspct
+          freq = maxfreq * REAL(jtspct,8) / REAL(jptspct,8)
+          tspct_power(jtspct) = EXP(-freq*freq)
+          freq = freq / loc_time_scale
+          tspct_freq(jtspct) = freq
+        ENDDO
+      ENDIF
 
 !     Loop on spherical harmonics
 !     to define the spectrum sph_spct
       DO jl = 0, jpl
       DO jm = -jl, jl
-        wnbr = REAL(jl,8) * 2.0_kr * pi * loc_radius_in_deg / 360._kr
+        wnbr = REAL(jl,8) * 2.0_kr * pi * loc_radius / 360._kr
         spctstd(jl,jm) = EXP(-wnbr*wnbr)
       ENDDO
       ENDDO
 
-      wnbr = REAL(jpl,8) * 2.0_kr * pi * loc_radius_in_deg / 360._kr
-      PRINT *, 'Localization radius in degrees:',loc_radius_in_deg
-      PRINT *, 'Length scale corresponding to lmax:',loc_radius_in_deg/wnbr
-      IF (wnbr.LT.3.0_kr) THEN
-        PRINT *, 'Warning: increase lmax to resolve the spectrum'
+      IF (.NOT.loc_radius_vary) THEN
+        wnbr = REAL(jpl,8) * 2.0_kr * pi * loc_radius / 360._kr
+        PRINT *, 'Localization radius in degrees:',loc_radius
+        PRINT *, 'Length scale corresponding to lmax:',loc_radius/wnbr
+        IF (wnbr.LT.3.0_kr) THEN
+          PRINT *, 'Warning: increase lmax to resolve the spectrum'
+        ENDIF
       ENDIF
 
 !     Normalize the spectrum sph_spct

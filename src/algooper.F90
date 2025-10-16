@@ -74,6 +74,7 @@
       use ensdam_obserror
       use utilvct
       use utilvalid
+      use utilfiles
       IMPLICIT NONE
 !----------------------------------------------------------------------
 ! header declarations
@@ -96,10 +97,10 @@
       TYPE (type_gridijk), dimension(:), allocatable :: gridijkobsnew
       TYPE (type_poscoef), dimension(:,:), allocatable :: poscoefobsnew
 !
-      INTEGER :: allocok,jpssize,jpisize,jpjsize
-      INTEGER :: jpitpsize,sxyend,indsxy,nbr
-      INTEGER, dimension(1:nbvar) :: sxy_ord,sxy_jpi,sxy_jpj
-      INTEGER :: jnxyo,js,ji,jk,jt,jpi,jextvar,jjproc,jqua,js1,jsxy
+      INTEGER :: allocok,jpssize,jpisize,jpjsize,jpksize
+      INTEGER :: jpitpsize,sxyend,indsxy,nbr,js0,js1
+      INTEGER, dimension(1:nbvar) :: sxy_ord,sxy_jpi,sxy_jpj,sxy_jpk,sxy_jpt
+      INTEGER :: jnxyo,js,ji,jk,jt,jpi,jextvar,jjproc,jqua,jsxy
       INTEGER :: flagcfg,flagxyo,ios,jpgroup,jgroup
       INTEGER :: jpoendold,jpitpsizeold,jpoendnew,jpitpsizenew,indobs, &
      &     inddbs,indobs1,inddbs1,jodeb,jofin,jodebnew,jofinnew,jobs,jitp
@@ -123,6 +124,9 @@
       REAL(KIND=8), PARAMETER :: deg2rad=twopi/360.
       REAL(KIND=8), PARAMETER :: earthrad=6.371e3
       INTEGER :: jday,jdaytarget,year,month,day
+      BIGREAL, dimension(:), allocatable, save :: dum1d
+      BIGREAL, dimension(:,:), allocatable, save :: dum2d
+      BIGREAL, dimension(:,:), allocatable, save :: zvalues
 !----------------------------------------------------------------------
       SELECT CASE (kflaganlxyo)
       CASE(1)
@@ -135,6 +139,8 @@
            indsxy= sxy_ord(jsxy)
            sxy_jpi(indsxy)=var_jpi(indsxy)
            sxy_jpj(indsxy)=var_jpj(indsxy)
+           sxy_jpk(indsxy)=var_jpk(indsxy)
+           sxy_jpt(indsxy)=var_jpt(indsxy)
          ENDDO
       CASE(2)
          jpssize=jpyend
@@ -144,8 +150,10 @@
          DO jsxy = 1,sxyend
            sxy_ord(jsxy)=dta_ord(jsxy)
            indsxy= sxy_ord(jsxy)
-           sxy_jpi(indsxy)=var_jpi(indsxy)
-           sxy_jpj(indsxy)=var_jpj(indsxy)
+           sxy_jpi(indsxy)=dta_jpi(indsxy)
+           sxy_jpj(indsxy)=dta_jpj(indsxy)
+           sxy_jpk(indsxy)=dta_jpk(indsxy)
+           sxy_jpt(indsxy)=dta_jpt(indsxy)
          ENDDO
       CASE(3)
          jpssize=jpoend
@@ -410,6 +418,52 @@
                   ENDDO
                   CLOSE(11)
                   print *, 'vectsout',MINVAL(vectsout(:)), MAXVAL(vectsout(:))
+               CASE ('zfile')
+                  IF (kflaganlxyo.EQ.3) GOTO 101
+
+                  ! Get max number of levels
+                  jpisize = MAXVAL(sxy_jpi(1:sxyend))
+                  jpjsize = MAXVAL(sxy_jpj(1:sxyend))
+                  jpksize = MAXVAL(sxy_jpk(1:sxyend))
+
+                  ! Allocate zvalues
+                  allocate ( zvalues(1:jpksize,1:sxyend), stat=allocok )
+                  IF (allocok.NE.0) GOTO 1001
+                  ! Allocate dummy arrays
+                  allocate ( dum1d(1:jpisize*jpjsize), stat=allocok )
+                  IF (allocok.NE.0) GOTO 1001
+                  allocate ( dum2d(1:jpisize,1:jpjsize), stat=allocok )
+                  IF (allocok.NE.0) GOTO 1001
+
+                  ! Read z values for each variable
+                  CALL openfile(11,kincfg)
+                  DO jsxy=1,sxyend
+                    indsxy= sxy_ord(jsxy)
+                    DO jk=1,sxy_jpk(jsxy)
+                      READ(11,*) zvalues(jk,jsxy)
+                    ENDDO
+                  ENDDO
+                  CLOSE(11)
+
+                  ! Loop on variables, time slices and levels
+                  js0 = 0
+                  DO jsxy=1,sxyend  ! loop on variables
+                    indsxy= sxy_ord(jsxy)
+                    DO jt=1,sxy_jpt(indsxy)  ! loop on time slices
+                    DO jk=1,sxy_jpk(indsxy)  ! loop on levels
+
+                      ! Get size of 2D slice -> nbr
+                      CALL mk8vct(dum1d,dum2d,jk,jt,jsxy,nbr,kflaganlxyo)
+
+                      ! Put constant zvalue in the corresponding segment of vector
+                      js1 = js0 + nbr - 1
+                      vectsout(js0:js1) = zvalues(jk,jsxy)
+                      js0 = js0 + nbr
+!
+                    ENDDO
+                    ENDDO
+                  ENDDO
+
                CASE ('probmap')
                   IF (jnxyo.EQ.1+jproc) THEN
                      CALL evalhdrcfgoper(kincfg,jpgroup)

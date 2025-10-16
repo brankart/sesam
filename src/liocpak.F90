@@ -35,7 +35,7 @@
       IMPLICIT NONE
       PRIVATE
 
-      PUBLIC readcpak,readpartcpak,writecpak,writepartcpak
+      PUBLIC readcpak,readpartcpak,writecpak,writepartcpak,writepartcpak2
 
       CONTAINS
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -760,6 +760,142 @@
 !
  1000 CALL printerror2(0,1000,1,'liocpak','writepartcpak')
  1001 CALL printerror2(0,1001,3,'liocpak','writeparcpak')
+!
+ 103  WRITE (texterror,*) 'inconsistent dimensions in output cpak file:', &
+     &                        kfnoutcpak(1:lenv(kfnoutcpak))
+      CALL printerror2(0,103,3,'liocpak','writeparcpak',comment=texterror)
+!
+      END SUBROUTINE
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+! -----------------------------------------------------------------
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      SUBROUTINE writepartcpak2(kfnoutcpak,kvectxin,kjx1,kjx2)
+!---------------------------------------------------------------------
+!
+!  Purpose : Write Vx segment in 'cpak' file
+!  -------
+!  Method :
+!  ------
+!  Input : kfnoutcpak : filename
+!  -----   kvectxin   : 1D vector (Vx segment)
+!
+!---------------------------------------------------------------------
+! modules
+! =======
+      use mod_cfgxyo
+      use mod_spacexyo , only : jpxend, jpx, arraynx_jindxbeg, &
+     &     arraynx_jpindxend
+      use utilcdfpak
+      IMPLICIT NONE
+!----------------------------------------------------------------------
+! header declarations
+! ===================
+      CHARACTER(len=*), intent(in) :: kfnoutcpak
+      BIGREAL, dimension(:), intent(in) :: kvectxin
+      INTEGER , intent(in) :: kjx1, kjx2
+!----------------------------------------------------------------------
+! local declarations
+! ==================
+      CHARACTER(len=bgword) :: cdrec1,cdrec2,text
+      INTEGER :: jpxend1,varend1,varlg1
+      INTEGER :: jpxend2,varend2,varlg2
+      INTEGER, dimension(1:nbvar) :: var_dim1, var_nbr1
+      CHARACTER(len=varlg), dimension(1:nbvar) :: var_nam1
+      BIGREAL4, dimension(1:nbvar) :: var_moy1,var_ect1
+      INTEGER allocok,jpxsize
+#if ! defined ALLREAL8
+      BIGREAL4, allocatable, dimension(:) :: ptabx
+#endif
+      INTEGER :: jindxbeg,jindxend
+      INTEGER :: jx,jvar,jvar1,indvar,indvar1
+      LOGICAL :: existence
+!----------------------------------------------------------------------
+!
+! Control print
+      IF (kjx1.EQ.1) THEN
+      IF (nprint.GE.2) THEN
+         WRITE(numout,*) '*** ROUTINE : ../writevar/writecpak'
+         WRITE(numout,*) '    ==> WRITING file ',kfnoutcpak(1:lenv(kfnoutcpak))
+      ENDIF
+      ENDIF
+!
+! Check and write header of cpak file only for 1st segment
+      IF (kjx1.EQ.1) THEN
+!
+! -1.- Set cpak header variables
+! ------------------------------
+!
+         jpxend1  = jpxend
+         varend1  = varend
+         varlg1   = varlg
+         DO jvar1 = 1,varend
+            indvar=var_ord(jvar1)
+            var_nam1(jvar1) = var_nam(indvar)
+            var_dim1(jvar1) = var_dim(indvar)
+            var_nbr1(jvar1) = var_nbr(indvar)
+         ENDDO
+!
+         IF (lmoyect) THEN
+            DO jvar1 = 1,varend
+               indvar=var_ord(jvar1)
+               var_moy1(jvar1) = FREAL4(var_moy(indvar))
+               var_ect1(jvar1) = FREAL4(var_ect(indvar))
+            ENDDO
+         ELSE
+            DO jvar1 = 1,varend
+               indvar=var_ord(jvar1)
+               var_moy1(jvar1) = FREAL4(0.0)
+               var_ect1(jvar1) = FREAL4(1.0)
+            ENDDO
+         ENDIF
+!
+         WRITE (cdrec1,'(a)') 'Vx =>'
+         DO jvar1=1,varend1
+            text=cdrec1
+            WRITE (cdrec1,'(a,a)') text(1:lenv(text)), &
+     &           var_nam1(jvar1)(1:lenv(var_nam1(jvar1)))  
+         ENDDO
+!
+! -2.- Check or write 'cpak' file dimensions
+! ------------------------------------------
+!
+         INQUIRE (FILE=kfnoutcpak,EXIST=existence)
+!
+         IF (existence) THEN
+            CALL cdfrdimpak(kfnoutcpak,jpxend2,varend2,varlg2,cdrec2)
+            IF (jpxend2.NE.jpxend1) GOTO 103
+            IF (varend2.NE.varend1) GOTO 103
+            IF (varlg2.NE.varlg1) GOTO 103
+         ELSE
+            CALL cdfwdimpak(kfnoutcpak,jpxend1,varend1,varlg1,cdrec1)
+         ENDIF
+!
+! -3.- Write 'cpak' file header
+! -----------------------------
+!
+         CALL cdfwhdrpak(kfnoutcpak,var_nam1,var_dim1,var_nbr1,var_moy1,var_ect1)
+!
+      ENDIF
+!
+! -4.- Write Vx segment in cpak file
+! ----------------------------------
+!
+#if ! defined ALLREAL8
+      allocate ( ptabx(1:SIZE(kvectxin,1)), stat=allocok )
+      IF (allocok.GT.0) GOTO 1001
+      ptabx(:) = FREAL4(kvectxin(:))
+      CALL cdfwpak(kfnoutcpak,ptabx(1),kjx1,kjx2)
+      IF (allocated(ptabx)) deallocate (ptabx)
+#else
+      CALL cdfwpak(kfnoutcpak,kvectxin(1),kjx1,kjx2)
+#endif
+!
+      RETURN
+!
+! --- error management section
+!
+ 1000 CALL printerror2(0,1000,1,'liocpak','writepartcpak2')
+ 1001 CALL printerror2(0,1001,3,'liocpak','writepartcpak2')
 !
  103  WRITE (texterror,*) 'inconsistent dimensions in output cpak file:', &
      &                        kfnoutcpak(1:lenv(kfnoutcpak))
