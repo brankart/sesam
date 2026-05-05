@@ -4,7 +4,7 @@
 cluster="jean-zay"
 cluster="adastra"
 
-if [ $cluster = "jean-zay" ] ; do
+if [ $cluster = "jean-zay" ] ; then
 
   module purge
   module load nvidia-compilers/24.3
@@ -14,17 +14,21 @@ if [ $cluster = "jean-zay" ] ; do
   #module load hdf5/1.14.5-mpi-cuda # not needed before (+hdf5_fortran in Makefile.macro)
   module load hdf5/1.12.0-mpi-cuda # not needed before (+hdf5_fortran in Makefile.macro)
 
-  ln -sf macro/make.jean-zay_gpu Makefile.macro
+  ln -sf ../macro/make.jean-zay_gpu Makefile.macro
 
-elif [ $cluster = "adastra" ] ; do
+elif [ $cluster = "adastra" ] ; then
 
   module purge
   module load cpe/24.07
-  module load craype-accel-amd-gfx90a craype-x86-trento
+  module load craype-x86-trento
+  module load craype-accel-amd-gfx90a
   module load PrgEnv-cray
-  module load amd-mixed
+  module load rocm
+  module load cray-mpich
+  module load cray-hdf5-parallel
+  module load cray-netcdf-hdf5parallel
 
-  ln -sf macro/make.adastra_gpu Makefile.macro
+  ln -sf ../macro/make.adastra_gpu Makefile.macro
 
 else
 

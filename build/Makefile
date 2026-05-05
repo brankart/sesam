@@ -7,7 +7,7 @@ include $(MK_TEMPLATE)
 
 .DEFAULT:
 	-echo $@ does not exist.
-all: /linkhome/rech/genleg01/regi700/bin/sesam_mpi
+all: /lus/home/CT1/c1601279/jmbrankart/bin/sesam_gpu
 algoanam.o: ../src/algoanam.F90 mod_main.o mod_cfgxyo.o mod_spacexyo.o hioxyo.o hiobas.o utilroa.o utilvalid.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/algoanam.F90
 algobase.o: ../src/algobase.F90 mod_main.o algortho.o mkmeanect.o mkconnect.o mod_cfgxyo.o mod_spacexyo.o hioxyo.o hiobas.o hiozon.o utilroa.o utilmkh.o utilmkto.o utilclc.o utilprint.o utilvalid.o
@@ -236,239 +236,239 @@ utilvct.o: ../src/utilvct.F90 mod_main.o mod_cfgxyo.o mod_mask.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/utilvct.F90
 utilzone.o: ../src/utilzone.F90 mod_main.o mod_cfgxyo.o mod_cont.o
 	$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c	../src/utilzone.F90
-./algotgest.F90: ../src/algotgest.F90
-	cp ../src/algotgest.F90 .
-./liorst.F90: ../src/liorst.F90
-	cp ../src/liorst.F90 .
-./mkreducevar.F90: ../src/mkreducevar.F90
-	cp ../src/mkreducevar.F90 .
-./algodiff.F90: ../src/algodiff.F90
-	cp ../src/algodiff.F90 .
-./utilcdfzon.F90: ../src/utilcdfzon.F90
-	cp ../src/utilcdfzon.F90 .
-./mkzontodta.F90: ../src/mkzontodta.F90
-	cp ../src/mkzontodta.F90 .
-./liospct.F90: ../src/liospct.F90
-	cp ../src/liospct.F90 .
-./mod_mpitime.F90: ../src/mod_mpitime.F90
-	cp ../src/mod_mpitime.F90 .
-./algocorr.F90: ../src/algocorr.F90
-	cp ../src/algocorr.F90 .
-./modobsv.F90: ../src/modobsv.F90
-	cp ../src/modobsv.F90 .
-./algolocal.F90: ../src/algolocal.F90
-	cp ../src/algolocal.F90 .
-./lioncdbs.F90: ../src/lioncdbs.F90
-	cp ../src/lioncdbs.F90 .
-./hiobas.F90: ../src/hiobas.F90
-	cp ../src/hiobas.F90 .
-./mkmeanect.F90: ../src/mkmeanect.F90
-	cp ../src/mkmeanect.F90 .
-./mkobsoper.F90: ../src/mkobsoper.F90
-	cp ../src/mkobsoper.F90 .
-./utilprint.F90: ../src/utilprint.F90
-	cp ../src/utilprint.F90 .
-./utilvalid.F90: ../src/utilvalid.F90
-	cp ../src/utilvalid.F90 .
-./utilfilt.F90: ../src/utilfilt.F90
-	cp ../src/utilfilt.F90 .
-./algooerr.F90: ../src/algooerr.F90
-	cp ../src/algooerr.F90 .
-./evalconfig.F90: ../src/evalconfig.F90
-	cp ../src/evalconfig.F90 .
-./mkcnttozon.F90: ../src/mkcnttozon.F90
-	cp ../src/mkcnttozon.F90 .
-./lionc.F90: ../src/lionc.F90
-	cp ../src/lionc.F90 .
-./modintf.F90: ../src/modintf.F90
-	cp ../src/modintf.F90 .
-./mkpttozon.F90: ../src/mkpttozon.F90
-	cp ../src/mkpttozon.F90 .
-./hiomsk.F90: ../src/hiomsk.F90
-	cp ../src/hiomsk.F90 .
-./mod_mask.F90: ../src/mod_mask.F90
-	cp ../src/mod_mask.F90 .
-./mkconnect.F90: ../src/mkconnect.F90
-	cp ../src/mkconnect.F90 .
-./utilroa.F90: ../src/utilroa.F90
-	cp ../src/utilroa.F90 .
-./mkdtatozon.F90: ../src/mkdtatozon.F90
-	cp ../src/mkdtatozon.F90 .
-./algorank.F90: ../src/algorank.F90
-	cp ../src/algorank.F90 .
-./hiocnt.F90: ../src/hiocnt.F90
-	cp ../src/hiocnt.F90 .
-./mkfiltzon.F90: ../src/mkfiltzon.F90
-	cp ../src/mkfiltzon.F90 .
-./liodimg.F90: ../src/liodimg.F90
-	cp ../src/liodimg.F90 .
-./sesam.F90: ../src/sesam.F90
-	cp ../src/sesam.F90 .
-./algobase.F90: ../src/algobase.F90
-	cp ../src/algobase.F90 .
-./hiocfg.F90: ../src/hiocfg.F90
-	cp ../src/hiocfg.F90 .
-./modtgop.F90: ../src/modtgop.F90
-	cp ../src/modtgop.F90 .
-./mod_cont.F90: ../src/mod_cont.F90
-	cp ../src/mod_cont.F90 .
-./liocobs.F90: ../src/liocobs.F90
-	cp ../src/liocobs.F90 .
-./modrank.F90: ../src/modrank.F90
-	cp ../src/modrank.F90 .
-./mkdtatoobs.F90: ../src/mkdtatoobs.F90
-	cp ../src/mkdtatoobs.F90 .
-./utilzone.F90: ../src/utilzone.F90
-	cp ../src/utilzone.F90 .
-./modoerr.F90: ../src/modoerr.F90
-	cp ../src/modoerr.F90 .
-./modvari.F90: ../src/modvari.F90
-	cp ../src/modvari.F90 .
-./mkinterp2dh.F90: ../src/mkinterp2dh.F90
-	cp ../src/mkinterp2dh.F90 .
-./mod_coord.F90: ../src/mod_coord.F90
-	cp ../src/mod_coord.F90 .
-./liocrg.F90: ../src/liocrg.F90
-	cp ../src/liocrg.F90 .
-./hiozon.F90: ../src/hiozon.F90
-	cp ../src/hiozon.F90 .
-./algospct.F90: ../src/algospct.F90
-	cp ../src/algospct.F90 .
-./utilcdfvar.F90: ../src/utilcdfvar.F90
-	cp ../src/utilcdfvar.F90 .
-./hioxyo.F90: ../src/hioxyo.F90
-	cp ../src/hioxyo.F90 .
-./utilvct.F90: ../src/utilvct.F90
-	cp ../src/utilvct.F90 .
-./algomcmc.F90: ../src/algomcmc.F90
-	cp ../src/algomcmc.F90 .
-./mod_cfgxyo.F90: ../src/mod_cfgxyo.F90
-	cp ../src/mod_cfgxyo.F90 .
-./defcst.F90: ../src/defcst.F90
-	cp ../src/defcst.F90 .
-./algoroa.F90: ../src/algoroa.F90
-	cp ../src/algoroa.F90 .
-./mkdbstoobs.F90: ../src/mkdbstoobs.F90
-	cp ../src/mkdbstoobs.F90 .
-./algooper.F90: ../src/algooper.F90
-	cp ../src/algooper.F90 .
-./mkpartvar.F90: ../src/mkpartvar.F90
-	cp ../src/mkpartvar.F90 .
-./readlist.F90: ../src/readlist.F90
-	cp ../src/readlist.F90 .
-./argmode.F90: ../src/argmode.F90
-	cp ../src/argmode.F90 .
-./utilobsv.F90: ../src/utilobsv.F90
-	cp ../src/utilobsv.F90 .
-./utilmkh.F90: ../src/utilmkh.F90
-	cp ../src/utilmkh.F90 .
-./liocpak.F90: ../src/liocpak.F90
-	cp ../src/liocpak.F90 .
-./modzone.F90: ../src/modzone.F90
-	cp ../src/modzone.F90 .
-./algoscor.F90: ../src/algoscor.F90
-	cp ../src/algoscor.F90 .
-./progsesam.f90: ../src/progsesam.f90
-	cp ../src/progsesam.f90 .
-./modspct.F90: ../src/modspct.F90
-	cp ../src/modspct.F90 .
 ./hiodbs.F90: ../src/hiodbs.F90
 	cp ../src/hiodbs.F90 .
-./mkobstodta.F90: ../src/mkobstodta.F90
-	cp ../src/mkobstodta.F90 .
-./algozone.F90: ../src/algozone.F90
-	cp ../src/algozone.F90 .
-./utilcdfpak.F90: ../src/utilcdfpak.F90
-	cp ../src/utilcdfpak.F90 .
-./modmcmc.F90: ../src/modmcmc.F90
-	cp ../src/modmcmc.F90 .
-./algortho.F90: ../src/algortho.F90
-	cp ../src/algortho.F90 .
+./utilcdfvar.F90: ../src/utilcdfvar.F90
+	cp ../src/utilcdfvar.F90 .
+./mkcnttozon.F90: ../src/mkcnttozon.F90
+	cp ../src/mkcnttozon.F90 .
+./utilclc.F90: ../src/utilclc.F90
+	cp ../src/utilclc.F90 .
+./modtgop.F90: ../src/modtgop.F90
+	cp ../src/modtgop.F90 .
+./liorst.F90: ../src/liorst.F90
+	cp ../src/liorst.F90 .
+./algoperc.F90: ../src/algoperc.F90
+	cp ../src/algoperc.F90 .
+./hiocfg.F90: ../src/hiocfg.F90
+	cp ../src/hiocfg.F90 .
+./mkdtatozon.F90: ../src/mkdtatozon.F90
+	cp ../src/mkdtatozon.F90 .
+./liodimg.F90: ../src/liodimg.F90
+	cp ../src/liodimg.F90 .
 ./mod_spacexyo.F90: ../src/mod_spacexyo.F90
 	cp ../src/mod_spacexyo.F90 .
-./modoper.F90: ../src/modoper.F90
-	cp ../src/modoper.F90 .
-./utilfiles.F90: ../src/utilfiles.F90
-	cp ../src/utilfiles.F90 .
-./lioobs.F90: ../src/lioobs.F90
-	cp ../src/lioobs.F90 .
-./mkinterp3d.F90: ../src/mkinterp3d.F90
-	cp ../src/mkinterp3d.F90 .
-./modanam.F90: ../src/modanam.F90
-	cp ../src/modanam.F90 .
-./modglbroa.F90: ../src/modglbroa.F90
-	cp ../src/modglbroa.F90 .
-./mod_main.F90: ../src/mod_main.F90
-	cp ../src/mod_main.F90 .
-./modadap.F90: ../src/modadap.F90
-	cp ../src/modadap.F90 .
-./modproj.F90: ../src/modproj.F90
-	cp ../src/modproj.F90 .
-./modglbeof.F90: ../src/modglbeof.F90
-	cp ../src/modglbeof.F90 .
-./utilmath1.F90: ../src/utilmath1.F90
-	cp ../src/utilmath1.F90 .
-./algoanam.F90: ../src/algoanam.F90
-	cp ../src/algoanam.F90 .
-./lioczon.F90: ../src/lioczon.F90
-	cp ../src/lioczon.F90 .
-./liobimg.F90: ../src/liobimg.F90
-	cp ../src/liobimg.F90 .
-./hiogrd.F90: ../src/hiogrd.F90
-	cp ../src/hiogrd.F90 .
-./modcorr.F90: ../src/modcorr.F90
-	cp ../src/modcorr.F90 .
-./modfilt.F90: ../src/modfilt.F90
-	cp ../src/modfilt.F90 .
-./mkcorrzbas.F90: ../src/mkcorrzbas.F90
-	cp ../src/mkcorrzbas.F90 .
-./mktgsmpl.F90: ../src/mktgsmpl.F90
-	cp ../src/mktgsmpl.F90 .
-./utilmkto.F90: ../src/utilmkto.F90
-	cp ../src/utilmkto.F90 .
-./algovari.F90: ../src/algovari.F90
-	cp ../src/algovari.F90 .
-./modglbreg.F90: ../src/modglbreg.F90
-	cp ../src/modglbreg.F90 .
+./modoerr.F90: ../src/modoerr.F90
+	cp ../src/modoerr.F90 .
+./mkmeanect.F90: ../src/mkmeanect.F90
+	cp ../src/mkmeanect.F90 .
+./modrank.F90: ../src/modrank.F90
+	cp ../src/modrank.F90 .
+./modvari.F90: ../src/modvari.F90
+	cp ../src/modvari.F90 .
+./sesam.F90: ../src/sesam.F90
+	cp ../src/sesam.F90 .
+./algooerr.F90: ../src/algooerr.F90
+	cp ../src/algooerr.F90 .
+./utilarg.F90: ../src/utilarg.F90
+	cp ../src/utilarg.F90 .
 ./argsesam.F90: ../src/argsesam.F90
 	cp ../src/argsesam.F90 .
-./mknullobs.F90: ../src/mknullobs.F90
-	cp ../src/mknullobs.F90 .
-./algomcmc_adap.F90: ../src/algomcmc_adap.F90
-	cp ../src/algomcmc_adap.F90 .
+./mkobsoper.F90: ../src/mkobsoper.F90
+	cp ../src/mkobsoper.F90 .
+./hiocnt.F90: ../src/hiocnt.F90
+	cp ../src/hiocnt.F90 .
+./mkinterp2dh.F90: ../src/mkinterp2dh.F90
+	cp ../src/mkinterp2dh.F90 .
+./modoper.F90: ../src/modoper.F90
+	cp ../src/modoper.F90 .
+./algortho.F90: ../src/algortho.F90
+	cp ../src/algortho.F90 .
+./utilroa.F90: ../src/utilroa.F90
+	cp ../src/utilroa.F90 .
+./algoroa.F90: ../src/algoroa.F90
+	cp ../src/algoroa.F90 .
+./algobase.F90: ../src/algobase.F90
+	cp ../src/algobase.F90 .
+./algoanam.F90: ../src/algoanam.F90
+	cp ../src/algoanam.F90 .
+./algoscor.F90: ../src/algoscor.F90
+	cp ../src/algoscor.F90 .
+./liocrg.F90: ../src/liocrg.F90
+	cp ../src/liocrg.F90 .
+./modobsv.F90: ../src/modobsv.F90
+	cp ../src/modobsv.F90 .
+./liocobs.F90: ../src/liocobs.F90
+	cp ../src/liocobs.F90 .
+./modproj.F90: ../src/modproj.F90
+	cp ../src/modproj.F90 .
+./progsesam.f90: ../src/progsesam.f90
+	cp ../src/progsesam.f90 .
+./modglbroa.F90: ../src/modglbroa.F90
+	cp ../src/modglbroa.F90 .
+./algolocal.F90: ../src/algolocal.F90
+	cp ../src/algolocal.F90 .
+./utilconstraint.F90: ../src/utilconstraint.F90
+	cp ../src/utilconstraint.F90 .
+./algocorr.F90: ../src/algocorr.F90
+	cp ../src/algocorr.F90 .
+./modintf.F90: ../src/modintf.F90
+	cp ../src/modintf.F90 .
+./modspct.F90: ../src/modspct.F90
+	cp ../src/modspct.F90 .
+./lioczon.F90: ../src/lioczon.F90
+	cp ../src/lioczon.F90 .
+./modadap.F90: ../src/modadap.F90
+	cp ../src/modadap.F90 .
+./mktgsmpl.F90: ../src/mktgsmpl.F90
+	cp ../src/mktgsmpl.F90 .
+./lioadbs.F90: ../src/lioadbs.F90
+	cp ../src/lioadbs.F90 .
+./algospct.F90: ../src/algospct.F90
+	cp ../src/algospct.F90 .
+./algotgest.F90: ../src/algotgest.F90
+	cp ../src/algotgest.F90 .
+./algodiff.F90: ../src/algodiff.F90
+	cp ../src/algodiff.F90 .
+./readlist.F90: ../src/readlist.F90
+	cp ../src/readlist.F90 .
+./utilmkh.F90: ../src/utilmkh.F90
+	cp ../src/utilmkh.F90 .
+./mod_cont.F90: ../src/mod_cont.F90
+	cp ../src/mod_cont.F90 .
+./mkzontodta.F90: ../src/mkzontodta.F90
+	cp ../src/mkzontodta.F90 .
+./algovari.F90: ../src/algovari.F90
+	cp ../src/algovari.F90 .
+./arghelp.F90: ../src/arghelp.F90
+	cp ../src/arghelp.F90 .
+./hioxyo.F90: ../src/hioxyo.F90
+	cp ../src/hioxyo.F90 .
+./liospct.F90: ../src/liospct.F90
+	cp ../src/liospct.F90 .
+./hiozon.F90: ../src/hiozon.F90
+	cp ../src/hiozon.F90 .
+./mkinterp3d.F90: ../src/mkinterp3d.F90
+	cp ../src/mkinterp3d.F90 .
+./modfilt.F90: ../src/modfilt.F90
+	cp ../src/modfilt.F90 .
+./utilvalid.F90: ../src/utilvalid.F90
+	cp ../src/utilvalid.F90 .
+./algooper.F90: ../src/algooper.F90
+	cp ../src/algooper.F90 .
+./utilvct.F90: ../src/utilvct.F90
+	cp ../src/utilvct.F90 .
+./mkconnect.F90: ../src/mkconnect.F90
+	cp ../src/mkconnect.F90 .
+./modglbreg.F90: ../src/modglbreg.F90
+	cp ../src/modglbreg.F90 .
+./utilmath1.F90: ../src/utilmath1.F90
+	cp ../src/utilmath1.F90 .
+./mkpartvar.F90: ../src/mkpartvar.F90
+	cp ../src/mkpartvar.F90 .
+./utilsesam.F90: ../src/utilsesam.F90
+	cp ../src/utilsesam.F90 .
+./utilcdfpak.F90: ../src/utilcdfpak.F90
+	cp ../src/utilcdfpak.F90 .
 ./liocdf.F90: ../src/liocdf.F90
 	cp ../src/liocdf.F90 .
+./modzone.F90: ../src/modzone.F90
+	cp ../src/modzone.F90 .
+./mod_cfgxyo.F90: ../src/mod_cfgxyo.F90
+	cp ../src/mod_cfgxyo.F90 .
+./mkdtatoobs.F90: ../src/mkdtatoobs.F90
+	cp ../src/mkdtatoobs.F90 .
+./modscor.F90: ../src/modscor.F90
+	cp ../src/modscor.F90 .
+./modglbeof.F90: ../src/modglbeof.F90
+	cp ../src/modglbeof.F90 .
+./mod_coord.F90: ../src/mod_coord.F90
+	cp ../src/mod_coord.F90 .
+./utilcdfzon.F90: ../src/utilcdfzon.F90
+	cp ../src/utilcdfzon.F90 .
+./lioobs.F90: ../src/lioobs.F90
+	cp ../src/lioobs.F90 .
+./utilzone.F90: ../src/utilzone.F90
+	cp ../src/utilzone.F90 .
+./algozone.F90: ../src/algozone.F90
+	cp ../src/algozone.F90 .
+./argmode.F90: ../src/argmode.F90
+	cp ../src/argmode.F90 .
+./defcst.F90: ../src/defcst.F90
+	cp ../src/defcst.F90 .
 ./mkrztovar.F90: ../src/mkrztovar.F90
 	cp ../src/mkrztovar.F90 .
 ./moddiff.F90: ../src/moddiff.F90
 	cp ../src/moddiff.F90 .
+./mknullobs.F90: ../src/mknullobs.F90
+	cp ../src/mknullobs.F90 .
+./mkdbstoobs.F90: ../src/mkdbstoobs.F90
+	cp ../src/mkdbstoobs.F90 .
+./mod_mask.F90: ../src/mod_mask.F90
+	cp ../src/mod_mask.F90 .
+./evalconfig.F90: ../src/evalconfig.F90
+	cp ../src/evalconfig.F90 .
+./algomcmc.F90: ../src/algomcmc.F90
+	cp ../src/algomcmc.F90 .
+./mkcorrzbas.F90: ../src/mkcorrzbas.F90
+	cp ../src/mkcorrzbas.F90 .
+./liobimg.F90: ../src/liobimg.F90
+	cp ../src/liobimg.F90 .
 ./algofilt.F90: ../src/algofilt.F90
 	cp ../src/algofilt.F90 .
+./modcorr.F90: ../src/modcorr.F90
+	cp ../src/modcorr.F90 .
+./modanam.F90: ../src/modanam.F90
+	cp ../src/modanam.F90 .
+./utilfilt.F90: ../src/utilfilt.F90
+	cp ../src/utilfilt.F90 .
+./modmcmc.F90: ../src/modmcmc.F90
+	cp ../src/modmcmc.F90 .
+./lioncdbs.F90: ../src/lioncdbs.F90
+	cp ../src/lioncdbs.F90 .
+./hiomsk.F90: ../src/hiomsk.F90
+	cp ../src/hiomsk.F90 .
+./mkreducevar.F90: ../src/mkreducevar.F90
+	cp ../src/mkreducevar.F90 .
+./utilfiles.F90: ../src/utilfiles.F90
+	cp ../src/utilfiles.F90 .
+./hiogrd.F90: ../src/hiogrd.F90
+	cp ../src/hiogrd.F90 .
+./hiobas.F90: ../src/hiobas.F90
+	cp ../src/hiobas.F90 .
+./mkfiltzon.F90: ../src/mkfiltzon.F90
+	cp ../src/mkfiltzon.F90 .
+./lionc.F90: ../src/lionc.F90
+	cp ../src/lionc.F90 .
+./liocpak.F90: ../src/liocpak.F90
+	cp ../src/liocpak.F90 .
+./mod_main.F90: ../src/mod_main.F90
+	cp ../src/mod_main.F90 .
+./mkobstodta.F90: ../src/mkobstodta.F90
+	cp ../src/mkobstodta.F90 .
+./algomcmc_adap.F90: ../src/algomcmc_adap.F90
+	cp ../src/algomcmc_adap.F90 .
 ./liocrz.F90: ../src/liocrz.F90
 	cp ../src/liocrz.F90 .
-./lioadbs.F90: ../src/lioadbs.F90
-	cp ../src/lioadbs.F90 .
-./utilclc.F90: ../src/utilclc.F90
-	cp ../src/utilclc.F90 .
-./utilarg.F90: ../src/utilarg.F90
-	cp ../src/utilarg.F90 .
-./algoperc.F90: ../src/algoperc.F90
-	cp ../src/algoperc.F90 .
+./utilmkto.F90: ../src/utilmkto.F90
+	cp ../src/utilmkto.F90 .
+./utilobsv.F90: ../src/utilobsv.F90
+	cp ../src/utilobsv.F90 .
+./algorank.F90: ../src/algorank.F90
+	cp ../src/algorank.F90 .
+./mod_mpitime.F90: ../src/mod_mpitime.F90
+	cp ../src/mod_mpitime.F90 .
 ./algointf.F90: ../src/algointf.F90
 	cp ../src/algointf.F90 .
-./modscor.F90: ../src/modscor.F90
-	cp ../src/modscor.F90 .
-./utilsesam.F90: ../src/utilsesam.F90
-	cp ../src/utilsesam.F90 .
-./arghelp.F90: ../src/arghelp.F90
-	cp ../src/arghelp.F90 .
-./utilconstraint.F90: ../src/utilconstraint.F90
-	cp ../src/utilconstraint.F90 .
-SRC = ../src/algotgest.F90 ../src/modintf.F90 ../src/mod_mpitime.F90 ../src/utilcdfvar.F90 ../src/liocpak.F90 ../src/utilsesam.F90 ../src/hiogrd.F90 ../src/algomcmc_adap.F90 ../src/utilarg.F90 ../src/algointf.F90 ../src/mod_cfgxyo.F90 ../src/mkobstodta.F90 ../src/algoroa.F90 ../src/algocorr.F90 ../src/modoper.F90 ../src/utilcdfpak.F90 ../src/modvari.F90 ../src/mod_main.F90 ../src/liorst.F90 ../src/modrank.F90 ../src/utilobsv.F90 ../src/mod_coord.F90 ../src/modanam.F90 ../src/algooper.F90 ../src/argsesam.F90 ../src/mkrztovar.F90 ../src/utilfilt.F90 ../src/algozone.F90 ../src/modcorr.F90 ../src/hiomsk.F90 ../src/mkdbstoobs.F90 ../src/utilzone.F90 ../src/algofilt.F90 ../src/algospct.F90 ../src/modadap.F90 ../src/hiocnt.F90 ../src/lioadbs.F90 ../src/algoanam.F90 ../src/hiocfg.F90 ../src/mkinterp2dh.F90 ../src/utilroa.F90 ../src/utilmath1.F90 ../src/liocrg.F90 ../src/sesam.F90 ../src/hiobas.F90 ../src/modglbroa.F90 ../src/utilvct.F90 ../src/utilvalid.F90 ../src/liocdf.F90 ../src/modzone.F90 ../src/algolocal.F90 ../src/mkmeanect.F90 ../src/hioxyo.F90 ../src/lioobs.F90 ../src/utilmkh.F90 ../src/modscor.F90 ../src/evalconfig.F90 ../src/modoerr.F90 ../src/algomcmc.F90 ../src/mod_spacexyo.F90 ../src/algovari.F90 ../src/lioncdbs.F90 ../src/mktgsmpl.F90 ../src/mkfiltzon.F90 ../src/modmcmc.F90 ../src/moddiff.F90 ../src/liospct.F90 ../src/mkzontodta.F90 ../src/mkconnect.F90 ../src/readlist.F90 ../src/mkcorrzbas.F90 ../src/mod_mask.F90 ../src/lioczon.F90 ../src/mkinterp3d.F90 ../src/mkpttozon.F90 ../src/mkdtatozon.F90 ../src/liocrz.F90 ../src/mkreducevar.F90 ../src/lionc.F90 ../src/algorank.F90 ../src/liodimg.F90 ../src/modobsv.F90 ../src/mkobsoper.F90 ../src/utilprint.F90 ../src/defcst.F90 ../src/algobase.F90 ../src/mod_cont.F90 ../src/utilclc.F90 ../src/mkdtatoobs.F90 ../src/algoperc.F90 ../src/algoscor.F90 ../src/algortho.F90 ../src/utilfiles.F90 ../src/arghelp.F90 ../src/liocobs.F90 ../src/utilmkto.F90 ../src/hiodbs.F90 ../src/modproj.F90 ../src/modspct.F90 ../src/utilcdfzon.F90 ../src/progsesam.f90 ../src/modglbeof.F90 ../src/utilconstraint.F90 ../src/mkcnttozon.F90 ../src/mknullobs.F90 ../src/mkpartvar.F90 ../src/hiozon.F90 ../src/modfilt.F90 ../src/modglbreg.F90 ../src/modtgop.F90 ../src/algodiff.F90 ../src/liobimg.F90 ../src/argmode.F90 ../src/algooerr.F90
-OBJ = algotgest.o modintf.o mod_mpitime.o utilcdfvar.o liocpak.o utilsesam.o hiogrd.o algomcmc_adap.o utilarg.o algointf.o mod_cfgxyo.o mkobstodta.o algoroa.o algocorr.o modoper.o utilcdfpak.o modvari.o mod_main.o liorst.o modrank.o utilobsv.o mod_coord.o modanam.o algooper.o argsesam.o mkrztovar.o utilfilt.o algozone.o modcorr.o hiomsk.o mkdbstoobs.o utilzone.o algofilt.o algospct.o modadap.o hiocnt.o lioadbs.o algoanam.o hiocfg.o mkinterp2dh.o utilroa.o utilmath1.o liocrg.o sesam.o hiobas.o modglbroa.o utilvct.o utilvalid.o liocdf.o modzone.o algolocal.o mkmeanect.o hioxyo.o lioobs.o utilmkh.o modscor.o evalconfig.o modoerr.o algomcmc.o mod_spacexyo.o algovari.o lioncdbs.o mktgsmpl.o mkfiltzon.o modmcmc.o moddiff.o liospct.o mkzontodta.o mkconnect.o readlist.o mkcorrzbas.o mod_mask.o lioczon.o mkinterp3d.o mkpttozon.o mkdtatozon.o liocrz.o mkreducevar.o lionc.o algorank.o liodimg.o modobsv.o mkobsoper.o utilprint.o defcst.o algobase.o mod_cont.o utilclc.o mkdtatoobs.o algoperc.o algoscor.o algortho.o utilfiles.o arghelp.o liocobs.o utilmkto.o hiodbs.o modproj.o modspct.o utilcdfzon.o progsesam.o modglbeof.o utilconstraint.o mkcnttozon.o mknullobs.o mkpartvar.o hiozon.o modfilt.o modglbreg.o modtgop.o algodiff.o liobimg.o argmode.o algooerr.o
-OFF = ../src/algotgest.F90 ../src/liorst.F90 ../src/mkreducevar.F90 ../src/algodiff.F90 ../src/utilcdfzon.F90 ../src/mkzontodta.F90 ../src/liospct.F90 ../src/mod_mpitime.F90 ../src/algocorr.F90 ../src/modobsv.F90 ../src/algolocal.F90 ../src/lioncdbs.F90 ../src/hiobas.F90 ../src/mkmeanect.F90 ../src/mkobsoper.F90 ../src/utilprint.F90 ../src/utilvalid.F90 ../src/utilfilt.F90 ../src/algooerr.F90 ../src/evalconfig.F90 ../src/mkcnttozon.F90 ../src/lionc.F90 ../src/modintf.F90 ../src/mkpttozon.F90 ../src/hiomsk.F90 ../src/mod_mask.F90 ../src/mkconnect.F90 ../src/utilroa.F90 ../src/mkdtatozon.F90 ../src/algorank.F90 ../src/hiocnt.F90 ../src/mkfiltzon.F90 ../src/liodimg.F90 ../src/sesam.F90 ../src/algobase.F90 ../src/hiocfg.F90 ../src/modtgop.F90 ../src/mod_cont.F90 ../src/liocobs.F90 ../src/modrank.F90 ../src/mkdtatoobs.F90 ../src/utilzone.F90 ../src/modoerr.F90 ../src/modvari.F90 ../src/mkinterp2dh.F90 ../src/mod_coord.F90 ../src/liocrg.F90 ../src/hiozon.F90 ../src/algospct.F90 ../src/utilcdfvar.F90 ../src/hioxyo.F90 ../src/utilvct.F90 ../src/algomcmc.F90 ../src/mod_cfgxyo.F90 ../src/defcst.F90 ../src/algoroa.F90 ../src/mkdbstoobs.F90 ../src/algooper.F90 ../src/mkpartvar.F90 ../src/readlist.F90 ../src/argmode.F90 ../src/utilobsv.F90 ../src/utilmkh.F90 ../src/liocpak.F90 ../src/modzone.F90 ../src/algoscor.F90 ../src/progsesam.f90 ../src/modspct.F90 ../src/hiodbs.F90 ../src/mkobstodta.F90 ../src/algozone.F90 ../src/utilcdfpak.F90 ../src/modmcmc.F90 ../src/algortho.F90 ../src/mod_spacexyo.F90 ../src/modoper.F90 ../src/utilfiles.F90 ../src/lioobs.F90 ../src/mkinterp3d.F90 ../src/modanam.F90 ../src/modglbroa.F90 ../src/mod_main.F90 ../src/modadap.F90 ../src/modproj.F90 ../src/modglbeof.F90 ../src/utilmath1.F90 ../src/algoanam.F90 ../src/lioczon.F90 ../src/liobimg.F90 ../src/hiogrd.F90 ../src/modcorr.F90 ../src/modfilt.F90 ../src/mkcorrzbas.F90 ../src/mktgsmpl.F90 ../src/utilmkto.F90 ../src/algovari.F90 ../src/modglbreg.F90 ../src/argsesam.F90 ../src/mknullobs.F90 ../src/algomcmc_adap.F90 ../src/liocdf.F90 ../src/mkrztovar.F90 ../src/moddiff.F90 ../src/algofilt.F90 ../src/liocrz.F90 ../src/lioadbs.F90 ../src/utilclc.F90 ../src/utilarg.F90 ../src/algoperc.F90 ../src/algointf.F90 ../src/modscor.F90 ../src/utilsesam.F90 ../src/arghelp.F90 ../src/utilconstraint.F90
+./mkpttozon.F90: ../src/mkpttozon.F90
+	cp ../src/mkpttozon.F90 .
+./utilprint.F90: ../src/utilprint.F90
+	cp ../src/utilprint.F90 .
+SRC = ../src/utilcdfvar.F90 ../src/utilroa.F90 ../src/algospct.F90 ../src/arghelp.F90 ../src/mkmeanect.F90 ../src/utilclc.F90 ../src/mkinterp3d.F90 ../src/modfilt.F90 ../src/hiogrd.F90 ../src/hiobas.F90 ../src/defcst.F90 ../src/modproj.F90 ../src/argmode.F90 ../src/algorank.F90 ../src/modspct.F90 ../src/mkreducevar.F90 ../src/algooper.F90 ../src/algotgest.F90 ../src/hiomsk.F90 ../src/algoanam.F90 ../src/utilfiles.F90 ../src/utilvct.F90 ../src/progsesam.f90 ../src/modvari.F90 ../src/mkobstodta.F90 ../src/argsesam.F90 ../src/liocdf.F90 ../src/algoperc.F90 ../src/utilprint.F90 ../src/lioobs.F90 ../src/utilzone.F90 ../src/liocrz.F90 ../src/lioadbs.F90 ../src/liodimg.F90 ../src/algooerr.F90 ../src/utilmkto.F90 ../src/modintf.F90 ../src/algomcmc_adap.F90 ../src/hiocnt.F90 ../src/liocobs.F90 ../src/liocpak.F90 ../src/evalconfig.F90 ../src/algofilt.F90 ../src/moddiff.F90 ../src/mkdtatoobs.F90 ../src/utilcdfzon.F90 ../src/modoper.F90 ../src/hiocfg.F90 ../src/hioxyo.F90 ../src/mkpartvar.F90 ../src/mod_coord.F90 ../src/mod_cfgxyo.F90 ../src/hiozon.F90 ../src/liobimg.F90 ../src/mod_main.F90 ../src/modmcmc.F90 ../src/readlist.F90 ../src/utilmkh.F90 ../src/utilvalid.F90 ../src/algodiff.F90 ../src/mkdbstoobs.F90 ../src/modcorr.F90 ../src/mkdtatozon.F90 ../src/algovari.F90 ../src/modoerr.F90 ../src/mod_spacexyo.F90 ../src/utilsesam.F90 ../src/mkobsoper.F90 ../src/modrank.F90 ../src/lioncdbs.F90 ../src/lioczon.F90 ../src/utilfilt.F90 ../src/liospct.F90 ../src/utilarg.F90 ../src/algocorr.F90 ../src/mkcorrzbas.F90 ../src/algolocal.F90 ../src/algobase.F90 ../src/liorst.F90 ../src/sesam.F90 ../src/modglbreg.F90 ../src/utilmath1.F90 ../src/algoscor.F90 ../src/mktgsmpl.F90 ../src/mknullobs.F90 ../src/mod_cont.F90 ../src/mkcnttozon.F90 ../src/algozone.F90 ../src/mkconnect.F90 ../src/mod_mpitime.F90 ../src/mkfiltzon.F90 ../src/mkrztovar.F90 ../src/modanam.F90 ../src/liocrg.F90 ../src/mkpttozon.F90 ../src/utilconstraint.F90 ../src/algomcmc.F90 ../src/modtgop.F90 ../src/hiodbs.F90 ../src/mod_mask.F90 ../src/mkinterp2dh.F90 ../src/algortho.F90 ../src/mkzontodta.F90 ../src/modzone.F90 ../src/modobsv.F90 ../src/utilobsv.F90 ../src/modglbroa.F90 ../src/algoroa.F90 ../src/utilcdfpak.F90 ../src/lionc.F90 ../src/modglbeof.F90 ../src/algointf.F90 ../src/modscor.F90 ../src/modadap.F90
+OBJ = utilcdfvar.o utilroa.o algospct.o arghelp.o mkmeanect.o utilclc.o mkinterp3d.o modfilt.o hiogrd.o hiobas.o defcst.o modproj.o argmode.o algorank.o modspct.o mkreducevar.o algooper.o algotgest.o hiomsk.o algoanam.o utilfiles.o utilvct.o progsesam.o modvari.o mkobstodta.o argsesam.o liocdf.o algoperc.o utilprint.o lioobs.o utilzone.o liocrz.o lioadbs.o liodimg.o algooerr.o utilmkto.o modintf.o algomcmc_adap.o hiocnt.o liocobs.o liocpak.o evalconfig.o algofilt.o moddiff.o mkdtatoobs.o utilcdfzon.o modoper.o hiocfg.o hioxyo.o mkpartvar.o mod_coord.o mod_cfgxyo.o hiozon.o liobimg.o mod_main.o modmcmc.o readlist.o utilmkh.o utilvalid.o algodiff.o mkdbstoobs.o modcorr.o mkdtatozon.o algovari.o modoerr.o mod_spacexyo.o utilsesam.o mkobsoper.o modrank.o lioncdbs.o lioczon.o utilfilt.o liospct.o utilarg.o algocorr.o mkcorrzbas.o algolocal.o algobase.o liorst.o sesam.o modglbreg.o utilmath1.o algoscor.o mktgsmpl.o mknullobs.o mod_cont.o mkcnttozon.o algozone.o mkconnect.o mod_mpitime.o mkfiltzon.o mkrztovar.o modanam.o liocrg.o mkpttozon.o utilconstraint.o algomcmc.o modtgop.o hiodbs.o mod_mask.o mkinterp2dh.o algortho.o mkzontodta.o modzone.o modobsv.o utilobsv.o modglbroa.o algoroa.o utilcdfpak.o lionc.o modglbeof.o algointf.o modscor.o modadap.o
+OFF = ../src/hiodbs.F90 ../src/utilcdfvar.F90 ../src/mkcnttozon.F90 ../src/utilclc.F90 ../src/modtgop.F90 ../src/liorst.F90 ../src/algoperc.F90 ../src/hiocfg.F90 ../src/mkdtatozon.F90 ../src/liodimg.F90 ../src/mod_spacexyo.F90 ../src/modoerr.F90 ../src/mkmeanect.F90 ../src/modrank.F90 ../src/modvari.F90 ../src/sesam.F90 ../src/algooerr.F90 ../src/utilarg.F90 ../src/argsesam.F90 ../src/mkobsoper.F90 ../src/hiocnt.F90 ../src/mkinterp2dh.F90 ../src/modoper.F90 ../src/algortho.F90 ../src/utilroa.F90 ../src/algoroa.F90 ../src/algobase.F90 ../src/algoanam.F90 ../src/algoscor.F90 ../src/liocrg.F90 ../src/modobsv.F90 ../src/liocobs.F90 ../src/modproj.F90 ../src/progsesam.f90 ../src/modglbroa.F90 ../src/algolocal.F90 ../src/utilconstraint.F90 ../src/algocorr.F90 ../src/modintf.F90 ../src/modspct.F90 ../src/lioczon.F90 ../src/modadap.F90 ../src/mktgsmpl.F90 ../src/lioadbs.F90 ../src/algospct.F90 ../src/algotgest.F90 ../src/algodiff.F90 ../src/readlist.F90 ../src/utilmkh.F90 ../src/mod_cont.F90 ../src/mkzontodta.F90 ../src/algovari.F90 ../src/arghelp.F90 ../src/hioxyo.F90 ../src/liospct.F90 ../src/hiozon.F90 ../src/mkinterp3d.F90 ../src/modfilt.F90 ../src/utilvalid.F90 ../src/algooper.F90 ../src/utilvct.F90 ../src/mkconnect.F90 ../src/modglbreg.F90 ../src/utilmath1.F90 ../src/mkpartvar.F90 ../src/utilsesam.F90 ../src/utilcdfpak.F90 ../src/liocdf.F90 ../src/modzone.F90 ../src/mod_cfgxyo.F90 ../src/mkdtatoobs.F90 ../src/modscor.F90 ../src/modglbeof.F90 ../src/mod_coord.F90 ../src/utilcdfzon.F90 ../src/lioobs.F90 ../src/utilzone.F90 ../src/algozone.F90 ../src/argmode.F90 ../src/defcst.F90 ../src/mkrztovar.F90 ../src/moddiff.F90 ../src/mknullobs.F90 ../src/mkdbstoobs.F90 ../src/mod_mask.F90 ../src/evalconfig.F90 ../src/algomcmc.F90 ../src/mkcorrzbas.F90 ../src/liobimg.F90 ../src/algofilt.F90 ../src/modcorr.F90 ../src/modanam.F90 ../src/utilfilt.F90 ../src/modmcmc.F90 ../src/lioncdbs.F90 ../src/hiomsk.F90 ../src/mkreducevar.F90 ../src/utilfiles.F90 ../src/hiogrd.F90 ../src/hiobas.F90 ../src/mkfiltzon.F90 ../src/lionc.F90 ../src/liocpak.F90 ../src/mod_main.F90 ../src/mkobstodta.F90 ../src/algomcmc_adap.F90 ../src/liocrz.F90 ../src/utilmkto.F90 ../src/utilobsv.F90 ../src/algorank.F90 ../src/mod_mpitime.F90 ../src/algointf.F90 ../src/mkpttozon.F90 ../src/utilprint.F90
 clean: neat
-	-rm -f ./linkhome/rech/genleg01/regi700/bin/sesam_mpi.cppdefs $(OBJ) /linkhome/rech/genleg01/regi700/bin/sesam_mpi
+	-rm -f ./lus/home/CT1/c1601279/jmbrankart/bin/sesam_gpu.cppdefs $(OBJ) /lus/home/CT1/c1601279/jmbrankart/bin/sesam_gpu
 
 neat:
 	-rm -f $(TMPFILES)
@@ -482,6 +482,6 @@ TAGS: $(SRC)
 tags: $(SRC)
 	ctags $(SRC)
 
-/linkhome/rech/genleg01/regi700/bin/sesam_mpi: $(OBJ)
-	$(LD) $(OBJ) -o /linkhome/rech/genleg01/regi700/bin/sesam_mpi  $(LDFLAGS)
+/lus/home/CT1/c1601279/jmbrankart/bin/sesam_gpu: $(OBJ)
+	$(LD) $(OBJ) -o /lus/home/CT1/c1601279/jmbrankart/bin/sesam_gpu  $(LDFLAGS)
 
