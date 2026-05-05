@@ -348,6 +348,7 @@
       ENDIF
 
       !$acc data copyin(upensobs,obs,oestd)
+      !$omp target update to(upensobs,obs,oestd)
 
 ! Initializations at first iteration
       IF (mcmc_index.EQ.1) THEN
@@ -531,42 +532,50 @@
       IF (mcmc_adap_type==0) THEN
         !$acc data present(state,obs,oestd)
         !$acc parallel loop private(cost_one) reduction(+:cost_jobs)
+        !$omp target teams distribute parallel do reduction(+:cost_jobs) private(cost_one)
         DO jo = 1,jpo
           cost_one  = ( state(jo) - obs(jo) ) / oestd(jo)
           cost_jobs = cost_jobs + 0.5 * cost_one * cost_one
         ENDDO
+        !$omp end target teams distribute parallel do
         !$acc end parallel loop
         !$acc end data
       ELSEIF (mcmc_adap_type==1) THEN
         !$acc data present(state,obs,oestd)
         !$acc parallel loop private(cost_one) reduction(+:cost_jobs)
+        !$omp target teams distribute parallel do reduction(+:cost_jobs) private(cost_one)
         DO jo = 1,jpo
           cost_one  = ( state(jo) - state(jpo+jo) - obs(jo) ) / oestd(jo)
           cost_jobs = cost_jobs + 0.5 * cost_one * cost_one
         ENDDO
+        !$omp end target teams distribute parallel do
         !$acc end parallel loop
         !$acc end data
       ELSEIF (mcmc_adap_type==2) THEN
         cost_alpha = 0.
         !$acc data present(state,obs,oestd)
         !$acc parallel loop private(cost_one) reduction(+:cost_jobs) reduction(+:cost_alpha)
+        !$omp target teams distribute parallel do reduction(+:cost_jobs,cost_alpha) private(cost_one)
         DO jo = 1,jpo
           cost_one   = ( state(jo) - state(jpo+jo) - obs(jo) ) / oestd(jo)
           cost_jobs  = cost_jobs + 0.5 * cost_one * cost_one
           !cost_alpha = cost_alpha + 0.5 * state(jo) * state(jo) * ( EXP(-2.0*state(2*jpo+jo)) - 1.0 ) + state(2*jpo+jo)
         ENDDO
+        !$omp end target teams distribute parallel do
         !$acc end parallel loop
         !$acc end data
       ELSEIF (mcmc_adap_type==3) THEN
         cost_alpha = 0.
         !$acc data present(state,obs,oestd)
         !$acc parallel loop private(cost_one) reduction(+:cost_jobs) reduction(+:cost_alpha)
+        !$omp target teams distribute parallel do reduction(+:cost_jobs,cost_alpha) private(cost_one)
         DO jo = 1,jpo
           cost_one  = ( state(jo) - state(jpo+jo) - obs(jo) ) / ( oestd(jo) * EXP(state(3*jpo+jo)) )
           cost_jobs = cost_jobs + 0.5 * cost_one * cost_one
           cost_alpha = cost_alpha + state(3*jpo+jo)
           !cost_alpha = cost_alpha + 0.5 * state(jo) * state(jo) * ( EXP(-2.0*state(2*jpo+jo)) - 1.0 ) + state(2*jpo+jo)
         ENDDO
+        !$omp end target teams distribute parallel do
         !$acc end parallel loop
         !$acc end data
       ENDIF
