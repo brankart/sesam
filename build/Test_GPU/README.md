@@ -1,4 +1,4 @@
-## Simple preliminary tests of efficiency on GPUs 
+# Simple preliminary tests of efficiency on GPUs 
 
 These test codes reproduces the structure of the code of the MCMC sampler:
 same memory structure, same loops, but without input data
