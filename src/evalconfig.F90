@@ -493,11 +493,11 @@
             somtot=somtot+sompart
             WRITE (numout,11) var_nam(indvar), &
      &           var_ind(indvar),var_nbr(indvar), &
-     &       INT(FREAL(var_nbr(indvar)*100)/ FREAL(sompart))
+     &       INT(100*FREAL(var_nbr(indvar))/FREAL(sompart))
          ENDDO
          WRITE (numout,*) ' Vx size (jpxend) = ',jpxend
          WRITE (numout,*) ' valid points ratio (%) = ', &
-     &        INT(FREAL(jpxend*100)/ FREAL(somtot))
+     &        INT(100*FREAL(jpxend)/ FREAL(somtot))
 !
          WRITE (numout,*)
          WRITE (numout,*) ' Vy configuration (dta)'
@@ -512,11 +512,11 @@
             somtot=somtot+sompart
             WRITE (numout,11) dta_nam(inddta), &
      &              dta_ind(inddta),dta_nbr(inddta), &
-     &       INT(FREAL(dta_nbr(inddta)*100)/ FREAL(sompart))
+     &       INT(100*FREAL(dta_nbr(inddta))/ FREAL(sompart))
          ENDDO
          WRITE (numout,*) ' Vy size (jpyend) = ',jpyend
          WRITE (numout,*) ' valid points ratio (%) = ', &
-     &        INT(FREAL(jpyend*100)/ FREAL(somtot))
+     &        INT(100 * FREAL(jpyend)/ FREAL(somtot))
          IF (existobs) THEN
             WRITE (numout,*)
             WRITE (numout,*) ' Vo configuration (obs)'
@@ -529,7 +529,7 @@
                WRITE (numout,13) obs_nam(indobs,inddbs), &
      &              obs_ind(indobs,inddbs),obs_nbr(indobs,inddbs), &
      &              obs_itp(indobs,inddbs), &
-     &              INT(FREAL(obs_nbr(indobs,inddbs)*100)/FREAL(jpoend))
+     &              INT(100*FREAL(obs_nbr(indobs,inddbs))/FREAL(jpoend))
             ENDDO
          WRITE (numout,*) ' Vo size (jpoend) = ',jpoend
          WRITE (numout,*) ' Nbr of interpolation points (jpitpend) = ',jpitpend

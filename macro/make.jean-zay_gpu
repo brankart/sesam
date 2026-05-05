@@ -11,11 +11,12 @@ CPPDEFS = -DMPI -DOPENACC
 #NETCDF_INC = -I/gpfslocalsup/spack_soft/netcdf-fortran/4.5.3/nvhpc-24.3-6txleriq4w2lkpuknl2voa244jhikevq/include
 #NETCDF_LIB = -L/gpfslocalsup/spack_soft/netcdf-fortran/4.5.3/nvhpc-24.3-6txleriq4w2lkpuknl2voa244jhikevq/lib
 NETCDF_INC = -I/gpfslocalsup/spack_soft/netcdf-fortran/4.5.3/nvhpc-24.3-lelwxxjhhkcnwng4eq2n74a3zwrpvnba/include
-NETCDF_LIB =
+NETCDF_LIB = -L/gpfslocalsup/spack_soft/netcdf-fortran/4.5.3/nvhpc-24.3-lelwxxjhhkcnwng4eq2n74a3zwrpvnba/lib
 #FFLAGS = -acc=gpu,noautopar -gpu=cc70,managed -Minfo=accel -fpic $(NETCDF_INC) $(IDEV_PATH) -I${HOME}/include_gpu
 #LDFLAGS = -acc=gpu,noautopar -gpu=cc70,managed -Minfo=accel -lnetcdff $(NETCDF_LIB) -L$(HOME)/lib -lensdam
 FFLAGS = -acc -Minfo=accel -fpic $(NETCDF_INC) $(IDEV_PATH) -I${HOME}/include_gpu
-LDFLAGS = -acc -Minfo=accel -lnetcdff $(NETCDF_LIB) -L$(HOME)/lib -lensdam_gpu
+LDFLAGS = -acc -Minfo=accel -lnetcdff -lhdf5_fortran $(NETCDF_LIB) -L$(HOME)/lib -lensdam_gpu
+#LDFLAGS = -acc -Minfo=accel -lnetcdff $(NETCDF_LIB) -L$(HOME)/lib -lensdam_gpu
 #FFLAGS = -fpic $(NETCDF_INC) $(IDEV_PATH) -I${HOME}/include_gpu
 #LDFLAGS = -lnetcdff $(NETCDF_LIB) -L$(HOME)/lib -lensdam
 LIST =
