@@ -1,4 +1,4 @@
-# Simple preliminary tests of efficiency on GPUs 
+# Preliminary tests of efficiency on GPUs 
 
 These test codes reproduces the structure of the code of the MCMC sampler:
 same memory structure, same loops, but without input data
@@ -13,7 +13,7 @@ The performance is mainly driven by the size of the problem (N, M, Niter):
  - larger M -> larger cost per iteration and per kernel.
  - larger number of iteration Niter -> larger cost for given memory transfer.
 
-## Performance on Jean-Zay (partition V100) for test5_mpi
+## Performance on Jean-Zay (partition V100) for test5_mpi
 
 This test is performed with MPI on 2 CPUs and 2 GPUs (1 GPU per CPU),
 with Nvidia compiler (option mpigpu_nvi in compilation script).
