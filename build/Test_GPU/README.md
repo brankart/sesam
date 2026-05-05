@@ -55,7 +55,7 @@ Typical run time at optimum (use number of nodes and cores to have that):
  - for 1e6 iterations: between T= 10m and T=  20m
  - for 1e7 iterations: between T=  1h and T=   2h
 
-## Performance on Adastra (partition MI250) for test5_mpi
+## Performance on Adastra (partition MI250) for test5_mpi
 
 This test is performed with MPI on 2 CPUs and 2 GPUs (1 GPU per CPU),
 with Cray compiler (option mpiomp_crayftn in compilation script).
