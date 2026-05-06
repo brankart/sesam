@@ -60,6 +60,8 @@ Typical run time at optimum (use number of nodes and cores to have that):
 This test is performed with MPI on 2 CPUs and 2 GPUs (1 GPU per CPU),
 with Cray compiler (option mpiomp_crayftn in compilation script).
 
+  - N=2e6, Niter=1e4: C=  27s, G= 3.44s, ratio=8
+  - N=5e6, Niter=1e4: C=  83s, G= 6.04s, ratio=14
   - N=1e7, Niter=1e4: C= 303s, G= 9.54s, ratio=32
   - N=1e7, Niter=1e4: C= 190s, G= 9.65s, ratio=20
   - N=2e7, Niter=1e4: C= 403s, G= 15.7s, ratio=26
