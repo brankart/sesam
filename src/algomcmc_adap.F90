@@ -380,12 +380,11 @@
       call MPI_TIMER(1)
       call MPI_TIMER(0)
 #endif
+
       CALL mcmc_iteration( maxiter, upensobs, inensobs, &
      &                     scl_mult(1:jpscl), cost_jo, &
      &                     upxens=upens, xens=inens, &
      &                     my_test=convergence_test )
-
-      !$acc end data
 
 #if defined MPI
       call MPI_TIMER(1)

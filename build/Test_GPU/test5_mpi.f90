@@ -4,7 +4,7 @@ program gpu_acc
     !include "mpif.h"
     ! Problem variables
     logical, parameter :: do_cpu_control=.false.
-    integer, parameter :: N = 100000000, M = 6, L = 1, Niter = 1000
+    integer, parameter :: N = 2000000, M = 6, L = 1, Niter = 10000
     real, allocatable :: ens(:,:,:)
     real, allocatable :: new(:)
     integer, allocatable :: sample(:)
