@@ -69,7 +69,7 @@
       INTEGER :: subdom_size_k,dom_size_k,part_nbr_k,zon_lk
       INTEGER :: subdom_size_t,dom_size_t,part_nbr_t,zon_lt
       INTEGER, dimension (:,:,:,:), allocatable :: part_index
-      INTEGER, dimension (:), allocatable :: pini_i,pini_j,pini_k,pini_t
+      INTEGER, dimension (:), allocatable :: pini_i,pini_j,pini_k,pini_t,pini_tmp
       INTEGER :: ji,jj,jk,jt,jx,jz,jvar,jbub,jdta,jnxyo,jzidx
       INTEGER :: jimin,jimax,jjmin,jjmax,jkmin,jkmax,jtmin,jtmax
       INTEGER :: indvarmsk,indvar
@@ -82,7 +82,8 @@
       INTEGER, dimension (:,:), allocatable :: ptdtadepth, ptdtatime
       INTEGER, dimension (:,:), allocatable :: ptbublon, ptbublat
       INTEGER, dimension (:,:), allocatable :: ptbubdepth, ptbubtime
-      LOGICAL :: inmask,lmoyectold,lectinfo,ingrid
+      LOGICAL, dimension (:), allocatable :: inmask
+      LOGICAL :: lmoyectold,lectinfo,ingrid
       INTEGER ::  allocok,numfila,flagxyo
       CHARACTER(len=hgword) :: text
       CHARACTER(len=1) :: textexclusion
@@ -192,6 +193,14 @@
       allocate ( pini_t(1:jpz), stat=allocok )
       IF (allocok.NE.0) GOTO 1001
       pini_t(:) = 0
+! --- allocation pini_tmp
+      allocate ( pini_tmp(1:jpz), stat=allocok )
+      IF (allocok.NE.0) GOTO 1001
+      pini_tmp(:) = 0
+! --- allocation inmask
+      allocate ( inmask(1:jpz), stat=allocok )
+      IF (allocok.NE.0) GOTO 1001
+      inmask(:) = .FALSE.
 !
       DO ji = 1,part_nbr_i
       DO jj = 1,part_nbr_j
@@ -212,10 +221,13 @@
 ! -3.2- Eliminate subdomains outside model mask
 ! ---------------------------------------------
 !
+      print *, 'Number of subdomains to check ',jpz
+
       jz = 1
       DO WHILE (jz .LE. jpz)
+        IF (MOD(jz,jpz/10)==0) print *, 'Checking ',jz
 !
-        inmask = .FALSE.
+        inmask(jz) = .FALSE.
         DO jvar = 1,varend
           indvarmsk = jvar - 1
           indvar = var_ord(jvar)
@@ -242,7 +254,7 @@
             DO jk = jkmin,jkmax
             DO jj = jjmin,jjmax
             DO ji = jimin,jimax
-              inmask = inmask .OR.  &
+              inmask(jz) = inmask(jz) .OR.  &
      &         (IBITS(mask(ji,jj,jk,jt),indvarmsk,1).NE.0) 
             ENDDO
             ENDDO
@@ -252,19 +264,21 @@
 !
         ENDDO
 !
-        IF (.NOT.inmask) THEN
-          DO jzidx = jz+1,jpz
-             pini_i(jzidx-1) = pini_i(jzidx)
-             pini_j(jzidx-1) = pini_j(jzidx)
-             pini_k(jzidx-1) = pini_k(jzidx)
-             pini_t(jzidx-1) = pini_t(jzidx)
-          ENDDO
-          jpz = jpz - 1
-        ELSE
-          jz = jz + 1
-        ENDIF
+        jz = jz + 1
 !
       ENDDO
+!
+!     Remove subdomains that are out of maskuseles
+      jpz = COUNT(inmask)
+      pini_tmp(1:jpz) = PACK(pini_i(:),inmask)
+      pini_i(1:jpz) = pini_tmp(1:jpz)
+      pini_tmp(1:jpz) = PACK(pini_j(:),inmask)
+      pini_j(1:jpz) = pini_tmp(1:jpz)
+      pini_tmp(1:jpz) = PACK(pini_k(:),inmask)
+      pini_k(1:jpz) = pini_tmp(1:jpz)
+      pini_tmp(1:jpz) = PACK(pini_t(:),inmask)
+      pini_t(1:jpz) = pini_tmp(1:jpz)
+!
 !
 ! -4.- Generate partition vector
 ! ------------------------------
