@@ -156,8 +156,8 @@
 ! --- allocation contij
          allocate ( contij(1:jppend,1:jpc), stat=allocok )
          IF (allocok.NE.0) GOTO 1001
-         contij(:,:)%longi = FREAL(0.0)
-         contij(:,:)%latj = FREAL(0.0)
+         contij(:,:)%lon = FREAL(0.0)
+         contij(:,:)%lat = FREAL(0.0)
 ! --- allocation jplay
          allocate ( jplay(1:jpc), stat=allocok )
          IF (allocok.NE.0) GOTO 1001
@@ -215,15 +215,15 @@
 !
                   IF (MOD(varecnt(indvar),10).EQ.0) THEN
                      IF (varngrd(indvar).LE.2) THEN
-                        grdpt%longi = longi(ji)
-                        grdpt%latj  = latj(jj)
+                        grdpt%lon = longi(ji)
+                        grdpt%lat  = latj(jj)
                      ELSE
-                        grdpt%longi = gridij(ji,jj)%longi
-                        grdpt%latj  = gridij(ji,jj)%latj
+                        grdpt%lon = gridij(ji,jj)%lon
+                        grdpt%lat  = gridij(ji,jj)%lat
                      ENDIF
                   ELSE
-                     grdpt%longi = FREAL(ji)
-                     grdpt%latj  = FREAL(jj)
+                     grdpt%lon = FREAL(ji)
+                     grdpt%lat  = FREAL(jj)
                   ENDIF
 !
                   IF (varecnt(indvar)/10.EQ.0) THEN

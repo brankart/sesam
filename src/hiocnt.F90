@@ -145,7 +145,7 @@
             DO WHILE (fline(1:1).EQ.'#')
                READ(10,'(a)') fline
             ENDDO
-            READ(fline,*) contij(jp,jc)%longi, contij(jp,jc)%latj
+            READ(fline,*) contij(jp,jc)%lon, contij(jp,jc)%lat
          ENDDO
 !
 ! Read number of horizontal slices in cylinders

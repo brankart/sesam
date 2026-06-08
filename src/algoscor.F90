@@ -178,7 +178,7 @@
 ! Allocate gridijkobs array
         allocate ( gridijkobs(1:jpssize), stat=allocok )
         IF (allocok.NE.0) GOTO 1001
-        gridijkobs(:)=type_gridijk(FREAL(0.0),FREAL(0.0),FREAL(0.0))
+        gridijkobs(:)=type_grid4d(FREAL(0.0),FREAL(0.0),FREAL(0.0),FREAL(0.0))
 !
 ! Allocate vectorms array
         allocate ( vectorms(1:jpssize), stat=allocok )

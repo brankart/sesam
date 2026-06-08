@@ -94,7 +94,7 @@
       BIGREAL, dimension(:), allocatable, save :: vectorms
       BIGREAL, dimension(:), allocatable, save :: vectormsnew
 !
-      TYPE (type_gridijk), dimension(:), allocatable :: gridijkobsnew
+      TYPE (type_grid4d), dimension(:), allocatable :: gridijkobsnew
       TYPE (type_poscoef), dimension(:,:), allocatable :: poscoefobsnew
 !
       INTEGER :: allocok,jpssize,jpisize,jpjsize,jpksize
@@ -108,8 +108,6 @@
       CHARACTER(len=bgword), dimension(:), allocatable :: nam_groupoper
       BIGREAL :: spvals,spvalsin,spvalsinref,cst,norm,x,delta,delta2
       BIGREAL :: gpmin,gpmax,gpval,ri
-!      TYPE (type_gridijk), dimension(:), allocatable :: gridijkobs
-!      TYPE (type_poscoef), dimension(:,:), allocatable :: poscoefobs
       BIGREAL, dimension(:), allocatable, save :: garray
       INTEGER, dimension(:), allocatable, save :: jpoendtab,jpitpendtab
       INTEGER, dimension(:,:), allocatable, save :: obs_nbrold, &
@@ -215,7 +213,7 @@
 ! --- allocation gridijkobs
          allocate ( gridijkobs(1:jpssize), stat=allocok )
          IF (allocok.NE.0) GOTO 1001
-         gridijkobs(:)=type_gridijk(FREAL(0.0),FREAL(0.0),FREAL(0.0))
+         gridijkobs(:)=type_grid4d(FREAL(0.0),FREAL(0.0),FREAL(0.0),FREAL(0.0))
          flagcfg=2
          CALL readcfgobs (kconfigo,flagcfg, &
      &        kgridijkobs=gridijkobs(:))
@@ -769,8 +767,8 @@
 ! --- allocation gridijkobsnew
                   allocate ( gridijkobsnew(1:jpoendnew), stat=allocok )
                   IF (allocok.NE.0) GOTO 1001
-                  gridijkobsnew(:)=type_gridijk(FREAL(0.0),FREAL(0.0), &
-     &                 FREAL(0.0))
+                  gridijkobsnew(:)=type_grid4d(FREAL(0.0),FREAL(0.0), &
+     &                 FREAL(0.0),FREAL(0.0))
 ! --- allocation vectormsnew
                   allocate ( vectormsnew(1:jpoendnew), stat=allocok )
                   IF (allocok.NE.0) GOTO 1001
@@ -800,8 +798,8 @@
 ! --- allocation gridijkobs
                      allocate ( gridijkobs(1:jpoend), stat=allocok )
                      IF (allocok.NE.0) GOTO 1001
-                     gridijkobs(:)=type_gridijk(FREAL(0.0),FREAL(0.0), &
-     &                    FREAL(0.0))
+                     gridijkobs(:)=type_grid4d(FREAL(0.0),FREAL(0.0), &
+     &                    FREAL(0.0),FREAL(0.0))
 ! --- allocation vectorms
                      allocate ( vectorms(1:jpoend), stat=allocok )
                      IF (allocok.NE.0) GOTO 1001
@@ -1404,9 +1402,9 @@
                IF (allocok.NE.0) GOTO 1001
 
                jk=1 ; jt=1
-               CALL mk8vct(lon(1:),gridij(:,:)%longi,jk,jt, &
+               CALL mk8vct(lon(1:),gridij(:,:)%lon,jk,jt, &
      &                     jsxy,nbr,kflaganlxyo)
-               CALL mk8vct(lat(1:),gridij(:,:)%latj, jk,jt, &
+               CALL mk8vct(lat(1:),gridij(:,:)%lat, jk,jt, &
      &                     jsxy,nbr,kflaganlxyo)
                lon = lon * deg2rad ; lat = (90. - lat) * deg2rad
 

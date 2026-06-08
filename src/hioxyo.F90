@@ -235,7 +235,7 @@
       INTEGER, intent(in) :: kflagxyo
       BIGREAL, dimension(:), intent(in) :: kvects
       BIGREAL, dimension(:), optional, intent(in) :: kvectsrms
-      TYPE (type_gridijk), dimension(:), optional,  intent(in)  ::  &
+      TYPE (type_grid4d), dimension(:), optional,  intent(in)  ::  &
      &     kgridijkobs
       TYPE (type_poscoef), dimension(:,:), optional,  intent(in) ::  &
      &     kposcoefobs
@@ -1493,7 +1493,7 @@
 !  ------                 (1=kvectorms, 2=kgridijkobs, 3=kposcoefobs)
 !                         (obsolete parameter)
 !           kvectorms   : associated error value (obsolete parameter)
-!           kgridijkobs : observation location (x,y,z)
+!           kgridijkobs : observation location (x,y,z,t)
 !           kposcoefobs : observation operator (interpolation points
 !                         and interpolation coefficients)
 !
@@ -1509,7 +1509,7 @@
       CHARACTER(len=*), intent(in) :: kfninobs
       INTEGER, intent(in) :: kflagcfg
       BIGREAL, optional, dimension(:), intent(out) :: kvectorms
-      TYPE (type_gridijk), optional, dimension(:), intent(out) ::  &
+      TYPE (type_grid4d), optional, dimension(:), intent(out) ::  &
      &     kgridijkobs
       TYPE (type_poscoef), optional, dimension(:,:), intent(out) ::  &
      &     kposcoefobs
@@ -1649,11 +1649,13 @@
      &                 (jo1,jo1=jo,MIN(jo+9,jofin))
                   IF (present(kgridijkobs)) THEN
                      WRITE(numout,'(a,10(1X,F5.1))')' lon |', &
-     &                    kgridijkobs(jo:MIN(jo+9,jofin))%longi
+     &                    kgridijkobs(jo:MIN(jo+9,jofin))%lon
                      WRITE(numout,'(a,10(1X,F5.1))')' lat |', &
-     &                    kgridijkobs(jo:MIN(jo+9,jofin))%latj
+     &                    kgridijkobs(jo:MIN(jo+9,jofin))%lat
                      WRITE(numout,'(a,10(1X,F5.1))')' lev |', &
-     &                    kgridijkobs(jo:MIN(jo+9,jofin))%levk
+     &                    kgridijkobs(jo:MIN(jo+9,jofin))%dep
+                     WRITE(numout,'(a,10(1X,F5.1))')' tim |', &
+     &                    kgridijkobs(jo:MIN(jo+9,jofin))%tim
                   ENDIF
                   IF (present(kposcoefobs)) THEN
                      DO jitp=1,obs_itp(indobs,inddbs)
@@ -1711,7 +1713,7 @@
 !  -----
 !  Output : kjnobs      : block index
 !  ------   kvectorms   : associated error value (obsolete parameter)
-!           kgridijkobs : observation location (x,y,z)
+!           kgridijkobs : observation location (x,y,z,t)
 !           kposcoefobs : observation operator (interpolation points
 !                         and interpolation coefficients)
 !
@@ -1728,7 +1730,7 @@
       CHARACTER(len=*), intent(in) :: kfninobs
       INTEGER, intent(in) :: kjnobs
       BIGREAL, optional, dimension(:), intent(out) :: kvectorms
-      TYPE (type_gridijk), optional, dimension(:), intent(out) ::  &
+      TYPE (type_grid4d), optional, dimension(:), intent(out) ::  &
      &     kgridijkobs
       TYPE (type_poscoef), optional, dimension(:,:), intent(out) ::  &
      &     kposcoefobs
@@ -1736,7 +1738,7 @@
 ! local declarations
 ! ==================
       BIGREAL, dimension(:), allocatable :: fullrms
-      TYPE (type_gridijk), dimension(:), allocatable :: fullgrid
+      TYPE (type_grid4d), dimension(:), allocatable :: fullgrid
       TYPE (type_poscoef), dimension(:,:), allocatable :: fullposcoef
       INTEGER :: jposize,jpitpsize,flagcfg,allocok
 !----------------------------------------------------------------------
@@ -1832,7 +1834,7 @@
 !  Input :  kfnoutobs  : filename
 !  -----    kvecto     : 1D vector object (Vo)
 !           kvectorms   : associated error value [obsolete]
-!           kgridijkobs : observation location (x,y,z)
+!           kgridijkobs : observation location (x,y,z,t)
 !           kposcoefobs : observation operator (interpolation points
 !                         and interpolation coefficients)
 !---------------------------------------------------------------------
@@ -1846,7 +1848,7 @@
 ! ===================
       CHARACTER(len=*), intent(in) :: kfnoutobs
       BIGREAL, dimension(:), intent(in) :: kvecto,kvectorms
-      TYPE (type_gridijk), dimension(:), intent(in)  :: kgridijkobs
+      TYPE (type_grid4d), dimension(:), intent(in)  :: kgridijkobs
       TYPE (type_poscoef), dimension(:,:), intent(in) :: kposcoefobs
 !----------------------------------------------------------------------
 ! local declarations
@@ -1948,11 +1950,13 @@
                   WRITE(numout,'(a,10(1X,i5.5))')' ind |', &
      &                 (jo1,jo1=jo,MIN(jo+9,jofin))
                   WRITE(numout,'(a,10(1X,F5.1))')' lon |', &
-     &                 kgridijkobs(jo:MIN(jo+9,jofin))%longi
+     &                 kgridijkobs(jo:MIN(jo+9,jofin))%lon
                   WRITE(numout,'(a,10(1X,F5.1))')' lat |', &
-     &                 kgridijkobs(jo:MIN(jo+9,jofin))%latj
+     &                 kgridijkobs(jo:MIN(jo+9,jofin))%lat
                   WRITE(numout,'(a,10(1X,F5.1))')' lev |', &
-     &                 kgridijkobs(jo:MIN(jo+9,jofin))%levk
+     &                 kgridijkobs(jo:MIN(jo+9,jofin))%dep
+                  WRITE(numout,'(a,10(1X,F5.1))')' tim |', &
+     &                 kgridijkobs(jo:MIN(jo+9,jofin))%tim
                   WRITE(numout,'(a,10(1X,F5.1))')' val |', &
      &                 kvecto(jo:MIN(jo+9,jofin))
                   WRITE(numout,'(a,10(1X,F5.2))')' rms |', &
@@ -1997,7 +2001,7 @@
 !  -----    kvecto     : 1D vector object (Vo)
 !           kjnobs     : block index
 !           kvectorms   : associated error value [obsolete]
-!           kgridijkobs : observation location (x,y,z)
+!           kgridijkobs : observation location (x,y,z,t)
 !           kposcoefobs : observation operator (interpolation points
 !                         and interpolation coefficients)
 !---------------------------------------------------------------------
@@ -2013,12 +2017,12 @@
       CHARACTER(len=*), intent(in) :: kfnoutobs
       BIGREAL, dimension(:), intent(in) :: kvecto,kvectorms
       INTEGER, intent(in) :: kjnobs
-      TYPE (type_gridijk), dimension(:), intent(in)  :: kgridijkobs
+      TYPE (type_grid4d), dimension(:), intent(in)  :: kgridijkobs
       TYPE (type_poscoef), dimension(:,:), intent(in) :: kposcoefobs
 !----------------------------------------------------------------------
       BIGREAL, dimension(:), allocatable :: fullobs
       BIGREAL, dimension(:), allocatable :: fullrms
-      TYPE (type_gridijk), dimension(:), allocatable :: fullgrid
+      TYPE (type_grid4d), dimension(:), allocatable :: fullgrid
       TYPE (type_poscoef), dimension(:,:), allocatable :: fullposcoef
       INTEGER, dimension(:,:), allocatable :: fullpos
       BIGREAL, dimension(:,:), allocatable :: fullcoef
@@ -2044,7 +2048,7 @@
       IF (allocok.NE.0) GOTO 1001
       allocate ( fullgrid(1:jpoend), stat=allocok )
       IF (allocok.NE.0) GOTO 1001
-      fullgrid(:)=type_gridijk(FREAL(0.0),FREAL(0.0),FREAL(0.0))
+      fullgrid(:)=type_grid4d(FREAL(0.0),FREAL(0.0),FREAL(0.0),FREAL(0.0))
       allocate ( fullposcoef(1:jpoend,1:jpitpsize), stat=allocok )
       IF (allocok.NE.0) GOTO 1001
       fullposcoef(:,:) = type_poscoef(0,FREAL(0.0))
@@ -2056,24 +2060,24 @@
 ! Merge grid data
       fullobs(:) = 0.
       fullobs(vo_idxbeg(kjnobs):vo_idxbeg(kjnobs)+vo_idxend(kjnobs)-1) &
-     &     = kgridijkobs(1:jposize)%longi
+     &     = kgridijkobs(1:jposize)%lon
       CALL mpi_allreduce(MPI_IN_PLACE,fullobs,jpoend, &
      &     mpi_double_precision,mpi_sum,mpi_comm_world,mpi_code)
-      fullgrid(:)%longi=fullobs(:)
+      fullgrid(:)%lon=fullobs(:)
 
       fullobs(:) = 0.
       fullobs(vo_idxbeg(kjnobs):vo_idxbeg(kjnobs)+vo_idxend(kjnobs)-1) &
-     &     = kgridijkobs(1:jposize)%latj
+     &     = kgridijkobs(1:jposize)%lat
       CALL mpi_allreduce(MPI_IN_PLACE,fullobs,jpoend, &
      &     mpi_double_precision,mpi_sum,mpi_comm_world,mpi_code)
-      fullgrid(:)%latj=fullobs(:)
+      fullgrid(:)%lat=fullobs(:)
 
       fullobs(:) = 0.
       fullobs(vo_idxbeg(kjnobs):vo_idxbeg(kjnobs)+vo_idxend(kjnobs)-1) &
-     &     = kgridijkobs(1:jposize)%levk
+     &     = kgridijkobs(1:jposize)%dep
       CALL mpi_allreduce(MPI_IN_PLACE,fullobs,jpoend, &
      &     mpi_double_precision,mpi_sum,mpi_comm_world,mpi_code)
-      fullgrid(:)%levk=fullobs(:)
+      fullgrid(:)%dep=fullobs(:)
 
 ! Merge poscoef data
       fullpos(:,:) = 0
@@ -2139,7 +2143,7 @@
 !  Input : kfnoutobs   : filename  
 !  -----   kvecto      : 1D vector object (Vo)
 !          kvectorms   : associated error value (obsolete)
-!          kgridijkobs : observation location (x,y,z)
+!          kgridijkobs : observation location (x,y,z,t)
 !          kposcoefobs : observation operator (interpolation points
 !                         and interpolation coefficients)
 !          kjobs       : observation index
@@ -2155,7 +2159,7 @@
 ! ===================
       CHARACTER(len=*), intent(in) :: kfnoutobs
       BIGREAL, dimension(:), intent(in) :: kvecto,kvectorms
-      TYPE (type_gridijk), dimension(:), intent(in)  :: kgridijkobs
+      TYPE (type_grid4d), dimension(:), intent(in)  :: kgridijkobs
       TYPE (type_poscoef), dimension(:,:), intent(in) :: kposcoefobs
       INTEGER, intent(in) :: kjobs
 !----------------------------------------------------------------------
@@ -2228,11 +2232,13 @@
                WRITE(numout,'(a,10(1X,i5.5))')' ind |', &
      &              (jo1,jo1=jo,MIN(jo+9,jofin))
                WRITE(numout,'(a,10(1X,F5.1))')' lon |', &
-     &              kgridijkobs(jo:MIN(jo+9,jofin))%longi
+     &              kgridijkobs(jo:MIN(jo+9,jofin))%lon
                WRITE(numout,'(a,10(1X,F5.1))')' lat |', &
-     &              kgridijkobs(jo:MIN(jo+9,jofin))%latj
+     &              kgridijkobs(jo:MIN(jo+9,jofin))%lat
                WRITE(numout,'(a,10(1X,F5.1))')' lev |', &
-     &              kgridijkobs(jo:MIN(jo+9,jofin))%levk
+     &              kgridijkobs(jo:MIN(jo+9,jofin))%dep
+               WRITE(numout,'(a,10(1X,F5.1))')' tim |', &
+     &              kgridijkobs(jo:MIN(jo+9,jofin))%tim
                WRITE(numout,'(a,10(1X,F5.1))')' val |', &
      &              kvecto(jo:MIN(jo+9,jofin))
                WRITE(numout,'(a,10(1X,F5.2))')' rms |', &

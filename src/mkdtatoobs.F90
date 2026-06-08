@@ -89,7 +89,7 @@
 ! --- allocation gridijkobs
       allocate ( gridijkobs(1:jposize), stat=allocok )
       IF (allocok.NE.0) GOTO 1001
-      gridijkobs(:)=type_gridijk(FREAL(0.0),FREAL(0.0),FREAL(0.0))
+      gridijkobs(:)=type_grid4d(FREAL(0.0),FREAL(0.0),FREAL(0.0),FREAL(0.0))
 ! --- allocation poscoefobs
       allocate ( poscoefobs(1:jposize,1:jpitpsize), stat=allocok )
       IF (allocok.NE.0) GOTO 1001
@@ -242,7 +242,7 @@
 ! --- allocation gridijkobs
       allocate ( gridijkobs(1:jposize), stat=allocok )
       IF (allocok.NE.0) GOTO 1001
-      gridijkobs(:)=type_gridijk(FREAL(0.0),FREAL(0.0),FREAL(0.0))
+      gridijkobs(:)=type_grid4d(FREAL(0.0),FREAL(0.0),FREAL(0.0),FREAL(0.0))
 ! --- allocation poscoefobs
       allocate ( poscoefobs(1:jposize,1:jpitpsize), stat=allocok )
       IF (allocok.NE.0) GOTO 1001
@@ -325,9 +325,9 @@
                IF (IBITS(mask(ji,jj,jk,jt),inddtamsk,1).NE.0) THEN
                   IF ((vecty(jy).NE.spvaldtamoyect) &
      &                 .AND.(vectreducedta(jy).NE.FREAL(0.0))) THEN
-                     gridijkobs(jo)%longi=ji
-                     gridijkobs(jo)%latj=jj
-                     gridijkobs(jo)%levk=jk
+                     gridijkobs(jo)%lon=ji
+                     gridijkobs(jo)%lat=jj
+                     gridijkobs(jo)%dep=jk
                      poscoefobs(jo,:) = type_poscoef(jy,FREAL(1.0))
                      jo=jo+1
                   ELSE
@@ -346,9 +346,9 @@
             DO ji=1,jpifin
                IF (IBITS(mask(ji,jj,jk,jt),inddtamsk,1).NE.0) THEN
                   IF (vecty(jy).NE.spvaldtamoyect) THEN
-                     gridijkobs(jo)%longi=ji
-                     gridijkobs(jo)%latj=jj
-                     gridijkobs(jo)%levk=jk
+                     gridijkobs(jo)%lon=ji
+                     gridijkobs(jo)%lat=jj
+                     gridijkobs(jo)%dep=jk
                      poscoefobs(jo,:) = type_poscoef(jy,FREAL(1.0))
                      jo=jo+1
                   ELSE

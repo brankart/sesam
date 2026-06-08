@@ -298,7 +298,7 @@
 ! Allocate gridijkobs array
         allocate ( gridijkobs(1:jpssize), stat=allocok )
         IF (allocok.NE.0) GOTO 1001
-        gridijkobs(:)=type_gridijk(FREAL(0.0),FREAL(0.0),FREAL(0.0))
+        gridijkobs(:)=type_grid4d(FREAL(0.0),FREAL(0.0),FREAL(0.0),FREAL(0.0))
 !
 ! Allocate vectorms array
         allocate ( vectorms(1:jpssize), stat=allocok )
@@ -388,9 +388,9 @@
 !
              WRITE(*,'(2a,2i4)') 'Transforming slice: ',sxy_nam(indsxy),jt,jk
 !
-             CALL mk8vct(lon(1:),gridij(:,:)%longi,jk,jt, &
+             CALL mk8vct(lon(1:),gridij(:,:)%lon,jk,jt, &
      &                   jsxy,nbr,kflagxyo)
-             CALL mk8vct(lat(1:),gridij(:,:)%latj, jk,jt, &
+             CALL mk8vct(lat(1:),gridij(:,:)%lat, jk,jt, &
      &                   jsxy,nbr,kflagxyo)
              CALL mk8vct(wei(1:),weightij(:,:), jk,jt, &
      &                   jsxy,nbr,kflagxyo)
@@ -420,9 +420,9 @@
              WRITE(*,'(2a,2i4)') 'Transforming slice: ',sxy_nam(indsxy),jt,jk
 !
              CALL readspct(kinxyo,spct,kflagxyo,jsxy,jk,jt)
-             CALL mk8vct(lon(1:),gridij(:,:)%longi,jk,jt, &
+             CALL mk8vct(lon(1:),gridij(:,:)%lon,jk,jt, &
      &                   jsxy,nbr,kflagxyo)
-             CALL mk8vct(lat(1:),gridij(:,:)%latj, jk,jt, &
+             CALL mk8vct(lat(1:),gridij(:,:)%lat, jk,jt, &
      &                   jsxy,nbr,kflagxyo)
 !
              js1 = js0 + nbr - 1
@@ -530,13 +530,13 @@
               IF (slice2dfull) THEN
                 IF (newradius) THEN
                   nbr = jpisize*jpjsize
-                  lon = RESHAPE(gridij(:,:)%longi, [nbr])
-                  lat = RESHAPE(gridij(:,:)%latj,  [nbr])
+                  lon = RESHAPE(gridij(:,:)%lon, [nbr])
+                  lat = RESHAPE(gridij(:,:)%lat,  [nbr])
                 ENDIF
               ELSE
-                CALL mk8vct(lon(1:),gridij(:,:)%longi,jk,jt, &
+                CALL mk8vct(lon(1:),gridij(:,:)%lon,jk,jt, &
      &                      jsxy,nbr,kflagxyo)
-                CALL mk8vct(lat(1:),gridij(:,:)%latj, jk,jt, &
+                CALL mk8vct(lat(1:),gridij(:,:)%lat, jk,jt, &
      &                      jsxy,nbr,kflagxyo)
               ENDIF
 !
@@ -615,9 +615,9 @@
           DO jt=1,sxy_jpt(indsxy)
           DO jk=1,sxy_jpk(indsxy)
 !
-             CALL mk8vct(lon(1:),gridij(:,:)%longi,jk,jt, &
+             CALL mk8vct(lon(1:),gridij(:,:)%lon,jk,jt, &
      &                   jsxy,nbr,kflagxyo)
-             CALL mk8vct(lat(1:),gridij(:,:)%latj, jk,jt, &
+             CALL mk8vct(lat(1:),gridij(:,:)%lat, jk,jt, &
      &                   jsxy,nbr,kflagxyo)
 !
              js1 = js0 + nbr - 1
@@ -836,8 +836,8 @@
 ! Make sure that longitude is increasing with ji
 !     DO ji=2,jpisize
 !     DO jj=1,jpjsize
-!       IF (gridij(ji,jj)%longi.LT.gridij(ji-1,jj)%longi) THEN
-!         gridij(ji,jj)%longi=gridij(ji,jj)%longi+360.
+!       IF (gridij(ji,jj)%lon.LT.gridij(ji-1,jj)%lon) THEN
+!         gridij(ji,jj)%lon=gridij(ji,jj)%lon+360.
 !       ENDIF
 !     ENDDO
 !     ENDDO
@@ -845,22 +845,22 @@
       DO ji=2,jpisize-1
       DO jj=2,jpjsize-1
 !       coordinates of the vertices of the quadrangle
-!       lon1 = 0.5 * ( gridij(ji+1,jj+1)%longi + gridij(ji,jj)%longi ) * deg2rad
-!       lon2 = 0.5 * ( gridij(ji+1,jj-1)%longi + gridij(ji,jj)%longi ) * deg2rad
-!       lon3 = 0.5 * ( gridij(ji-1,jj-1)%longi + gridij(ji,jj)%longi ) * deg2rad
-!       lon4 = 0.5 * ( gridij(ji-1,jj+1)%longi + gridij(ji,jj)%longi ) * deg2rad
-!       lat1 = ( 90. - 0.5 * ( gridij(ji+1,jj+1)%latj + gridij(ji,jj)%latj ) ) * deg2rad
-!       lat2 = ( 90. - 0.5 * ( gridij(ji+1,jj-1)%latj + gridij(ji,jj)%latj ) ) * deg2rad
-!       lat3 = ( 90. - 0.5 * ( gridij(ji-1,jj-1)%latj + gridij(ji,jj)%latj ) ) * deg2rad
-!       lat4 = ( 90. - 0.5 * ( gridij(ji-1,jj+1)%latj + gridij(ji,jj)%latj ) ) * deg2rad
-        lon1 = gridij(ji,jj)%longi * deg2rad
-        lon2 = gridij(ji+1,jj)%longi * deg2rad
-        lon3 = gridij(ji+1,jj+1)%longi * deg2rad
-        lon4 = gridij(ji,jj+1)%longi * deg2rad
-        lat1 = ( 90. - gridij(ji,jj)%latj ) * deg2rad
-        lat2 = ( 90. - gridij(ji+1,jj)%latj ) * deg2rad
-        lat3 = ( 90. - gridij(ji+1,jj+1)%latj ) * deg2rad
-        lat4 = ( 90. - gridij(ji,jj+1)%latj ) * deg2rad
+!       lon1 = 0.5 * ( gridij(ji+1,jj+1)%lon + gridij(ji,jj)%lon ) * deg2rad
+!       lon2 = 0.5 * ( gridij(ji+1,jj-1)%lon + gridij(ji,jj)%lon ) * deg2rad
+!       lon3 = 0.5 * ( gridij(ji-1,jj-1)%lon + gridij(ji,jj)%lon ) * deg2rad
+!       lon4 = 0.5 * ( gridij(ji-1,jj+1)%lon + gridij(ji,jj)%lon ) * deg2rad
+!       lat1 = ( 90. - 0.5 * ( gridij(ji+1,jj+1)%lat + gridij(ji,jj)%lat ) ) * deg2rad
+!       lat2 = ( 90. - 0.5 * ( gridij(ji+1,jj-1)%lat + gridij(ji,jj)%lat ) ) * deg2rad
+!       lat3 = ( 90. - 0.5 * ( gridij(ji-1,jj-1)%lat + gridij(ji,jj)%lat ) ) * deg2rad
+!       lat4 = ( 90. - 0.5 * ( gridij(ji-1,jj+1)%lat + gridij(ji,jj)%lat ) ) * deg2rad
+        lon1 = gridij(ji,jj)%lon * deg2rad
+        lon2 = gridij(ji+1,jj)%lon * deg2rad
+        lon3 = gridij(ji+1,jj+1)%lon * deg2rad
+        lon4 = gridij(ji,jj+1)%lon * deg2rad
+        lat1 = ( 90. - gridij(ji,jj)%lat ) * deg2rad
+        lat2 = ( 90. - gridij(ji+1,jj)%lat ) * deg2rad
+        lat3 = ( 90. - gridij(ji+1,jj+1)%lat ) * deg2rad
+        lat4 = ( 90. - gridij(ji,jj+1)%lat ) * deg2rad
 !       distance between vertices
         c12 = ACOS ( MIN( SIN(lat1)*SIN(lat2)*COS(lon1-lon2) + COS(lat1)*COS(lat2) , 1._kr) )
         c23 = ACOS ( MIN( SIN(lat2)*SIN(lat3)*COS(lon2-lon3) + COS(lat2)*COS(lat3) , 1._kr) )
@@ -914,7 +914,7 @@
       INTEGER, INTENT( out ) :: knbr
       BIGREAL, DIMENSION(:), INTENT( in ) :: kvects
       TYPE (type_poscoef), dimension(:,:), intent(in) :: kposcoefobs
-      TYPE (type_gridijk), dimension(:), intent(in)  :: kgridijkobs
+      TYPE (type_grid4d), dimension(:), intent(in)  :: kgridijkobs
       BIGREAL, DIMENSION(:), INTENT( in ) :: vectorms
       BIGREAL, DIMENSION(:), INTENT( out ) :: kobs, kobswei
       BIGREAL, DIMENSION(:), INTENT( out ) :: klon, klat
@@ -942,19 +942,19 @@
           IF (jpitpsize.EQ.8) THEN
             inddta= dta_ord(kjsxy)
             IF (kjk.EQ.1) THEN
-              accepted = kgridijkobs(jo)%levk.LT.var_lev(2,inddta)
+              accepted = kgridijkobs(jo)%dep.LT.var_lev(2,inddta)
             ELSEIF (kjk.EQ.jpksize) THEN
-              accepted = kgridijkobs(jo)%levk.GT.var_lev(jpksize-1,inddta)
+              accepted = kgridijkobs(jo)%dep.GT.var_lev(jpksize-1,inddta)
             ELSE
-              accepted = ( kgridijkobs(jo)%levk.GT.var_lev(kjk-1,inddta) ) &
-     &             .AND. ( kgridijkobs(jo)%levk.LT.var_lev(kjk+1,inddta) )
+              accepted = ( kgridijkobs(jo)%dep.GT.var_lev(kjk-1,inddta) ) &
+     &             .AND. ( kgridijkobs(jo)%dep.LT.var_lev(kjk+1,inddta) )
             ENDIF
           ENDIF
           IF (accepted) THEN
             knbr=knbr+1
             kobs(knbr) = kvects(jo)
-            klon(knbr) = kgridijkobs(jo)%longi
-            klat(knbr) = kgridijkobs(jo)%latj
+            klon(knbr) = kgridijkobs(jo)%lon
+            klat(knbr) = kgridijkobs(jo)%lat
             kobswei(knbr) = 1.0/vectorms(jo)
           ENDIF
         ENDDO

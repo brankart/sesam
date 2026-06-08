@@ -320,7 +320,7 @@
 !  Input :  kfninobs    : filename
 !  -----    kjobs       : observed variable index
 !
-!  Output : kgridijkobs : observation location (x,y,z)
+!  Output : kgridijkobs : observation location (x,y,z,t)
 !  ------   kposcoefobs : observation operator (interpolation points
 !                         and interpolation coefficients)
 !           kvectorms   : associated error value (obsolete)
@@ -340,7 +340,7 @@
       CHARACTER(len=*), intent(in) :: kfninobs
       INTEGER, intent(in) :: kjobs,kflagcfg
       BIGREAL, dimension(:), optional, intent(out) :: kvectorms
-      TYPE (type_gridijk), dimension(:), optional, intent(out) ::  &
+      TYPE (type_grid4d), dimension(:), optional, intent(out) ::  &
      &     kgridijkobs
       TYPE (type_poscoef), dimension(:,:), optional, intent(out) ::  &
      &     kposcoefobs
@@ -451,21 +451,28 @@
       jrec=2
       IF (kflagcfg.EQ.2) THEN
          READ(numfil,REC=jrec,ERR=101,IOSTAT=iost) ptabo(:)
-         kgridijkobs(:)%longi = FREAL(ptabo(:))
+         kgridijkobs(:)%lon = FREAL(ptabo(:))
       ENDIF
 !
 ! Read observation latitudes
       jrec=jrec+1
       IF (kflagcfg.EQ.2) THEN
          READ(numfil,REC=jrec,ERR=101,IOSTAT=iost) ptabo(:)
-         kgridijkobs(:)%latj = FREAL(ptabo(:))
+         kgridijkobs(:)%lat = FREAL(ptabo(:))
       ENDIF
 !
 ! Read observation depths
       jrec=jrec+1
       IF (kflagcfg.EQ.2) THEN
          READ(numfil,REC=jrec,ERR=101,IOSTAT=iost) ptabo(:)
-         kgridijkobs(:)%levk = FREAL(ptabo(:))
+         kgridijkobs(:)%dep = FREAL(ptabo(:))
+      ENDIF
+!
+! Read observation time
+      jrec=jrec+1
+      IF (kflagcfg.EQ.2) THEN
+         READ(numfil,REC=jrec,ERR=101,IOSTAT=iost) ptabo(:)
+         kgridijkobs(:)%tim = FREAL(ptabo(:))
       ENDIF
 !
 ! Do not read observation values
@@ -642,7 +649,7 @@
 !  -----   kjobs       : observed variable index
 !          kvecto      : vector of observed values in file
 !          kvectorms   : associated error value (obsolete)
-!          kgridijkobs : observation location (x,y,z)
+!          kgridijkobs : observation location (x,y,z,t)
 !          kposcoefobs : observation operator (interpolation points
 !                         and interpolation coefficients)
 !---------------------------------------------------------------------
@@ -657,7 +664,7 @@
 ! ===================
       CHARACTER(len=*), intent(in) :: kfnoutobs
       BIGREAL, dimension(:), intent(in) :: kvecto,kvectorms
-      TYPE (type_gridijk), dimension(:), intent(in)  :: kgridijkobs
+      TYPE (type_grid4d), dimension(:), intent(in)  :: kgridijkobs
       TYPE (type_poscoef), dimension(:,:), intent(in) :: kposcoefobs
       INTEGER, intent(in) :: kjobs
 !----------------------------------------------------------------------
@@ -730,18 +737,24 @@
 !
 ! Write observation longitudes
       jrec=2
-      ptabo(:) = FREAL4(kgridijkobs(:)%longi)
+      ptabo(:) = FREAL4(kgridijkobs(:)%lon)
       WRITE(UNIT=numfil,REC=jrec,ERR=101,IOSTAT=iost) ptabo(:)
 !
 ! Write observation latitudes
       jrec=jrec+1
-      ptabo(:) = FREAL4(kgridijkobs(:)%latj)
+      ptabo(:) = FREAL4(kgridijkobs(:)%lat)
       WRITE(UNIT=numfil,REC=jrec,ERR=101,IOSTAT=iost) ptabo(:)
 !
 ! Write observation depths
       jrec=jrec+1
-      ptabo(:) = FREAL4(kgridijkobs(:)%levk)
+      ptabo(:) = FREAL4(kgridijkobs(:)%dep)
       WRITE(UNIT=numfil,REC=jrec,ERR=101,IOSTAT=iost) ptabo(:)
+
+! Write observation time
+      jrec=jrec+1
+      ptabo(:) = FREAL4(kgridijkobs(:)%tim)
+      WRITE(UNIT=numfil,REC=jrec,ERR=101,IOSTAT=iost) ptabo(:)
+
 !
 ! Write observation values
       jrec=jrec+1

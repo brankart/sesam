@@ -241,13 +241,13 @@
                IF (kngrd.LE.2) THEN
                   longi(:) = FREAL(ptabij(:,1))
                ELSE
-                  gridij(:,:)%longi = FREAL(ptabij(:,:))
+                  gridij(:,:)%lon = FREAL(ptabij(:,:))
                ENDIF
             ELSE
                IF (kngrd.LE.2) THEN
                   latj(:) = FREAL(ptabij(1,:))
                ELSE
-                  gridij(:,:)%latj = FREAL(ptabij(:,:))
+                  gridij(:,:)%lat = FREAL(ptabij(:,:))
                ENDIF
             ENDIF
 !
@@ -284,8 +284,8 @@
             ptablatij(:,:) = FREAL4(0.0)
 !
             CALL cdfrpos(kfname,ptablonij,ptablatij,spval,unit)
-            gridij(:,:)%longi = FREAL(ptablonij(:,:))
-            gridij(:,:)%latj = FREAL(ptablatij(:,:))
+            gridij(:,:)%lon = FREAL(ptablonij(:,:))
+            gridij(:,:)%lat = FREAL(ptablatij(:,:))
          CASE DEFAULT
             GOTO 1000
          END SELECT
@@ -342,12 +342,12 @@
            ierr = NF90_GET_VAR(idf,idxv,ptabij,start=vstart, &
      &                         count=vcount,stride=vstrid)
            IF (ierr.NE.0) GOTO 109
-           gridij(:,:)%longi = FREAL(ptabij(:,:))
+           gridij(:,:)%lon = FREAL(ptabij(:,:))
 !
            ierr = NF90_GET_VAR(idf,idyv,ptabij,start=vstart, &
      &                         count=vcount,stride=vstrid)
            IF (ierr.NE.0) GOTO 109
-           gridij(:,:)%latj = FREAL(ptabij(:,:))
+           gridij(:,:)%lat = FREAL(ptabij(:,:))
 !
          CASE DEFAULT
             GOTO 1000
@@ -356,11 +356,11 @@
          IF (kngrd.EQ.4) THEN
            DO ji=1,nx
            DO jj=1,ny
-             DO WHILE (gridij(ji,jj)%longi.GE.FREAL4(442.))
-               gridij(ji,jj)%longi = gridij(ji,jj)%longi - FREAL4(360)
+             DO WHILE (gridij(ji,jj)%lon.GE.FREAL4(442.))
+               gridij(ji,jj)%lon = gridij(ji,jj)%lon - FREAL4(360)
              ENDDO
-             DO WHILE (gridij(ji,jj)%longi.LT.FREAL4(78.))
-               gridij(ji,jj)%longi = gridij(ji,jj)%longi + FREAL4(360)
+             DO WHILE (gridij(ji,jj)%lon.LT.FREAL4(78.))
+               gridij(ji,jj)%lon = gridij(ji,jj)%lon + FREAL4(360)
              ENDDO
            ENDDO
            ENDDO
@@ -436,11 +436,11 @@
          ELSE
             WRITE(numout,*) ' - sample of longitude irregular grid:'
             DO jj = 1,kjpj,MAX(1,kjpj/5)
-               WRITE(numout,*) gridij(1:kjpi:MAX(1,kjpi/5),jj)%longi
+               WRITE(numout,*) gridij(1:kjpi:MAX(1,kjpi/5),jj)%lon
             ENDDO
             WRITE(numout,*) ' - sample of latitude irregular grid:'
             DO jj = 1,kjpj,MAX(1,kjpj/5)
-               WRITE(numout,*) gridij(1:kjpi:MAX(1,kjpi/5),jj)%latj
+               WRITE(numout,*) gridij(1:kjpi:MAX(1,kjpi/5),jj)%lat
             ENDDO
          ENDIF
       ENDIF
@@ -505,11 +505,11 @@
       jpjsize=SIZE(latj)
 !
       DO jj=1,jpjsize
-        gridij(:,jj)%longi = longi(:)
+        gridij(:,jj)%lon = longi(:)
       ENDDO
 !
       DO ji=1,jpisize
-        gridij(ji,:)%latj = latj(:)
+        gridij(ji,:)%lat = latj(:)
       ENDDO
 !
       END SUBROUTINE

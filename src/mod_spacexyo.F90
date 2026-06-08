@@ -68,7 +68,7 @@
 ! gridijkobs : observation locations (3D case)
 ! poscoefobs : observation operator (interpolation points and coefficients)
       TYPE (type_gridij), dimension(:), allocatable :: gridijobs
-      TYPE (type_gridijk), dimension(:), allocatable :: gridijkobs
+      TYPE (type_grid4d), dimension(:), allocatable :: gridijkobs
       TYPE (type_poscoef), dimension(:,:), allocatable :: poscoefobs
 !
 ! vo_idxbeg  : indices pointing to the beginning of Vo segments in Vo vector

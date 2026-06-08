@@ -164,7 +164,7 @@
 !
       IF (dta_jpt(inddta).GT.1)  THEN
 !
-! --- allocation levk
+! --- allocation time
          allocate ( time(1:dta_jpt(inddta)) , stat = allocok )
          IF (allocok.GT.0) GOTO 1001
          time = FREAL(0.0)
@@ -328,7 +328,7 @@
 ! --- allocation gridijkobs
       allocate ( gridijkobs(1:jposize), stat=allocok )
       IF (allocok.NE.0) GOTO 1001
-      gridijkobs(:)=type_gridijk(FREAL(0.0),FREAL(0.0),FREAL(0.0))
+      gridijkobs(:)=type_grid4d(FREAL(0.0),FREAL(0.0),FREAL(0.0),FREAL(0.0))
 ! --- allocation poscoefobs
       allocate ( poscoefobs(1:jposize,1:jpitpsize), stat=allocok )
       IF (allocok.NE.0) GOTO 1001
@@ -482,7 +482,7 @@
 !
       IF ( jpoend .NE. 0 ) THEN
       IF (dta_dim(obs_ord(kjobs)).EQ.2) THEN
-         gridijkobs(:jpoend)%levk = FREAL (1.0)
+         gridijkobs(:jpoend)%dep = FREAL (1.0)
       ENDIF
       ENDIF
 !

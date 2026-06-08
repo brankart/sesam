@@ -68,7 +68,7 @@
       BIGREAL, dimension(:), intent(in) :: kvectdbs
       TYPE (type_grid4d), dimension(:), intent(inout) :: kgriddbs
       BIGREAL, dimension(:), intent(out) :: kvecto
-      TYPE (type_gridijk), dimension(:), intent(out) :: kgridobs
+      TYPE (type_grid4d), dimension(:), intent(out) :: kgridobs
       TYPE (type_poscoef), dimension(:,:), intent(out) :: kposcoefobs
       INTEGER, intent(out) :: kjpoend
       BIGREAL, intent(in) :: kspvaldbs
@@ -195,7 +195,7 @@
 ! -2.- Preprocessing for irregular 2D grid
 ! ----------------------------------------
       IF (dtangrd(indobs).GT.2) THEN
-        CALL grid2D_init(gridij(:,:)%longi,gridij(:,:)%latj,gtype)
+        CALL grid2D_init(gridij(:,:)%lon,gridij(:,:)%lat,gtype)
       ENDIF
 !
 ! -3.- Loop on all observations extracted from the database
@@ -318,9 +318,10 @@
 ! 3d - fill the routine output arrays
 ! -----------------------------------
 ! --- fill the observation arrays
-              kgridobs(jo)%longi=kgriddbs(jdbs)%lon
-              kgridobs(jo)%latj=kgriddbs(jdbs)%lat
-              kgridobs(jo)%levk=kgriddbs(jdbs)%dep
+              kgridobs(jo)%lon=kgriddbs(jdbs)%lon
+              kgridobs(jo)%lat=kgriddbs(jdbs)%lat
+              kgridobs(jo)%dep=kgriddbs(jdbs)%dep
+              kgridobs(jo)%tim=kgriddbs(jdbs)%tim
               kvecto(jo)=kvectdbs(jdbs)
 !
 ! --- fill the observation operator arrays

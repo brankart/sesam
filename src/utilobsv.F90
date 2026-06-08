@@ -64,7 +64,7 @@
 ! ===================
       INTEGER, intent(out) :: jicrg,jjcrg
       BIGREAL, intent(out) :: ricrg,rjcrg
-      TYPE (type_gridijk), intent(in) :: kgridijkobs
+      TYPE (type_grid4d), intent(in) :: kgridijkobs
       BIGREAL, dimension(:), intent(in) :: kloncrgbias,klatcrgbias
 !----------------------------------------------------------------------
 ! local declarations
@@ -78,8 +78,8 @@
       jpjcrg=size(klatcrgbias,1)
 !
 ! Get observation location
-      lon = kgridijkobs%longi
-      lat = kgridijkobs%latj
+      lon = kgridijkobs%lon
+      lat = kgridijkobs%lat
 !
 ! Dichotomy in longitude
       IF ( (lon.GE.kloncrgbias(1)) .AND. (lon.LE.kloncrgbias(jpicrg)) ) THEN

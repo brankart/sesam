@@ -523,8 +523,8 @@
       lat(1:jpjend) = FREAL4(latj(1:jpjend))
       lev(1:jpkend) = FREAL4(levk(1:jpkend))
       IF (existence.AND.(sxyngrd(1).GE.3)) THEN
-        lonxy(1:jpiend,1:jpjend) = FREAL4(gridij(1:jpiend,1:jpjend)%longi)
-        latxy(1:jpiend,1:jpjend) = FREAL4(gridij(1:jpiend,1:jpjend)%latj)
+        lonxy(1:jpiend,1:jpjend) = FREAL4(gridij(1:jpiend,1:jpjend)%lon)
+        latxy(1:jpiend,1:jpjend) = FREAL4(gridij(1:jpiend,1:jpjend)%lat)
       ENDIF
 !
 ! -2.- Write NetCDF file header

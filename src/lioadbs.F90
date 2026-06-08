@@ -165,12 +165,12 @@
 !
       SELECT CASE(dtadim)
       CASE(2)
-         kgridij(:)%longi = spvaldbsout
-         kgridij(:)%latj = spvaldbsout
+         kgridij(:)%lon = spvaldbsout
+         kgridij(:)%lat = spvaldbsout
       CASE(3)
-         kgridijk(:)%longi = spvaldbsout
-         kgridijk(:)%latj = spvaldbsout
-         kgridijk(:)%levk = spvaldbsout
+         kgridijk(:)%lon = spvaldbsout
+         kgridijk(:)%lat = spvaldbsout
+         kgridijk(:)%dep = spvaldbsout
       CASE(4)
          kgrid(:)%lon = spvaldbsout
          kgrid(:)%lat = spvaldbsout
@@ -217,12 +217,12 @@
 !
             SELECT CASE(dtadim)
             CASE(2)
-               kgridij(jpo)%longi = olon
-               kgridij(jpo)%latj = olat
+               kgridij(jpo)%lon = olon
+               kgridij(jpo)%lat = olat
             CASE(3)
-               kgridijk(jpo)%longi = olon
-               kgridijk(jpo)%latj = olat
-               kgridijk(jpo)%levk = odep
+               kgridijk(jpo)%lon = olon
+               kgridijk(jpo)%lat = olat
+               kgridijk(jpo)%dep = odep
             CASE(4)
                kgrid(jpo)%lon = olon
                kgrid(jpo)%lat = olat
@@ -256,11 +256,11 @@
          DO jo=1,jpo,MAX(1,jpo/25)
             SELECT CASE(dtadim)
             CASE(2)
-               WRITE(numout,kform) jo, kgridij(jo)%longi, &
-     &            kgridij(jo)%latj, kvectdbs(jo)
+               WRITE(numout,kform) jo, kgridij(jo)%lon, &
+     &            kgridij(jo)%lat, kvectdbs(jo)
             CASE(3)
-               WRITE(numout,kform) jo, kgridijk(jo)%longi, &
-     &            kgridijk(jo)%latj, kgridijk(jpo)%levk, &
+               WRITE(numout,kform) jo, kgridijk(jo)%lon, &
+     &            kgridijk(jo)%lat, kgridijk(jpo)%dep, &
      &            kvectdbs(jo)
             CASE(4)
                WRITE(numout,kform) jo, kgrid(jo)%lon, &

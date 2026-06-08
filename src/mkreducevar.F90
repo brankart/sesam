@@ -159,8 +159,8 @@
 ! --- allocation contij
          allocate ( contij(1:jppend,1:jpc), stat=allocok )
          IF (allocok.NE.0) GOTO 1001
-         contij(:,:)%longi = FREAL(0.0)
-         contij(:,:)%latj = FREAL(0.0)
+         contij(:,:)%lon = FREAL(0.0)
+         contij(:,:)%lat = FREAL(0.0)
 ! --- allocation jplay
          allocate ( jplay(1:jpc), stat=allocok )
          IF (allocok.NE.0) GOTO 1001
@@ -234,15 +234,15 @@
 !
                   IF (MOD(varecnt(indvar),10).EQ.0) THEN
                      IF (varngrd(indvar).LE.2) THEN
-                        grdpt%longi = longi(ji)
-                        grdpt%latj  = latj(jj)
+                        grdpt%lon = longi(ji)
+                        grdpt%lat  = latj(jj)
                      ELSE
-                        grdpt%longi = gridij(ji,jj)%longi
-                        grdpt%latj  = gridij(ji,jj)%latj
+                        grdpt%lon = gridij(ji,jj)%lon
+                        grdpt%lat  = gridij(ji,jj)%lat
                      ENDIF
                   ELSE
-                     grdpt%longi = FREAL(ji)
-                     grdpt%latj  = FREAL(jj)
+                     grdpt%lon = FREAL(ji)
+                     grdpt%lat  = FREAL(jj)
                   ENDIF
 !
                   IF (varecnt(indvar)/10.EQ.0) THEN
@@ -265,16 +265,16 @@
 !
                                  IF (jpp(jc).NE.5) GOTO 102
 !
-                                 jix (1) = contij(1,jc)%longi
-                                 jix (2) = contij(2,jc)%longi
-                                 jix (3) = contij(3,jc)%longi
-                                 jix (4) = contij(4,jc)%longi
-                                 jjy (1) = contij(1,jc)%latj
-                                 jjy (2) = contij(2,jc)%latj
-                                 jjy (3) = contij(3,jc)%latj
-                                 jjy (4) = contij(4,jc)%latj
+                                 jix (1) = contij(1,jc)%lon
+                                 jix (2) = contij(2,jc)%lon
+                                 jix (3) = contij(3,jc)%lon
+                                 jix (4) = contij(4,jc)%lon
+                                 jjy (1) = contij(1,jc)%lat
+                                 jjy (2) = contij(2,jc)%lat
+                                 jjy (3) = contij(3,jc)%lat
+                                 jjy (4) = contij(4,jc)%lat
 !
-                                 CALL mkxytors(grdpt%longi,grdpt%latj,jix,jjy,r,s)
+                                 CALL mkxytors(grdpt%lon,grdpt%lat,jix,jjy,r,s)
 !
                                  dimcnt = 1
                                  vectx(jx) = vectx(jx) * fxyzcnt(r,dimcnt,jlay,jc)

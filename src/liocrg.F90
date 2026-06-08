@@ -359,12 +359,12 @@
 ! Initialize data and grid arrays with special values
       kvectcrg(:) = spvalcrgout
       IF (dtadim.EQ.2) THEN
-         kgridij(:)%longi = spvalcrgout
-         kgridij(:)%latj = spvalcrgout
+         kgridij(:)%lon = spvalcrgout
+         kgridij(:)%lat = spvalcrgout
       ELSE
-         kgridijk(:)%longi = spvalcrgout
-         kgridijk(:)%latj = spvalcrgout
-         kgridijk(:)%levk = spvalcrgout
+         kgridijk(:)%lon = spvalcrgout
+         kgridijk(:)%lat = spvalcrgout
+         kgridijk(:)%dep = spvalcrgout
       ENDIF
 !
 ! Loop on database 4th dimension (time in regular grid)
@@ -529,12 +529,12 @@
                   IF (jpo.GT.jpcrgsize) GOTO 105
                   kvectcrg(jpo) = FREAL(tabcrg(ji,jj))
                   IF (dtadim.EQ.2) THEN
-                     kgridij(jpo)%longi = FREAL(olon)
-                     kgridij(jpo)%latj = FREAL(olat)
+                     kgridij(jpo)%lon = FREAL(olon)
+                     kgridij(jpo)%lat = FREAL(olat)
                   ELSE
-                     kgridijk(jpo)%longi = FREAL(olon)
-                     kgridijk(jpo)%latj = FREAL(olat)
-                     kgridijk(jpo)%levk = FREAL(odepth)
+                     kgridijk(jpo)%lon = FREAL(olon)
+                     kgridijk(jpo)%lat = FREAL(olat)
+                     kgridijk(jpo)%dep = FREAL(odepth)
                   ENDIF
                 ENDIF
 !
@@ -556,11 +556,11 @@
          WRITE(numout,*) ' idx lon lat (depth) value'
          DO jo=1,jpo,MAX(1,jpo/25)
             IF (dtadim.EQ.2) THEN
-               WRITE(numout,*) jo, kgridij(jo)%longi, &
-     &            kgridij(jo)%latj, kvectcrg(jo)
+               WRITE(numout,*) jo, kgridij(jo)%lon, &
+     &            kgridij(jo)%lat, kvectcrg(jo)
             ELSE
-               WRITE(numout,*) jo, kgridijk(jo)%longi, &
-     &            kgridijk(jo)%latj, kgridijk(jo)%levk, &
+               WRITE(numout,*) jo, kgridijk(jo)%lon, &
+     &            kgridijk(jo)%lat, kgridijk(jo)%dep, &
      &            kvectcrg(jo)
             ENDIF
          ENDDO

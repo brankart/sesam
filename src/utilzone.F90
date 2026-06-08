@@ -76,8 +76,8 @@
 !
 ! Check if polygonal contour is closed
 ! (last point is identical to first point)
-      IF ( (contij(1,kjc)%longi.NE.contij(jpp(kjc),kjc)%longi) &
-     &  .OR. (contij(1,kjc)%latj.NE.contij(jpp(kjc),kjc)%latj) ) GOTO 102
+      IF ( (contij(1,kjc)%lon.NE.contij(jpp(kjc),kjc)%lon) &
+     &  .OR. (contij(1,kjc)%lat.NE.contij(jpp(kjc),kjc)%lat) ) GOTO 102
 !
 ! -1.- Build cidx array: ordered list of polygon vertex indices
 ! -------------------------------------------------------------
@@ -92,15 +92,15 @@
 ! (if yes, input point point is on the border line and we
 ! go directly to the end of the program [nonborder=FALSE])
       nonborder = .FALSE.
-      nonborder = nonborder .OR. (kgrdpt%longi.NE.contij(1,kjc)%longi)
-      nonborder = nonborder .OR. (kgrdpt%latj.NE.contij(1,kjc)%latj)
+      nonborder = nonborder .OR. (kgrdpt%lon.NE.contij(1,kjc)%lon)
+      nonborder = nonborder .OR. (kgrdpt%lat.NE.contij(1,kjc)%lat)
 !
       IF (nonborder) THEN
 !
 ! Find first vertex point with a different longitude than input point
 ! (i.e. which does not belong to the research line)
          jp = 1
-         DO WHILE ( (kgrdpt%longi.EQ.contij(jp,kjc)%longi)  &
+         DO WHILE ( (kgrdpt%lon.EQ.contij(jp,kjc)%lon)  &
      &                        .AND. (jp.LT.jpp(kjc)) )
             jp = jp + 1
          ENDDO
@@ -134,8 +134,8 @@
 ! scont < 0  : the research line is crossing the segment
 ! scont > 0  : the research line is not crossing the segment
 !              (-> go directly to next polygonal segment)
-         scont = (contij(cidx(jp),kjc)%longi-kgrdpt%longi) * &
-     &              (contij(cidx(jp+1),kjc)%longi-kgrdpt%longi)
+         scont = (contij(cidx(jp),kjc)%lon-kgrdpt%lon) * &
+     &              (contij(cidx(jp+1),kjc)%lon-kgrdpt%lon)
 !
          IF (scont.EQ.FREAL(0.0)) THEN
 ! The second vertex belongs to the research line
@@ -151,22 +151,22 @@
             jk = 1
             DO WHILE (scont.EQ.FREAL(0.0)) 
                jk = jk + 1
-               scont = (contij(cidx(jp),kjc)%longi-kgrdpt%longi) * &
-     &                 (contij(cidx(jp+jk),kjc)%longi-kgrdpt%longi)
+               scont = (contij(cidx(jp),kjc)%lon-kgrdpt%lon) * &
+     &                 (contij(cidx(jp+jk),kjc)%lon-kgrdpt%lon)
             ENDDO
 !
             IF (scont.LT.FREAL(0.0)) THEN
 !
 ! Check if crossing segment contains the input point
-               scont = (contij(cidx(jp+1),kjc)%latj-kgrdpt%latj) * &
-     &                   (contij(cidx(jp+jk-1),kjc)%latj-kgrdpt%latj)
+               scont = (contij(cidx(jp+1),kjc)%lat-kgrdpt%lat) * &
+     &                   (contij(cidx(jp+jk-1),kjc)%lat-kgrdpt%lat)
                IF (scont.LE.FREAL(0.0)) THEN
 ! Input point is on the border line
                   nonborder = .FALSE.
                ELSE
 !
 ! Check if tangential segment is North or South of the input point
-                  IF (contij(cidx(jp+1),kjc)%latj .GT. kgrdpt%latj) THEN
+                  IF (contij(cidx(jp+1),kjc)%lat .GT. kgrdpt%lat) THEN
 ! The contour is crossing the research line North of the input point
                      csup = csup + 1
                   ELSE
@@ -177,8 +177,8 @@
             ELSE
 !
 ! Check if tangential segment contains the input point
-               scont = (contij(cidx(jp+1),kjc)%latj-kgrdpt%latj) * &
-     &                   (contij(cidx(jp+jk-1),kjc)%latj-kgrdpt%latj)
+               scont = (contij(cidx(jp+1),kjc)%lat-kgrdpt%lat) * &
+     &                   (contij(cidx(jp+jk-1),kjc)%lat-kgrdpt%lat)
                IF (scont.LE.FREAL(0.0)) THEN
 ! Input point is on the border line
                   nonborder = .FALSE.
@@ -197,11 +197,11 @@
 ! latitudes of the segment
 ! If not (the usual case), the positionning requires
 ! less computational time
-               scont = (contij(cidx(jp),kjc)%latj-kgrdpt%latj) * &
-     &                   (contij(cidx(jp+1),kjc)%latj-kgrdpt%latj)
+               scont = (contij(cidx(jp),kjc)%lat-kgrdpt%lat) * &
+     &                   (contij(cidx(jp+1),kjc)%lat-kgrdpt%lat)
                IF (scont.GT.FREAL(0.0)) THEN
 ! Input point latitude is outside segment latitude range
-                  IF (contij(cidx(jp),kjc)%latj .GT. kgrdpt%latj) THEN
+                  IF (contij(cidx(jp),kjc)%lat .GT. kgrdpt%lat) THEN
 ! The segment is crossing the research line North of the input point
                      csup = csup + 1
                   ELSE
@@ -210,13 +210,13 @@
                   ENDIF
                ELSE
 ! Input point latitude is inside segment latitude range
-                  delta = (contij(cidx(jp+1),kjc)%latj - &
-     &                             contij(cidx(jp),kjc)%latj) &
-     &                  / (contij(cidx(jp+1),kjc)%longi -  &
-     &                             contij(cidx(jp),kjc)%longi)
-                  scont = contij(cidx(jp),kjc)%latj - kgrdpt%latj  &
+                  delta = (contij(cidx(jp+1),kjc)%lat - &
+     &                             contij(cidx(jp),kjc)%lat) &
+     &                  / (contij(cidx(jp+1),kjc)%lon -  &
+     &                             contij(cidx(jp),kjc)%lon)
+                  scont = contij(cidx(jp),kjc)%lat - kgrdpt%lat  &
      &                       - delta * &
-     &                   ( contij(cidx(jp),kjc)%longi - kgrdpt%longi )
+     &                   ( contij(cidx(jp),kjc)%lon - kgrdpt%lon )
                   IF (scont.EQ.FREAL(0.0)) THEN
 ! Input point is on the border line
                      nonborder = .FALSE.

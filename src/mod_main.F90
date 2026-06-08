@@ -49,14 +49,14 @@
       END TYPE type_swiarg
 !
       TYPE type_gridij
-          BIGREAL :: longi
-          BIGREAL :: latj
+          BIGREAL :: lon
+          BIGREAL :: lat
       END TYPE type_gridij
 !
       TYPE type_gridijk
-          BIGREAL :: longi
-          BIGREAL :: latj
-          BIGREAL :: levk
+          BIGREAL :: lon
+          BIGREAL :: lat
+          BIGREAL :: dep
       END TYPE type_gridijk
 !
       TYPE type_grid4d

@@ -343,7 +343,7 @@
 !  Input :  kfninobs    : filename
 !  -----    kjobs       : observed variable index
 !
-!  Output : kgridijkobs : observation location (x,y,z)
+!  Output : kgridijkobs : observation location (x,y,z,t)
 !  ------   kposcoefobs : observation operator (interpolation points
 !                         and interpolation coefficients)
 !           kvectorms   : associated error value (obsolete)
@@ -362,7 +362,7 @@
       CHARACTER(len=*), intent(in) :: kfninobs
       INTEGER, intent(in) :: kjobs,kflagcfg
       BIGREAL, dimension(:), optional, intent(out) :: kvectorms
-      TYPE (type_gridijk), dimension(:), optional, intent(out) ::  &
+      TYPE (type_grid4d), dimension(:), optional, intent(out) ::  &
      &     kgridijkobs
       TYPE (type_poscoef), dimension(:,:), optional, intent(out) ::  &
      &     kposcoefobs
@@ -375,7 +375,7 @@
       INTEGER :: jpolocobs,jpitplocobs,jitp
 !
       INTEGER :: ierr, idf, idobs, iditp, iddta, idnam
-      INTEGER :: idvlon, idvlat, idvdep, idvpos, idvcoe
+      INTEGER :: idvlon, idvlat, idvdep, idvpos, idvcoe, idvtime
       INTEGER, dimension(2) :: vstart,vcount
       LOGICAL :: filexists
 !----------------------------------------------------------------------
@@ -460,7 +460,7 @@
          IF (ierr.NE.0) GOTO 105
          ierr = NF90_GET_VAR(idf,idvlon,ptabo,start=vstart,count=vcount)
          IF (ierr.NE.0) GOTO 105
-         kgridijkobs(:)%longi = FREAL(ptabo(:))
+         kgridijkobs(:)%lon = FREAL(ptabo(:))
       ENDIF
 !
 ! Read observation latitudes
@@ -469,7 +469,7 @@
          IF (ierr.NE.0) GOTO 105
          ierr = NF90_GET_VAR(idf,idvlat,ptabo,start=vstart,count=vcount)
          IF (ierr.NE.0) GOTO 105
-         kgridijkobs(:)%latj = FREAL(ptabo(:))
+         kgridijkobs(:)%lat = FREAL(ptabo(:))
       ENDIF
 !
 ! Read observation depths
@@ -478,8 +478,21 @@
          IF (ierr.NE.0) GOTO 105
          ierr = NF90_GET_VAR(idf,idvdep,ptabo,start=vstart,count=vcount)
          IF (ierr.NE.0) GOTO 105
-         kgridijkobs(:)%levk = FREAL(ptabo(:))
+         kgridijkobs(:)%dep = FREAL(ptabo(:))
       ENDIF
+
+! Read observation time
+      IF (kflagcfg.EQ.2) THEN
+         ierr = NF90_INQ_VARID(idf,'time',idvtime)
+         IF (ierr.NE.0) THEN
+           kgridijkobs(:)%tim = FREAL(0.0)
+         ELSE
+           ierr = NF90_GET_VAR(idf,idvtime,ptabo,start=vstart,count=vcount)
+           IF (ierr.NE.0) GOTO 105
+           kgridijkobs(:)%tim = FREAL(ptabo(:))
+         ENDIF
+      ENDIF
+
 !
 ! Read observation operator
       IF (kflagcfg.EQ.3) THEN
@@ -595,7 +608,7 @@
 !  -----   kjobs       : observed variable index
 !          kvecto      : vector of observed values in file
 !          kvectorms   : associated error value (obsolete)
-!          kgridijkobs : observation location (x,y,z)
+!          kgridijkobs : observation location (x,y,z,t)
 !          kposcoefobs : observation operator (interpolation points
 !                         and interpolation coefficients)
 !---------------------------------------------------------------------
@@ -609,7 +622,7 @@
 ! ===================
       CHARACTER(len=*), intent(in) :: kfnoutobs
       BIGREAL, dimension(:), intent(in) :: kvecto,kvectorms
-      TYPE (type_gridijk), dimension(:), intent(in)  :: kgridijkobs
+      TYPE (type_grid4d), dimension(:), intent(in)  :: kgridijkobs
       TYPE (type_poscoef), dimension(:,:), intent(in) :: kposcoefobs
       INTEGER, intent(in) :: kjobs
 !----------------------------------------------------------------------
@@ -626,7 +639,7 @@
 !
       INTEGER :: ierr, idf, idobs, iditp, iddta, idnam
       INTEGER :: idvnam, idvdim, idvnbr, idvobs
-      INTEGER :: idvlon, idvlat, idvdep, idvpos, idvcoe
+      INTEGER :: idvlon, idvlat, idvdep, idvpos, idvcoe, idvtime
       INTEGER, dimension(2) :: vstart,vcount
       LOGICAL :: filexists
 !----------------------------------------------------------------------
@@ -687,6 +700,9 @@
       ierr = NF90_DEF_VAR(idf,'depth', &
      &                    NF90_FLOAT,(/idobs/),idvdep)
       IF (ierr.NE.0) GOTO 104
+      ierr = NF90_DEF_VAR(idf,'time', &
+     &                    NF90_FLOAT,(/idobs/),idvtime)
+      IF (ierr.NE.0) GOTO 104
       ierr = NF90_DEF_VAR(idf,obs_nam(indobs,inddbs), &
      &                    NF90_FLOAT,(/idobs/),idvobs)
       IF (ierr.NE.0) GOTO 104
@@ -729,18 +745,23 @@
       IF (allocok.NE.0) GOTO 1001
 !
 ! Write observation longitudes
-      ptabo(:) = FREAL4(kgridijkobs(:)%longi)
+      ptabo(:) = FREAL4(kgridijkobs(:)%lon)
       ierr = NF90_PUT_VAR(idf,idvlon,ptabo,start=vstart,count=vcount)
       IF (ierr.NE.0) GOTO 106
 !
 ! Write observation latitudes
-      ptabo(:) = FREAL4(kgridijkobs(:)%latj)
+      ptabo(:) = FREAL4(kgridijkobs(:)%lat)
       ierr = NF90_PUT_VAR(idf,idvlat,ptabo,start=vstart,count=vcount)
       IF (ierr.NE.0) GOTO 106
 !
 ! Write observation depths
-      ptabo(:) = FREAL4(kgridijkobs(:)%levk)
+      ptabo(:) = FREAL4(kgridijkobs(:)%dep)
       ierr = NF90_PUT_VAR(idf,idvdep,ptabo,start=vstart,count=vcount)
+      IF (ierr.NE.0) GOTO 106
+      
+! Write observation time
+      ptabo(:) = FREAL4(kgridijkobs(:)%tim)
+      ierr = NF90_PUT_VAR(idf,idvtime,ptabo,start=vstart,count=vcount)
       IF (ierr.NE.0) GOTO 106
 !
 ! Write observation values

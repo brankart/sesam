@@ -285,7 +285,7 @@
       INTEGER , intent(in) :: kjrbasdeb,kjrbasfin
       INTEGER, intent(in) :: kflagxyo
       BIGREAL, dimension(:), optional, intent(in) :: kvectsrms
-      TYPE (type_gridijk), dimension(:), optional,  intent(in)  ::  &
+      TYPE (type_grid4d), dimension(:), optional,  intent(in)  ::  &
      &     kgridijkobs
       TYPE (type_poscoef), dimension(:,:), optional,  intent(in) ::  &
      &     kposcoefobs
@@ -396,7 +396,7 @@
       INTEGER, intent(in) :: kjnxyo
       INTEGER , intent(in) :: kjrbasdeb,kjrbasfin
       BIGREAL, dimension(:), intent(in) :: kvectsrms
-      TYPE (type_gridijk), dimension(:), intent(in)  ::  &
+      TYPE (type_grid4d), dimension(:), intent(in)  ::  &
      &     kgridijkobs
       TYPE (type_poscoef), dimension(:,:), intent(in) ::  &
      &     kposcoefobs

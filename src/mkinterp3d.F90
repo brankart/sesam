@@ -80,7 +80,7 @@
       TYPE (type_gridijk), dimension(:), intent(inout) :: kgridijkdbs
       BIGREAL, dimension(:), intent(out) :: kvecto
       BIGREAL, dimension(:), intent(out) :: kvectorms
-      TYPE (type_gridijk), dimension(:), intent(out) :: kgridijkobs
+      TYPE (type_grid4d), dimension(:), intent(out) :: kgridijkobs
       TYPE (type_poscoef), dimension(:,:), intent(out) :: kposcoefobs
       INTEGER, intent(out) :: kjpoend
       LOGICAL, intent(in) :: ldbsrms
@@ -145,53 +145,53 @@
      &          (fx1-fx2)*(fx1-fx2) + (fy1-fy2)*(fy1-fy2)
       baryc(fxa,fxb,fx1,fx2) = FREAL(0.25) * ( fxa + fxb + fx1 + fx2 )
       calcr(jfi,jfj,jfdbs) = &
-     &            ( kgridijkdbs(jfdbs)%longi - longi(jfi) ) / &
+     &            ( kgridijkdbs(jfdbs)%lon - longi(jfi) ) / &
      &            ( longi(jfi+1)            - longi(jfi) )
       calcs(jfi,jfj,jfdbs) = &
-     &            ( kgridijkdbs(jfdbs)%latj  - latj (jfj) ) / &
+     &            ( kgridijkdbs(jfdbs)%lat  - latj (jfj) ) / &
      &            ( latj (jfj+1)            - latj (jfj) )
       insquare(jfi,jfj,jfdbs) = &
-     &            ( longi(jfi)   .LE. kgridijkdbs(jfdbs)%longi ) .AND. &
-     &            ( longi(jfi+1) .GT. kgridijkdbs(jfdbs)%longi ) .AND. &
-     &            ( latj(jfj)    .LE. kgridijkdbs(jfdbs)%latj  ) .AND. &
-     &            ( latj(jfj+1)  .GT. kgridijkdbs(jfdbs)%latj  )
+     &            ( longi(jfi)   .LE. kgridijkdbs(jfdbs)%lon ) .AND. &
+     &            ( longi(jfi+1) .GT. kgridijkdbs(jfdbs)%lon ) .AND. &
+     &            ( latj(jfj)    .LE. kgridijkdbs(jfdbs)%lat  ) .AND. &
+     &            ( latj(jfj+1)  .GT. kgridijkdbs(jfdbs)%lat  )
       incell(jfi,jfj,jfdbs) = &
-     &   sameside ( kgridijkdbs(jfdbs)%longi   , gridij(jfi+1,jfj+1)%longi, &
-     &              gridij(jfi,jfj)%longi     , gridij(jfi+1,jfj)%longi, &
-     &              kgridijkdbs(jfdbs)%latj    , gridij(jfi+1,jfj+1)%latj, &
-     &              gridij(jfi,jfj)%latj      , gridij(jfi+1,jfj)%latj )    .AND. &
-     &   sameside ( kgridijkdbs(jfdbs)%longi   , gridij(jfi,jfj+1)%longi, &
-     &              gridij(jfi+1,jfj)%longi   , gridij(jfi+1,jfj+1)%longi, &
-     &              kgridijkdbs(jfdbs)%latj    , gridij(jfi,jfj+1)%latj, &
-     &              gridij(jfi+1,jfj)%latj    , gridij(jfi+1,jfj+1)%latj )  .AND. &
-     &   sameside ( kgridijkdbs(jfdbs)%longi   , gridij(jfi,jfj)%longi, &
-     &              gridij(jfi+1,jfj+1)%longi , gridij(jfi,jfj+1)%longi, &
-     &              kgridijkdbs(jfdbs)%latj    , gridij(jfi,jfj)%latj, &
-     &              gridij(jfi+1,jfj+1)%latj  , gridij(jfi,jfj+1)%latj )    .AND. &
-     &   sameside ( kgridijkdbs(jfdbs)%longi   , gridij(jfi+1,jfj)%longi, &
-     &              gridij(jfi,jfj+1)%longi   , gridij(jfi,jfj)%longi, &
-     &              kgridijkdbs(jfdbs)%latj    , gridij(jfi+1,jfj)%latj, &
-     &              gridij(jfi,jfj+1)%latj    , gridij(jfi,jfj)%latj )
+     &   sameside ( kgridijkdbs(jfdbs)%lon   , gridij(jfi+1,jfj+1)%lon, &
+     &              gridij(jfi,jfj)%lon     , gridij(jfi+1,jfj)%lon, &
+     &              kgridijkdbs(jfdbs)%lat    , gridij(jfi+1,jfj+1)%lat, &
+     &              gridij(jfi,jfj)%lat      , gridij(jfi+1,jfj)%lat )    .AND. &
+     &   sameside ( kgridijkdbs(jfdbs)%lon   , gridij(jfi,jfj+1)%lon, &
+     &              gridij(jfi+1,jfj)%lon   , gridij(jfi+1,jfj+1)%lon, &
+     &              kgridijkdbs(jfdbs)%lat    , gridij(jfi,jfj+1)%lat, &
+     &              gridij(jfi+1,jfj)%lat    , gridij(jfi+1,jfj+1)%lat )  .AND. &
+     &   sameside ( kgridijkdbs(jfdbs)%lon   , gridij(jfi,jfj)%lon, &
+     &              gridij(jfi+1,jfj+1)%lon , gridij(jfi,jfj+1)%lon, &
+     &              kgridijkdbs(jfdbs)%lat    , gridij(jfi,jfj)%lat, &
+     &              gridij(jfi+1,jfj+1)%lat  , gridij(jfi,jfj+1)%lat )    .AND. &
+     &   sameside ( kgridijkdbs(jfdbs)%lon   , gridij(jfi+1,jfj)%lon, &
+     &              gridij(jfi,jfj+1)%lon   , gridij(jfi,jfj)%lon, &
+     &              kgridijkdbs(jfdbs)%lat    , gridij(jfi+1,jfj)%lat, &
+     &              gridij(jfi,jfj+1)%lat    , gridij(jfi,jfj)%lat )
       square_distance(jfi,jfj,jfdbs) = &
-     &   eucl_distance ( kgridijkdbs(jfdbs)%longi                 , &
+     &   eucl_distance ( kgridijkdbs(jfdbs)%lon                 , &
      &                   ( longi(jfi) + longi(jfi+1)  ) * FREAL(0.5)    , &
-     &                   kgridijkdbs(jfdbs)%latj                  , &
+     &                   kgridijkdbs(jfdbs)%lat                  , &
      &                   ( latj(jfj)  + latj(jfj+1)   ) * FREAL(0.5)    )
       cell_distance(jfi,jfj,jfdbs) = &
-     &   eucl_distance ( kgridijkdbs(jfdbs)%longi                          , &
-     &   baryc ( gridij(jfi,jfj)%longi     , gridij(jfi+1,jfj)%longi , &
-     &           gridij(jfi+1,jfj+1)%longi , gridij(jfi,jfj+1)%longi   )  , &
-     &                   kgridijkdbs(jfdbs)%latj                           , &
-     &   baryc ( gridij(jfi,jfj)%latj      , gridij(jfi+1,jfj)%latj  , &
-     &           gridij(jfi+1,jfj+1)%latj  , gridij(jfi,jfj+1)%latj    )  )
+     &   eucl_distance ( kgridijkdbs(jfdbs)%lon                          , &
+     &   baryc ( gridij(jfi,jfj)%lon     , gridij(jfi+1,jfj)%lon , &
+     &           gridij(jfi+1,jfj+1)%lon , gridij(jfi,jfj+1)%lon   )  , &
+     &                   kgridijkdbs(jfdbs)%lat                           , &
+     &   baryc ( gridij(jfi,jfj)%lat      , gridij(jfi+1,jfj)%lat  , &
+     &           gridij(jfi+1,jfj+1)%lat  , gridij(jfi,jfj+1)%lat    )  )
 !----------------------------------------------------------------------
 ! statement functions
 ! ================
       BIGREAL :: fcoefa,fcoefb,fcoefc,fcoefd
       BIGREAL :: fw1,fw2,fw3,fw4,jfa,jfb,jfc,jfd
-      fcoefa(jfdbs,jfi)=kgridijkdbs(jfdbs)%longi-longi(jfi)
+      fcoefa(jfdbs,jfi)=kgridijkdbs(jfdbs)%lon-longi(jfi)
       fcoefb(jfi)=longi(jfi+1)-longi(jfi)
-      fcoefc(jfdbs,jfj)=kgridijkdbs(jfdbs)%latj-latj(jfj)
+      fcoefc(jfdbs,jfj)=kgridijkdbs(jfdbs)%lat-latj(jfj)
       fcoefd(jfj)=latj(jfj+1)-latj(jfj)
       fw1(jfa,jfb,jfc,jfd)=(1-jfa/jfb)*(1-jfc/jfd)
       fw2(jfa,jfb,jfc,jfd)=(jfa/jfb)*(1-jfc/jfd)
@@ -383,14 +383,14 @@
 !                 
             IF (ptvalid) THEN
                DO jdbs=1,kjpdbssize
-                  IF (kgridijkdbs(jdbs)%latj.NE.kspvaldbs) THEN
+                  IF (kgridijkdbs(jdbs)%lat.NE.kspvaldbs) THEN
 !                     
-                     IF ( (longi(ji).LE.kgridijkdbs(jdbs)%longi) .AND. &
-     &                    (longi(ji+1).GT.kgridijkdbs(jdbs)%longi) .AND. &
-     &                    (latj(jj).LE.kgridijkdbs(jdbs)%latj) .AND. &
-     &                    (latj(jj+1).GT.kgridijkdbs(jdbs)%latj ) .AND. &
-     &                    (levk(jk).LE.kgridijkdbs(jdbs)%levk) .AND. &
-     &                    (levk(jk+1).GT.kgridijkdbs(jdbs)%levk ) ) THEN
+                     IF ( (longi(ji).LE.kgridijkdbs(jdbs)%lon) .AND. &
+     &                    (longi(ji+1).GT.kgridijkdbs(jdbs)%lon) .AND. &
+     &                    (latj(jj).LE.kgridijkdbs(jdbs)%lat) .AND. &
+     &                    (latj(jj+1).GT.kgridijkdbs(jdbs)%lat ) .AND. &
+     &                    (levk(jk).LE.kgridijkdbs(jdbs)%dep) .AND. &
+     &                    (levk(jk+1).GT.kgridijkdbs(jdbs)%dep ) ) THEN
 ! --- on calcule les poids
 !                           PRINT *,'on n''en tient un :'
 !     $                          ,jdbs,ji,jj,longi(ji),longi(ji+1),latj(jj),latj(jj+1)
@@ -402,7 +402,7 @@
                         w2=fw2(a,b,c,d)
                         w3=fw3(a,b,c,d)
                         w4=fw4(a,b,c,d)
-                        wh=(kgridijkdbs(jdbs)%levk-levk(jk)) &
+                        wh=(kgridijkdbs(jdbs)%dep-levk(jk)) &
      &                       /(levk(jk+1)-levk(jk))
                         w5=w1*wh
                         w1=w1*(1-wh)
@@ -417,9 +417,9 @@
 ! --- on incremente                       
                         jo= jo+1
 ! --- on affecte les valeurs
-                        kgridijkobs(jo)%longi=kgridijkdbs(jdbs)%longi
-                        kgridijkobs(jo)%latj=kgridijkdbs(jdbs)%latj
-                        kgridijkobs(jo)%levk=kgridijkdbs(jdbs)%levk
+                        kgridijkobs(jo)%lon=kgridijkdbs(jdbs)%lon
+                        kgridijkobs(jo)%lat=kgridijkdbs(jdbs)%lat
+                        kgridijkobs(jo)%dep=kgridijkdbs(jdbs)%dep
                         kvecto(jo)=kvectdbs(jdbs)
                         IF (ldbsrms) THEN
                            kvectorms(jo)=kvectrmsdbs(jdbs)
@@ -442,7 +442,7 @@
                         kposcoefobs(jo,8)%coef=w8
                         IF (jo.EQ.2005) print*, kposcoefobs(jo,:)
 ! --- on desactive
-                        kgridijkdbs(jdbs)%latj=kspvaldbs
+                        kgridijkdbs(jdbs)%lat=kspvaldbs
 !     
                      ENDIF
                   ENDIF	
@@ -461,29 +461,29 @@
          jo=0
          IF (technique.EQ.2) THEN
             DO jdbs=1,kjpdbssize
-               IF (kgridijkdbs(jdbs)%latj.NE.kspvaldbs) THEN
+               IF (kgridijkdbs(jdbs)%lat.NE.kspvaldbs) THEN
                   ji=1
                   DO WHILE ( ji.LE.(kjpisize-1) )
                      ptvalid = .TRUE.
                      ptvalid = ( ptvalid .AND. &
-     &                    (longi(ji).LE.kgridijkdbs(jdbs)%longi) )
+     &                    (longi(ji).LE.kgridijkdbs(jdbs)%lon) )
                      ptvalid = ( ptvalid .AND. &
-     &                    (longi(ji+1).GT.kgridijkdbs(jdbs)%longi ))
+     &                    (longi(ji+1).GT.kgridijkdbs(jdbs)%lon ))
                      IF (ptvalid) THEN
                         jj=1
                         DO WHILE ( jj.LE.(kjpjsize-1) )
                            ptvalid = .TRUE.
                            ptvalid = ( ptvalid .AND. &
-     &                          (latj(jj).LE.kgridijkdbs(jdbs)%latj) )
+     &                          (latj(jj).LE.kgridijkdbs(jdbs)%lat) )
                            ptvalid = ( ptvalid .AND. &
-     &                          (latj(jj+1).GT.kgridijkdbs(jdbs)%latj ))
+     &                          (latj(jj+1).GT.kgridijkdbs(jdbs)%lat ))
                            IF (ptvalid) THEN
                               jk=1
                               DO WHILE ( jk.LE.(kjpksize-1) )
                                  ptvalid = ( ptvalid .AND. &
-     &                                (levk(jk).LE.kgridijkdbs(jdbs)%levk) )
+     &                                (levk(jk).LE.kgridijkdbs(jdbs)%dep) )
                                  ptvalid = ( ptvalid .AND. &
-     &                                (levk(jk+1).GT.kgridijkdbs(jdbs)%levk ))
+     &                                (levk(jk+1).GT.kgridijkdbs(jdbs)%dep ))
                                  IF (ptvalid) THEN
                                     ptvalid = ( ptvalid .AND. &
      &                                   (IBITS(mask(ji,jj,jk,jt),inddtamsk,1).NE.0) )
@@ -542,19 +542,19 @@
             ENDDO
          ELSE
             DO jdbs=1,kjpdbssize
-               IF (kgridijkdbs(jdbs)%latj.NE.kspvaldbs) THEN
+               IF (kgridijkdbs(jdbs)%lat.NE.kspvaldbs) THEN
                   ptvalid = .TRUE.
 ! --- selection du carre en i par dichotomie
                   jbas=1
                   jmil=kjpisize/2
                   jhaut=kjpisize
                   ptvalid = ( ptvalid .AND. &
-     &                 (longi(jbas).LE.kgridijkdbs(jdbs)%longi) )
+     &                 (longi(jbas).LE.kgridijkdbs(jdbs)%lon) )
                   ptvalid = ( ptvalid .AND. &
-     &                 (longi(jhaut).GT.kgridijkdbs(jdbs)%longi ))
+     &                 (longi(jhaut).GT.kgridijkdbs(jdbs)%lon ))
                   IF (ptvalid) THEN
                      DO WHILE ( jbas.NE.jmil )
-                        IF (kgridijkdbs(jdbs)%longi.GE.longi(jmil)) THEN
+                        IF (kgridijkdbs(jdbs)%lon.GE.longi(jmil)) THEN
                            jbas=jmil
                            jhaut=jhaut
                            jmil=jbas+(jhaut-jbas)/2
@@ -570,12 +570,12 @@
                      jmil=kjpjsize/2
                      jhaut=kjpjsize
                      ptvalid = ( ptvalid .AND. &
-     &                    (latj(jbas).LE.kgridijkdbs(jdbs)%latj) )
+     &                    (latj(jbas).LE.kgridijkdbs(jdbs)%lat) )
                      ptvalid = ( ptvalid .AND. &
-     &                    (latj(jhaut).GT.kgridijkdbs(jdbs)%latj ))
+     &                    (latj(jhaut).GT.kgridijkdbs(jdbs)%lat ))
                      IF (ptvalid) THEN
                         DO WHILE ( jbas.NE.jmil )
-                           IF (kgridijkdbs(jdbs)%latj.GE.latj(jmil)) THEN
+                           IF (kgridijkdbs(jdbs)%lat.GE.latj(jmil)) THEN
                               jbas=jmil
                               jhaut=jhaut
                               jmil=jbas+(jhaut-jbas)/2
@@ -591,12 +591,12 @@
                         jmil=kjpksize/2
                         jhaut=kjpksize
                         ptvalid = ( ptvalid .AND. &
-     &                       (levk(jbas).LE.kgridijkdbs(jdbs)%levk) )
+     &                       (levk(jbas).LE.kgridijkdbs(jdbs)%dep) )
                         ptvalid = ( ptvalid .AND. &
-     &                       (levk(jhaut).GT.kgridijkdbs(jdbs)%levk ))
+     &                       (levk(jhaut).GT.kgridijkdbs(jdbs)%dep ))
                         IF (ptvalid) THEN
                            DO WHILE ( jbas.NE.jmil )
-                              IF (kgridijkdbs(jdbs)%levk.GE.levk(jmil)) THEN
+                              IF (kgridijkdbs(jdbs)%dep.GE.levk(jmil)) THEN
                                  jbas=jmil
                                  jhaut=jhaut
                                  jmil=jbas+(jhaut-jbas)/2
@@ -692,7 +692,7 @@
                w2=fw2(a,b,c,d)
                w3=fw3(a,b,c,d)
                w4=fw4(a,b,c,d)
-               wh=(kgridijkdbs(jdbs)%levk-levk(tabinddbs(jdbs)%indk)) &
+               wh=(kgridijkdbs(jdbs)%dep-levk(tabinddbs(jdbs)%indk)) &
      &              /(levk(tabinddbs(jdbs)%indk+1)-levk(tabinddbs(jdbs)%indk))
                w5=w1*wh
                w1=w1*(1-wh)
@@ -705,9 +705,9 @@
 !     PRINT *,'a,b,c,d,w1,w2,w3,w4'
 !     $     ,a,b,c,d,w1,w2,w3,w4
 ! --- on affecte les valeurs
-               kgridijkobs(jo)%longi=kgridijkdbs(jdbs)%longi
-               kgridijkobs(jo)%latj=kgridijkdbs(jdbs)%latj
-               kgridijkobs(jo)%levk=kgridijkdbs(jdbs)%levk
+               kgridijkobs(jo)%lon=kgridijkdbs(jdbs)%lon
+               kgridijkobs(jo)%lat=kgridijkdbs(jdbs)%lat
+               kgridijkobs(jo)%dep=kgridijkdbs(jdbs)%dep
                kvecto(jo)=kvectdbs(jdbs)
                IF (ldbsrms) THEN
                   kvectorms(jo)=kvectrmsdbs(jdbs)
@@ -756,7 +756,7 @@
 ! --- loop on valid database elements
          jo=0
          DO jdbs=1,kjpdbssize
-            IF (kgridijkdbs(jdbs)%latj.NE.kspvaldbs) THEN
+            IF (kgridijkdbs(jdbs)%lat.NE.kspvaldbs) THEN
                IF (nprint.GE.2) THEN
                    IF (MOD(jdbs-1,MAX(1,kjpdbssize/20)).EQ.0) THEN
                      print *, ' ------ Observation ',jdbs, '/',kjpdbssize, &
@@ -859,12 +859,12 @@
                jhaut=kjpksize
                ptvalid = .TRUE.
                ptvalid = ( ptvalid .AND. &
-     &              (levk(jbas).LE.kgridijkdbs(jdbs)%levk) )
+     &              (levk(jbas).LE.kgridijkdbs(jdbs)%dep) )
                ptvalid = ( ptvalid .AND. &
-     &              (levk(jhaut).GT.kgridijkdbs(jdbs)%levk ))
+     &              (levk(jhaut).GT.kgridijkdbs(jdbs)%dep ))
                IF (ptvalid) THEN
                   DO WHILE ( jbas.NE.jmil )
-                     IF (kgridijkdbs(jdbs)%levk.GE.levk(jmil)) THEN
+                     IF (kgridijkdbs(jdbs)%dep.GE.levk(jmil)) THEN
                         jbas=jmil
                         jhaut=jhaut
                         jmil=jbas+(jhaut-jbas)/2
@@ -945,17 +945,17 @@
 
                         CASE(3)
 !
-                           jox = kgridijkdbs(jdbs)%longi
-                           joy = kgridijkdbs(jdbs)%latj
+                           jox = kgridijkdbs(jdbs)%lon
+                           joy = kgridijkdbs(jdbs)%lat
 !
-                           jix (1) = gridij(ji,jj)%longi
-                           jix (2) = gridij(ji+1,jj)%longi
-                           jix (3) = gridij(ji+1,jj+1)%longi
-                           jix (4) = gridij(ji,jj+1)%longi
-                           jjy (1) = gridij(ji,jj)%latj
-                           jjy (2) = gridij(ji+1,jj)%latj
-                           jjy (3) = gridij(ji+1,jj+1)%latj
-                           jjy (4) = gridij(ji,jj+1)%latj
+                           jix (1) = gridij(ji,jj)%lon
+                           jix (2) = gridij(ji+1,jj)%lon
+                           jix (3) = gridij(ji+1,jj+1)%lon
+                           jix (4) = gridij(ji,jj+1)%lon
+                           jjy (1) = gridij(ji,jj)%lat
+                           jjy (2) = gridij(ji+1,jj)%lat
+                           jjy (3) = gridij(ji+1,jj+1)%lat
+                           jjy (4) = gridij(ji,jj+1)%lat
 !
                            CALL mkxytors(jox,joy,jix,jjy,r,s)
 !
@@ -969,7 +969,7 @@
                      w2=fn2(r,s)
                      w3=fn3(r,s)
                      w4=fn4(r,s)
-                     wh=(kgridijkdbs(jdbs)%levk-levk(jk))/(levk(jk+1)-levk(jk))
+                     wh=(kgridijkdbs(jdbs)%dep-levk(jk))/(levk(jk+1)-levk(jk))
                      w5=w1*wh
                      w1=w1*(1-wh)
                      w6=w2*wh
@@ -981,9 +981,9 @@
 !
 ! --- fill the observation arrays
 !
-                     kgridijkobs(jo)%longi=kgridijkdbs(jdbs)%longi
-                     kgridijkobs(jo)%latj=kgridijkdbs(jdbs)%latj
-                     kgridijkobs(jo)%levk=kgridijkdbs(jdbs)%levk
+                     kgridijkobs(jo)%lon=kgridijkdbs(jdbs)%lon
+                     kgridijkobs(jo)%lat=kgridijkdbs(jdbs)%lat
+                     kgridijkobs(jo)%dep=kgridijkdbs(jdbs)%dep
                      kvecto(jo)=kvectdbs(jdbs)
                      IF (ldbsrms) THEN
                         kvectorms(jo)=kvectrmsdbs(jdbs)
