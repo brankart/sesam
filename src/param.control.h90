@@ -36,7 +36,7 @@
 ! Maximum number of nested grids
       INTEGER, parameter :: nbnest=3
 ! Maximum number of observation data sets for each observed variable
-      INTEGER, parameter :: jpndbs=25
+      INTEGER, parameter :: jpndbs=32
 ! Maximum number of observation data sets
       INTEGER, parameter :: nbobs=nbvar*jpndbs
 ! Maximum number of scales in multiple scale ensemble
