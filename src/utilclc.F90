@@ -388,6 +388,7 @@
       INTEGER, intent(in) :: jrdebproj,jrfinproj
       INTEGER :: jpzsize,jpssize,jprsize,jpwsize
       INTEGER :: jwdeb,jwfin,jsfin,jr1,jr2,jr,js
+      BIGREAL :: tmp
 !
       jpwsize = size(mat_wr,1)
       jpssize = size(mat_sr,1)
@@ -400,7 +401,47 @@
       IF (jprsize.LT.jrfinproj) GOTO 1000
 !
       mat_sr(:,:) = FREAL(0.0)
-!
+
+
+#if defined OPENACC || defined OPENMP
+      !$acc data present(mat_wr, mat_sr, mat_rrz, vectx)
+      DO jwdeb = 1, jpwsize, jpssize
+
+         jwfin = min(jpssize + jwdeb - 1, jpwsize)
+         jsfin = min(jpssize, jwfin - jwdeb + 1)
+
+         !$acc parallel loop gang vector collapse(1)
+         !$omp target teams distribute parallel do
+         DO jr=1,jprsize
+            !$omp simd
+            DO js = 1, jsfin
+               mat_sr(js,jr)=mat_wr(jwdeb+js-1,jr)
+            ENDDO
+         ENDDO
+
+         !$acc parallel loop gang vector collapse(2)
+         !$omp target teams distribute parallel do collapse(2)
+         DO jr1 = jrdebproj, jrfinproj
+         DO jr2 = 1, jprsize
+
+            tmp = 0.0
+
+            !$acc loop vector reduction(+:tmp)
+            !$omp simd reduction(+:tmp)
+            DO js = 1, jsfin
+               tmp = tmp + mat_sr(js,jr2) * &
+                           mat_rrz(jr2,jr1,nint(vectx(jwdeb+js-1)))
+            ENDDO
+
+            DO js = 1, jsfin
+               mat_wr(jwdeb+js-1,jr1) = mat_wr(jwdeb+js-1,jr1) + tmp
+            ENDDO
+
+         ENDDO
+         ENDDO
+
+      ENDDO
+#else
       DO jwdeb=1,jpwsize,jpssize
          jwfin=MIN(jpssize+jwdeb-1,jpwsize)
          jsfin=MIN(jpssize,jwfin-jwdeb+1)
@@ -419,6 +460,8 @@
          ENDDO
  
       ENDDO
+#endif
+
       RETURN
 !
 ! --- error management

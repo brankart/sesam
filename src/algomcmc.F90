@@ -828,7 +828,7 @@
 #if defined MPI
       CALL mpi_allreduce (mpi_in_place, cost_jobs, 1,  &
      &     mpi_double_precision,mpi_sum,mpi_comm_world,mpi_code)
-# ifdef FLOWSAMPELR
+# ifdef FLOWSAMPLER
       IF (dyn_constraint) THEN
         CALL mpi_allreduce (mpi_in_place, cost_jdyn, 1,  &
      &       mpi_double_precision,mpi_sum,mpi_comm_world,mpi_code)

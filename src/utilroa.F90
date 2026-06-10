@@ -92,7 +92,7 @@
 !----------------------------------------------------------------------
 ! local declarations
 ! ==================
-      INTEGER :: allocok,jpssize,jprsize,jpqsize
+      INTEGER :: allocok,jpssize,jprsize,jpqsize,js
       INTEGER :: jrbasdeb,jrbasfin,jrbas,jrbas1,jrbas2
       INTEGER :: jrmatdeb,jrmatfin,jrmat,jrmat1,jrmat2
       INTEGER :: jqbasdeb,jqbasfin,jqbas,jqbas1,jqbas2
@@ -100,6 +100,7 @@
       INTEGER :: nvpnull
       BIGREAL, dimension(:,:), allocatable :: matsr
       BIGREAL, dimension(:,:), allocatable :: matrr
+      BIGREAL :: tmp
 !----------------------------------------------------------------------
 !
       jpssize=size(kbasesr,1)
@@ -108,10 +109,12 @@
          jpqsize=size(kbasesq,2)
       ENDIF
 !
+#if !defined(OPENACC) && !defined(OPENMP)
 ! --- allocation matsr
       allocate ( matsr(1:jpssize,1:jprsize) , stat=allocok )
       IF (allocok.GT.0) GOTO 1001
       matsr(:,:) = FREAL(0.0)
+#endif
 ! --- allocation matrr
       allocate ( matrr(1:jprsize,1:jprsize) , stat=allocok )
       IF (allocok.GT.0) GOTO 1001
@@ -147,6 +150,35 @@
 ! -1.- Compute the ROA kernel matrix (trsp((HSf)inv(R)(HSf))
 ! -----------------------------------------------------------
 !
+#if defined OPENACC || defined OPENMP
+      !!!acc enter data create(matrr)
+      !!!omp target update map(alloc:matrr)
+      !!!omp target enter data map(alloc:matrr)
+      !$acc data copyin(matrr)
+      !$acc parallel loop collapse(2) gang vector
+      !$omp target update map(to:matrr)
+      !$omp target teams distribute collapse(2)
+      DO jrmat2 = jrmatdeb, jrmatfin
+        DO jrmat1 = jrmat2, jrmatfin
+
+        tmp = 0.d0
+
+        !$acc loop vector reduction(+:tmp)
+        !$omp simd reduction(+:tmp)
+        DO js = 1, jpssize
+           tmp = tmp + kbasesr(js,jrmat1+1)*kbasesr(js,jrmat2+1)
+        ENDDO
+
+        matrr(jrmat1,jrmat2) = tmp
+        matrr(jrmat2,jrmat1) = tmp
+
+        ENDDO
+      ENDDO
+      !$omp target update from(matrr)
+      !$acc update self(matrr)
+      !!!omp target exit data map(delete:matrr)
+      !!!acc exit data delete(matrr)
+#else
       DO jrbas=jrbasdeb,jrbasfin
          jrmat = jrbas - 1
          matsr(:,jrmat) = kbasesr(:,jrbas) * kvectssqrdiagRi(:)
@@ -177,6 +209,7 @@
             matrr(jrmat2,jrmat2:jrmatfin)=matrr(jrmat2:jrmatfin,jrmat2)
          ENDDO
       ENDIF
+#endif
 !
 ! -2.- Compute SVD decomposition of C
 ! -----------------------------------
@@ -243,6 +276,7 @@
       BIGREAL, dimension(:), allocatable :: kcoefr1
       BIGREAL, dimension(:), allocatable :: kcoefq1
       BIGREAL, dimension(:), allocatable :: vects
+      BIGREAL :: tmp
 !----------------------------------------------------------------------
 !
       jpssize=size(kbasesr,1)
@@ -254,10 +288,12 @@
       allocate ( kcoefr1(1:jprsize), stat=allocok )
       IF (allocok.NE.0) GOTO 1001
       kcoefr1(:) = FREAL(0.0)
+#if !defined(OPENACC) && !defined(OPENMP)
 ! --- allocation vects
       allocate ( vects(1:jpssize), stat=allocok )
       IF (allocok.NE.0) GOTO 1001
       vects(:) = FREAL(0.0)
+#endif
 ! --- allocation kcoefq1
       IF (present(kbasesq)) THEN
          allocate ( kcoefq1(1:jpqsize), stat=allocok )
@@ -297,16 +333,41 @@
 ! -1.- Compute innovation vector and weight by observation error
 ! --------------------------------------------------------------
 !
+#if !defined(OPENACC) && !defined(OPENMP)
       IF (.NOT.present(kbasesq)) THEN
          vects(:) = kvectsinnov(:) * &
      &           kvectssqrdiagRi(:) * kvectssqrdiagRi(:)
       ELSE
          vects(:) = kvectsinnov(:) * kvectssqrdiagRi(:)
       ENDIF
+#endif
 !
 ! -2.- Compute innovation in reduced space
 ! ----------------------------------------
 !
+#if defined OPENACC || defined OPENMP
+      !$acc data copyin(kcoefr1)
+      !$acc parallel loop
+      !$omp target update map(to:kcoefr1)
+      !$omp target teams distribute parallel do
+      DO jrbas=jrbasdeb,jrbasfin
+
+        tmp = 0.d0
+
+        !$acc loop vector reduction(+:tmp)
+        !$omp simd reduction(+:tmp)
+        DO js = 1, jpssize
+           tmp = tmp + kbasesr(js,jrbas)*kvectsinnov(js)
+        ENDDO
+
+        kcoefr1(jrbas)=tmp
+
+      ENDDO
+      !$omp end target teams distribute parallel do
+      !$omp target update from(kcoefr1)
+      !$acc end parallel loop
+      !$acc update self(kcoefr1)
+#else
       IF (.NOT.present(kbasesq)) THEN
          DO jrbas=jrbasdeb,jrbasfin
             kcoefr1(jrbas)=DOT_PRODUCT(kbasesr(:,jrbas),vects(:))
@@ -321,6 +382,7 @@
      &                                kcoefq1(jqbasdeb:jqbasfin))
          ENDDO
       ENDIF
+#endif
 !
 ! -3.- Transform to analysis eigenpsace
 ! -------------------------------------
