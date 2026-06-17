@@ -19,7 +19,8 @@ if [ $cluster = "jean-zay" ] ; then
 elif [ $cluster = "adastra" ] ; then
 
   module purge
-  module load cpe/24.07
+  #module load cpe/24.07
+  module load cpe/25.09
   module load craype-x86-trento
   module load craype-accel-amd-gfx90a
   module load PrgEnv-cray

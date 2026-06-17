@@ -144,7 +144,7 @@
       BIGREAL, dimension(:), allocatable :: vectuweight,bubblklin
       BIGREAL, dimension(:), allocatable :: vectuinnov
       BIGREAL, dimension(:), allocatable :: vectupart
-      BIGREAL :: ensmean
+      BIGREAL :: ensmean, tmp
       TYPE (type_poscoef), dimension(:,:), allocatable :: poscoefuobs, &
      &     poscoefbubobs
       INTEGER, dimension(:), allocatable :: vectynbpoint
@@ -842,10 +842,12 @@
 ! -4.2- Loop on the blocks of subdomains and read the influence bubbles
 ! ---------------------------------------------------------------------
 !
+      CALL flush(numout)
+!
       !$acc data copyin(basesr, vectsinnov, vectssqrdiagRi) &
-      !$acc      create(baseur)
+      !$acc      create(baseur, ptu, vectuweight)
       !$omp target data map(to: basesr, vectsinnov, vectssqrdiagRi) &
-      !$omp             map(alloc: baseur)
+      !$omp             map(alloc: baseur, ptu, vectuweight)
       DO jnz = 1,MAXVAL(limjpnz)
 !
          jz1 = 1
@@ -944,7 +946,9 @@
      &      print *,'--> Computation of ROA coefficients, nproc=',jpproc
          IF (nprint.GE.1)  &
      &      print *, '  Computing for zones in the range:',jz1,jz2
+!
          DO jz = jz1+jproc,jz2,jpproc
+            print *, 'jz=',jz
 !
             IF (kflaggloloc.NE.0) THEN
 !
@@ -1029,6 +1033,12 @@
                   nbzonnull = nbzonnull + 1
                ELSE
                   maxjpu=MAX(maxjpu,jpu)
+#if defined OPENACC || defined OPENMP
+                  IF (jpu.GT.jpusize) THEN
+                     print *, 'Insufficient fixjpu',jpu,jpusize
+                     !STOP 'Stopping now...'
+                  ENDIF
+#else
                   IF (jpu.GT.jpusize) THEN
 ! --- desallocate some arrays
                      IF (allocated(ptu)) deallocate(ptu)
@@ -1075,6 +1085,7 @@
                         IF (allocok.NE.0) GOTO 1001
                      ENDIF
                   ENDIF
+#endif
 !                 
                   ju=0
                   DO js=1,jpssize
@@ -1083,7 +1094,6 @@
                       ptu(ju)=js
                     ENDIF
                   ENDDO
-                  IF (ju.NE.jpu) GOTO 1000
 !                 ptu(:jpu) = PACK( (/ (js, js=1,jpssize) /) ,
 !    $                        vectsweight(:) .NE. FREAL(0.0) )
                   baseur(:jpu,:) = FREAL(0.0)
@@ -1141,8 +1151,10 @@
                      ENDDO
                      ENDDO
                   ENDIF
+#if !defined(OPENACC) && !defined(OPENMP)
                CASE DEFAULT
                   GOTO 1000
+#endif
                END SELECT
 !
 ! -4.33- Load part of uweight :
@@ -1184,8 +1196,10 @@
      &                 vectuweight(:jpu),poscoefbubobs(:jpu,:))
                   ENDIF
 !
+#if !defined(OPENACC) && !defined(OPENMP)
                CASE DEFAULT
                   GOTO 1000
+#endif
                END SELECT
 !
 ! -4.4- Load part of A for covariance computation :
@@ -1208,6 +1222,7 @@
 #else
                   baseur(1:jpu,1:jprsize)=basesr(ptu(1:jpu),1:jprsize)
 #endif
+#if !defined(OPENACC) && !defined(OPENMP)
                CASE (4)
                   zlectinfo = .FALSE.
                   IF (kflagincovyoz.NE.4) GOTO 1000
@@ -1244,11 +1259,13 @@
                   ENDDO
                CASE DEFAULT
                   GOTO 1000
+#endif
                END SELECT
 !
 ! -4.5- Load the inverse observation error correlation matrix 
 ! -----------------------------------------------------------
 !
+#if !defined(OPENACC) && !defined(OPENMP)
                IF (largoecorrel) THEN
                   IF (kflaggloloc.EQ.0) GOTO 1000
 ! 
@@ -1284,6 +1301,7 @@
                      ENDIF
                   ENDDO
                ENDIF
+#endif
 !
 ! -4.6- Weight (HSf) and inv(R) using the local bulk parameterization
 ! -------------------------------------------------------------------
@@ -1349,7 +1367,7 @@
                   !$acc parallel loop
                   !$omp target teams distribute parallel do
                   DO ju = 1,jpu
-                    vectuinnov(ju) = vectsinnov(ptu(ju)) * vectssqrdiagRi(ptu(ju))
+                    vectuinnov(ju) = vectsinnov(ptu(ju)) * vectuweight(ju)
                   ENDDO
                   !$omp end target teams distribute parallel do
                   !$acc end parallel loop
@@ -1533,6 +1551,8 @@
       ENDDO
       !$omp end target data
       !$acc end data
+!
+      CALL flush(numout)
 !
       IF (kflaggloloc.NE.0) THEN
          print *,'maxjpu=',maxjpu,' nbzonnull=',nbzonnull,' %=', &
@@ -1784,6 +1804,8 @@
          CALL readbas (kinbasxyo,basexr(:,:),jnxyo,jrbasdeb,jrbasfin, &
      &        lectinfo,kflaganlxyo,poscoefobs(:,:))
 !
+         CALL flush(numout)
+!
          !$acc data copyin(vectxpart, coefrz, matCUrrz) &
          !$acc      copy(basexr) copyout(vectxa) create(vectxf, mat_yr)
          !$omp target data map(to: vectxpart, coefrz, matCUrrz) &
@@ -1799,6 +1821,7 @@
            !$omp end target teams distribute parallel do
            !$acc end parallel loop
          ENDIF
+         !print *, 'xf:',minval(vectxf), maxval(vectxf)
 !
 ! -9.3- Compute the analysed state (xa - xf)
 ! -------------------------------------------
@@ -1810,25 +1833,46 @@
                WRITE(numout,*) 'ALGOROA : ', &
      &              'computing the analysed state (xa-xf)'
             ENDIF
-            vectxa(:) = FREAL(0.0)
             IF (kflaggloloc.EQ.0) THEN
+               vectxa(:) = FREAL(0.0)
                DO jr=jrbasdeb,jrbasfin
                   vectxa(:) = vectxa(:)+ &
      &                 basexr(:,jr)*coefrz(jr,1)
                ENDDO
             ELSE
 #if defined OPENACC || defined OPENMP
+# if defined OPENMP_bis
                !$acc parallel loop
                !$omp target teams distribute parallel do
                DO jx=1,jpxsize
+                  tmp = FREAL(0.0)
                   DO jr=jrbasdeb,jrbasfin
+                     tmp = tmp + &
+     &                 basexr(jx,jr)*coefrz(jr,nint(vectxpart(jx)))
+                  ENDDO
+                  vectxa(jx) = tmp
+               ENDDO
+               !$acc end parallel loop
+# else
+               !$acc parallel loop
+               !$omp target teams distribute parallel do
+               DO jx=1,jpxsize
+                  vectxa(jx) = FREAL(0.0)
+               ENDDO
+               !$acc end parallel loop
+!
+               DO jr=jrbasdeb,jrbasfin
+                  !$acc parallel loop
+   !              !$omp target teams distribute parallel do
+                  DO jx=1,jpxsize
                      vectxa(jx)=vectxa(jx)+ &
      &                 basexr(jx,jr)*coefrz(jr,nint(vectxpart(jx)))
                   ENDDO
+                  !$acc end parallel loop
                ENDDO
-               !$omp end target teams distribute parallel do
-               !$acc end parallel loop
+# endif
 #else
+               vectxa(:) = FREAL(0.0)
                DO jr=jrbasdeb,jrbasfin
                   DO jx=1,jpxsize
                      vectxa(jx)=vectxa(jx)+ &
@@ -1838,6 +1882,8 @@
 #endif
             ENDIF
          ENDIF
+         !print *, 'coef:',minval(coefrz(:,nint(vectxpart(:)))), maxval(coefrz(:,nint(vectxpart(:))))
+         !print *, 'xa:',minval(vectxa), maxval(vectxa)
 !
 ! -9.4- Read the weight from the reducevar config
 ! -----------------------------------------------
@@ -1859,6 +1905,7 @@
 ! -9.5- Read the forecast state vector (xf) 
 ! -----------------------------------------
 !
+         print *, 'valbase:', valbase
          IF (((lXaout).AND.(lXa)).OR.((valbase.LT.1).AND.(lPaout))) THEN
 !
             IF ((jnxyo.EQ.1).AND.(nprint.GE.2)) THEN
@@ -1886,6 +1933,7 @@
 #endif
 !
          ENDIF
+         print *, 'xa1:',minval(vectxa), maxval(vectxa)
 !
 ! -9.6- Compute the analysed error covariance matrix (Sa)
 ! -------------------------------------------------------
@@ -1912,9 +1960,24 @@
      &              jrmatdeb,jrmatfin)
             ENDIF
 !
+#if defined OPENACC || defined OPENMP
+            ! compute updated ensemble here (inside data region, before any write)
+            IF (valbase.LT.1) THEN
+              !$acc parallel loop
+              !$omp target teams distribute parallel do
+              DO jx=1,jpxsize
+                basexr(jx,:) = basexr(jx,:) * SQRT(FREAL(jprsize-1))
+                basexr(jx,:) = basexr(jx,:) + vectxa(jx)
+              ENDDO
+              !$omp end target teams distribute parallel do
+              !$acc end parallel loop
+            ENDIF
+#endif
+!
          ENDIF
          !$omp end target data
          !$acc end data
+         print *, 'xa2:',minval(vectxa), maxval(vectxa)
 !
 ! -9.7- Write the analysed state vector (xa) or (xa - xf)
 ! -------------------------------------------------------
@@ -1985,12 +2048,14 @@
 !
 ! -9.8.2- Compute updated ensemble if required
 ! --------------------------------------------
+#if !defined(OPENACC) && !defined(OPENMP)
             IF (valbase.LT.1) THEN
               DO jx=1,jpxsize
                 basexr(jx,:) = basexr(jx,:) * SQRT(FREAL(jprsize-1))
                 basexr(jx,:) = basexr(jx,:) + vectxa(jx)
               ENDDO
             ENDIF
+#endif
 !
 ! -9.8.3- Writing output basis directory 
 ! --------------------------------------

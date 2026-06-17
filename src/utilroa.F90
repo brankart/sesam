@@ -153,13 +153,17 @@
 #if defined OPENACC || defined OPENMP
       !!!acc enter data create(matrr)
       !!!omp target update map(alloc:matrr)
+      !!!omp target update to(matrr)
       !!!omp target enter data map(alloc:matrr)
+      !!!omp target teams distribute collapse(2)
+
       !$acc data copyin(matrr)
       !$acc parallel loop collapse(2) gang vector
-      !$omp target update map(to:matrr)
-      !$omp target teams distribute collapse(2)
+      !$omp target data map(tofrom:matrr)
+      !$omp target teams distribute
       DO jrmat2 = jrmatdeb, jrmatfin
-        DO jrmat1 = jrmat2, jrmatfin
+        DO jrmat1 = jrmatdeb, jrmatfin
+        !DO jrmat1 = jrmat2, jrmatfin
 
         tmp = 0.d0
 
@@ -170,12 +174,14 @@
         ENDDO
 
         matrr(jrmat1,jrmat2) = tmp
-        matrr(jrmat2,jrmat1) = tmp
+        !matrr(jrmat2,jrmat1) = tmp
 
         ENDDO
       ENDDO
-      !$omp target update from(matrr)
+      !$omp end target data
       !$acc update self(matrr)
+
+      !!!omp target update from(matrr)
       !!!omp target exit data map(delete:matrr)
       !!!acc exit data delete(matrr)
 #else
@@ -268,7 +274,7 @@
 !----------------------------------------------------------------------
 ! local declarations
 ! ==================
-      INTEGER :: allocok,jpssize,jprsize,jpqsize
+      INTEGER :: allocok,jpssize,jprsize,jpqsize,js
       INTEGER :: jrbasdeb,jrbasfin,jrbas,jrbas1,jrbas2
       INTEGER :: jrmatdeb,jrmatfin,jrmat,jrmat1,jrmat2
       INTEGER :: jqbasdeb,jqbasfin,jqbas,jqbas1,jqbas2
@@ -348,7 +354,7 @@
 #if defined OPENACC || defined OPENMP
       !$acc data copyin(kcoefr1)
       !$acc parallel loop
-      !$omp target update map(to:kcoefr1)
+      !$omp target update to(kcoefr1)
       !$omp target teams distribute parallel do
       DO jrbas=jrbasdeb,jrbasfin
 

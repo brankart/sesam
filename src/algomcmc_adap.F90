@@ -348,7 +348,7 @@
       ENDIF
 
       !$acc data copyin(upensobs,obs,oestd)
-      !$omp target update to(upensobs,obs,oestd)
+      !$omp target enter data map(to:obs,oestd,upensobs)
 
 ! Initializations at first iteration
       IF (mcmc_index.EQ.1) THEN
@@ -391,6 +391,8 @@
       call MPI_TIMER(0)
 #endif
       IF (jproc.eq.0) PRINT *, 'Evaluations of cost function:', njo
+
+      !$omp target exit data map(from:upensobs)
 !     
 ! -5.- Write output ensemble
 ! --------------------------
